@@ -1,0 +1,1444 @@
+<title>Karnet.asist — prototyp v6</title>
+<style>
+  :root {
+    --bg: #faf9f7; --surface: #ffffff; --surface-2: #eff3f1;
+    --ink: #232629; --ink-soft: #6f7686; --line: #e6e9eb;
+    --mint: #82d2b9; --mint-ink: #175e4b;
+    --coral: #f7b9a5; --coral-ink: #8a3e2c;
+    --accent: #f2825a; --accent-deep: #de6b41;
+    --status-ok: #22a876; --status-soon: #d69a3e; --status-urgent: #dd5f58;
+    --shadow: 0 14px 30px rgba(30,30,25,.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121316; --surface: #1a1d21; --surface-2: #242830;
+      --ink: #f2f1ec; --ink-soft: #a3a9b5; --line: #303540;
+      --mint: #24705b; --mint-ink: #c2f2e0;
+      --coral: #934830; --coral-ink: #ffdecf;
+      --accent: #ff9470; --accent-deep: #ed7b4e;
+      --status-ok: #3adda6; --status-soon: #f0be5e; --status-urgent: #f2726e;
+      --shadow: 0 14px 30px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121316; --surface: #1a1d21; --surface-2: #242830;
+    --ink: #f2f1ec; --ink-soft: #a3a9b5; --line: #303540;
+    --mint: #24705b; --mint-ink: #c2f2e0;
+    --coral: #934830; --coral-ink: #ffdecf;
+    --accent: #ff9470; --accent-deep: #ed7b4e;
+    --status-ok: #3adda6; --status-soon: #f0be5e; --status-urgent: #f2726e;
+    --shadow: 0 14px 30px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"] {
+    --bg: #faf9f7; --surface: #ffffff; --surface-2: #eff3f1;
+    --ink: #232629; --ink-soft: #6f7686; --line: #e6e9eb;
+    --mint: #82d2b9; --mint-ink: #175e4b;
+    --coral: #f7b9a5; --coral-ink: #8a3e2c;
+    --accent: #f2825a; --accent-deep: #de6b41;
+    --status-ok: #22a876; --status-soon: #d69a3e; --status-urgent: #dd5f58;
+    --shadow: 0 14px 30px rgba(30,30,25,.09);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    padding: 28px 12px 48px;
+  }
+  .page-caption { text-align: center; max-width: 460px; }
+  .page-caption h1 { font-size: 17px; margin: 0 0 4px; letter-spacing: .01em; }
+  .page-caption p { font-size: 13px; color: var(--ink-soft); margin: 0; line-height: 1.5; }
+
+  .device {
+    width: 400px; max-width: 100%; height: 812px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 34px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .topbar {
+    height: 60px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; flex-shrink: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .brand span { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; white-space: nowrap; }
+  .topbar-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .avatar-btn {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--mint);
+    border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--mint-ink); font-weight: 700; font-size: 12.5px; flex-shrink: 0;
+  }
+  .back-header { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface-2);
+    color: var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink:0;
+  }
+  .icon-btn svg { width: 15px; height: 15px; }
+  .icon-btn:hover { background: var(--line); }
+  .maps-pick-btn { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent-deep); }
+  .topbar h2 { font-size: 16px; margin: 0; font-weight: 700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .lang-toggle { display: flex; background: var(--surface-2); border-radius: 100px; padding: 2px; flex-shrink: 0; }
+  .lang-toggle button {
+    border: none; background: none; padding: 5px 8px; border-radius: 100px;
+    font-size: 10.5px; font-weight: 700; cursor: pointer; color: var(--ink-soft); letter-spacing: .02em;
+  }
+  .lang-toggle button.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.10); }
+
+  .tabs-layer { position: absolute; inset: 60px 0 74px 0; }
+  .tab-screen {
+    position: absolute; inset: 0; overflow-y: auto;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .tab-screen.active { opacity: 1; pointer-events: auto; }
+
+  .list-wrap { padding: 12px 16px 100px; display: flex; flex-direction: column; gap: 12px; }
+
+  .card-tile {
+    background: var(--surface); border-radius: 20px; padding: 14px;
+    box-shadow: 0 1px 0 var(--line);
+    border: 1px solid var(--line);
+    cursor: pointer; display: flex; flex-direction: column; gap: 10px;
+    transition: transform .12s ease;
+  }
+  .card-tile:active { transform: scale(.98); }
+  .card-tile.archived { opacity: .85; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; }
+  .cat-icon {
+    width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cat-icon svg { width: 22px; height: 22px; }
+  .cat-icon.sport { background: var(--mint); color: var(--mint-ink); }
+  .cat-icon.relax { background: var(--coral); color: var(--coral-ink); }
+
+  .card-info { flex: 1; min-width: 0; }
+  .card-info .name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+  .card-info .cat { font-size: 12px; color: var(--ink-soft); }
+
+  .expiry-chip {
+    font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 100px;
+    white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  .expiry-chip.ok { background: color-mix(in srgb, var(--status-ok) 16%, transparent); color: var(--status-ok); }
+  .expiry-chip.soon { background: color-mix(in srgb, var(--status-soon) 18%, transparent); color: var(--status-soon); }
+  .expiry-chip.urgent { background: color-mix(in srgb, var(--status-urgent) 18%, transparent); color: var(--status-urgent); }
+  .expiry-chip.neutral { background: var(--surface-2); color: var(--ink-soft); }
+
+  .progress-row { display: flex; align-items: center; gap: 10px; }
+  .progress-track {
+    flex: 1; height: 9px; border-radius: 100px; background: var(--surface-2); overflow: hidden;
+  }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); border-radius: 100px; transition: width .4s ease; }
+  .progress-label { font-size: 12px; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .unlimited-row {
+    display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-soft);
+    background: var(--surface-2); padding: 6px 10px; border-radius: 100px; width: fit-content;
+  }
+
+  .plus-row { display: flex; justify-content: flex-end; align-items: center; }
+  .plus-btn {
+    width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--accent);
+    color: #fff; font-size: 18px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 8px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .plus-btn:active { transform: scale(.9); }
+  .plus-btn[disabled] { background: var(--surface-2); color: var(--ink-soft); box-shadow: none; cursor: default; }
+  .plus-btn.pulse { animation: pulse .35s ease; }
+  @keyframes pulse { 0%{transform:scale(1)} 40%{transform:scale(1.25)} 100%{transform:scale(1)} }
+  @media (prefers-reduced-motion: reduce) { .plus-btn.pulse { animation: none; } }
+
+  .archive-add-btn {
+    border: none; background: none; color: var(--accent-deep); font-size: 12.5px;
+    font-weight: 700; cursor: pointer; padding: 6px 2px;
+  }
+  .archive-add-btn:hover { text-decoration: underline; }
+
+  .section-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink-soft); margin: 4px 2px 0;
+  }
+
+  .archived-banner {
+    background: var(--surface-2); border-radius: 14px; padding: 13px; text-align: center;
+    font-size: 13px; color: var(--ink-soft); font-weight: 600;
+  }
+
+  .fab {
+    position: absolute; right: 18px; bottom: 92px; z-index: 5;
+    width: 54px; height: 54px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: #fff; font-size: 26px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-deep) 55%, transparent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fab:active { transform: scale(.94); }
+
+  .bottom-nav {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 74px;
+    background: var(--surface); border-top: 1px solid var(--line);
+    display: flex;
+  }
+  .nav-btn {
+    flex: 1; border: none; background: none; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px; cursor: pointer;
+    color: var(--ink-soft); font-size: 10.5px; font-weight: 600;
+  }
+  .nav-btn svg { width: 20px; height: 20px; }
+  .nav-btn.active { color: var(--accent-deep); }
+
+  /* overlay screens */
+  .overlay {
+    position: absolute; inset: 0; background: var(--bg); z-index: 20;
+    transform: translateX(100%); transition: transform .28s ease; display: flex; flex-direction: column;
+  }
+  .overlay.from-bottom { transform: translateY(100%); }
+  .overlay.open { transform: translate(0,0); }
+  .overlay-body { flex: 1; overflow-y: auto; padding: 18px 18px 40px; }
+
+  .ring-wrap { display: flex; justify-content: center; padding: 18px 0 6px; }
+
+  .detail-hero { text-align: center; padding: 6px 0 14px; }
+  .detail-hero .name { font-size: 20px; font-weight: 800; margin: 4px 0 2px; }
+  .detail-hero .cat { font-size: 13px; color: var(--ink-soft); }
+
+  .detail-stat-row { display: flex; gap: 10px; margin: 14px 0 4px; }
+  .stat-box {
+    flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    padding: 12px; text-align: center;
+  }
+  .stat-box .v { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat-box .l { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+
+  .edit-expiry-link {
+    display: block; width: 100%; text-align: center; background: none; border: none;
+    color: var(--accent-deep); font-size: 12.5px; font-weight: 700; cursor: pointer;
+    margin: 0 0 14px; padding: 4px;
+  }
+  .edit-expiry-link:hover { text-decoration: underline; }
+
+  .primary-btn {
+    width: 100%; border: none; border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff;
+    font-size: 15px; font-weight: 700; padding: 14px; cursor: pointer;
+  }
+  .primary-btn:active { transform: scale(.98); }
+  .primary-btn[disabled] { background: var(--surface-2); color: var(--ink-soft); }
+  .secondary-btn {
+    width: 100%; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink);
+    font-size: 14px; font-weight: 600; padding: 13px; cursor: pointer; margin-top: 8px;
+  }
+
+  .voucher-box {
+    margin-top: 16px; border: 1px dashed var(--line); border-radius: 16px; padding: 16px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer; background: var(--surface);
+  }
+  .voucher-box svg { width: 30px; height: 30px; color: var(--mint-ink); flex-shrink: 0; }
+  .voucher-box .t { font-weight: 700; font-size: 13.5px; }
+  .voucher-box .s { font-size: 12px; color: var(--ink-soft); }
+
+  .history-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px;
+    cursor: pointer;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .d-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+  .history-item .d-top { display: flex; gap: 8px; align-items: baseline; }
+  .history-item .d { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .history-note {
+    font-size: 12px; color: var(--ink-soft); font-style: italic;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 210px;
+  }
+  .history-actions { display: flex; gap: 1px; flex-shrink: 0; }
+  .history-action {
+    width: 28px; height: 28px; border-radius: 50%; border: none; background: none;
+    color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .history-action svg { width: 14px; height: 14px; }
+  .history-action.edit:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent-deep); }
+  .history-action.del:hover { background: color-mix(in srgb, var(--status-urgent) 14%, transparent); color: var(--status-urgent); }
+
+  /* add-card wizard */
+  .step-dots { display: flex; gap: 6px; justify-content: center; padding: 10px 0 2px; }
+  .step-dots span { width: 22px; height: 4px; border-radius: 100px; background: var(--line); }
+  .step-dots span.done { background: var(--accent-deep); }
+
+  .field-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin: 16px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+  .field-label:first-child { margin-top: 4px; }
+  input[type=text], input[type=number], input[type=date], input[type=time] {
+    width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px;
+    font-size: 14.5px; background: var(--surface); color: var(--ink); font-family: inherit;
+  }
+  input:focus, .choice-card:focus-visible, button:focus-visible { outline: 2px solid var(--accent-deep); outline-offset: 2px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 8px 13px; border-radius: 100px; border: 1px solid var(--line); background: var(--surface);
+    font-size: 13px; cursor: pointer; color: var(--ink); display:flex; align-items:center; gap:6px;
+  }
+  .chip.selected { background: var(--mint); border-color: var(--mint); color: var(--mint-ink); font-weight: 700; }
+
+  .choice-card {
+    display: flex; align-items: center; gap: 12px; border: 1.5px solid var(--line); border-radius: 16px;
+    padding: 14px; cursor: pointer; margin-bottom: 10px; background: var(--surface);
+  }
+  .choice-card.selected { border-color: var(--accent-deep); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+  .choice-card .radio {
+    width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .choice-card.selected .radio { border-color: var(--accent-deep); }
+  .choice-card.selected .radio::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent-deep); }
+  .choice-card .t { font-weight: 700; font-size: 14px; }
+  .choice-card .s { font-size: 12px; color: var(--ink-soft); }
+
+  .toggle-row { display: flex; background: var(--surface-2); border-radius: 12px; padding: 3px; margin-bottom: 4px; }
+  .toggle-row button { flex: 1; border: none; background: none; padding: 9px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; color: var(--ink-soft); }
+  .toggle-row button.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+  .field-row { display: flex; gap: 10px; }
+  .field-row > div { flex: 1; }
+
+  .footer-bar { padding: 12px 18px 18px; border-top: 1px solid var(--line); background: var(--surface); display: flex; gap: 10px; }
+  .footer-bar .primary-btn, .footer-bar .ghost-btn { flex: 1; margin: 0; }
+  .ghost-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 16px; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--ink); }
+
+  /* partners tab */
+  .map-panel {
+    margin: 16px 16px 4px; height: 150px; border-radius: 16px; overflow: hidden; position: relative;
+    background:
+      repeating-linear-gradient(0deg, var(--surface-2) 0 1px, transparent 1px 34px),
+      repeating-linear-gradient(90deg, var(--surface-2) 0 1px, transparent 1px 34px),
+      var(--surface);
+    border: 1px solid var(--line);
+  }
+  .map-caption {
+    position: absolute; left: 8px; bottom: 6px; font-size: 10px; color: var(--ink-soft);
+    background: color-mix(in srgb, var(--surface) 82%, transparent); padding: 2px 7px; border-radius: 100px;
+  }
+  .pin {
+    position: absolute; width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: translate(-50%,-100%) rotate(-45deg);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--surface);
+  }
+  .pin svg { transform: rotate(45deg); width: 11px; height: 11px; }
+  .pin.sport { background: var(--mint); color: var(--mint-ink); }
+  .pin.relax { background: var(--coral); color: var(--coral-ink); }
+  .pin.highlight { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-deep) 35%, transparent); }
+
+  .search-box { margin: 12px 16px 4px; }
+  .search-box input { width: 100%; }
+
+  .partner-row {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer;
+  }
+  .partner-row .name { font-weight: 700; font-size: 14.5px; }
+  .partner-row .meta { font-size: 12px; color: var(--ink-soft); }
+  .star-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--line); flex-shrink: 0; }
+  .star-btn.on { color: var(--accent-deep); }
+  .star-btn svg { width: 20px; height: 20px; }
+
+  .partner-card-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer;
+  }
+  .partner-card-row:last-child { border-bottom: none; }
+  .partner-card-row .n { font-weight: 700; font-size: 13.5px; }
+  .partner-card-row .m { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+
+  /* modal + toast */
+  .modal-scrim {
+    position: absolute; inset: 0; background: rgba(15,15,15,.4); z-index: 30;
+    display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .modal-scrim.open { opacity: 1; pointer-events: auto; }
+  .modal-sheet {
+    background: var(--surface); width: 100%; border-radius: 22px 22px 0 0; padding: 22px 20px 24px;
+    transform: translateY(30px); transition: transform .25s ease; max-height: 86%; overflow-y: auto;
+  }
+  .modal-scrim.open .modal-sheet { transform: translateY(0); }
+  .modal-sheet h3 { margin: 0 0 8px; font-size: 16.5px; }
+  .modal-sheet p { margin: 0 0 16px; font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+
+  .help-item { margin-bottom: 14px; }
+  .help-item b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+  .help-item div { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+
+  .toast {
+    position: absolute; left: 50%; bottom: 90px; transform: translate(-50%, 20px);
+    background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 100px;
+    font-size: 13px; font-weight: 600; opacity: 0; transition: all .25s ease; z-index: 40; pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  .empty-note { text-align: center; color: var(--ink-soft); font-size: 13px; padding: 30px 20px; }
+</style>
+
+<div class="page-caption">
+  <h1>Karnet.asist — klikalny prototyp (v6)</h1>
+  <p>Jak w v5, ale bez małej grafiki powitalnej na ekranie Karnety — sam nagłówek sekcji nad listą karnetów.</p>
+</div>
+
+<div class="device" id="device">
+
+  <!-- TOP BAR: tabs mode -->
+  <div class="topbar" id="topbarTabs">
+    <div class="brand"><span class="dot"></span><span>Karnet.asist</span></div>
+    <div class="topbar-actions">
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="pl" class="lang-btn active">PL</button>
+        <button data-lang="en" class="lang-btn">EN</button>
+      </div>
+      <button class="icon-btn" id="btnHelp" data-i18n-aria="helpAria" aria-label="Pomoc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1.5 1-1.5 2.2"/><circle cx="12" cy="17" r=".6" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button class="icon-btn" id="btnTheme" data-i18n-aria="themeAria" aria-label="Przełącz tryb ciemny"></button>
+      <button class="avatar-btn" id="btnAccount" data-i18n-aria="accountAria" aria-label="Konto">JD</button>
+    </div>
+  </div>
+
+  <div class="tabs-layer">
+    <!-- KARNETY TAB -->
+    <div class="tab-screen active" id="tabList">
+      <div class="section-label" style="margin:14px 16px 0" data-i18n="sectionYourCards">Twoje karnety</div>
+      <div class="list-wrap" id="listWrap"></div>
+    </div>
+
+    <!-- PARTNERZY TAB -->
+    <div class="tab-screen" id="tabPartners">
+      <div class="map-panel" id="mapPanel">
+        <div class="map-caption" data-i18n="mapCaption">Podgląd mapy — integracja z Google Maps w wersji docelowej</div>
+      </div>
+      <div class="search-box"><input type="text" id="partnerSearch" data-i18n-placeholder="partnerSearchPlaceholder" placeholder="Szukaj partnera..." /></div>
+      <div id="partnerList"></div>
+    </div>
+
+    <!-- ARCHIWUM TAB -->
+    <div class="tab-screen" id="tabArchive">
+      <div class="section-label" style="margin:14px 16px 0" data-i18n="sectionArchive">Karnety w archiwum</div>
+      <div class="list-wrap" id="archiveWrap"></div>
+    </div>
+  </div>
+
+  <button class="fab" id="fabAdd" aria-label="+">+</button>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-tab="tabList" id="navList">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="4" rx="1.5"/><rect x="4" y="11" width="16" height="4" rx="1.5"/><rect x="4" y="17" width="10" height="4" rx="1.5"/></svg>
+      <span data-i18n="navKarnety">Karnety</span>
+    </button>
+    <button class="nav-btn" data-tab="tabPartners" id="navPartners">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <span data-i18n="navPartnerzy">Partnerzy</span>
+    </button>
+    <button class="nav-btn" data-tab="tabArchive" id="navArchive">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></svg>
+      <span data-i18n="navArchiwum">Archiwum</span>
+    </button>
+  </div>
+
+  <!-- DETAIL OVERLAY -->
+  <div class="overlay" id="overlayDetail">
+    <div class="topbar">
+      <div class="back-header">
+        <button class="icon-btn" id="btnDetailBack" data-i18n-aria="backAria" aria-label="Wstecz">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 id="detailTitle">Karnet</h2>
+      </div>
+      <button class="icon-btn" id="btnDetailDelete" data-i18n-aria="deleteCardAria" aria-label="Usuń karnet">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13"/></svg>
+      </button>
+    </div>
+    <div class="overlay-body" id="detailBody"></div>
+  </div>
+
+  <!-- ADD CARD WIZARD OVERLAY -->
+  <div class="overlay from-bottom" id="overlayAdd">
+    <div class="topbar">
+      <div class="back-header">
+        <button class="icon-btn" id="btnAddClose" data-i18n-aria="closeAria" aria-label="Zamknij">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <h2 data-i18n="newCardTitle">Nowy karnet</h2>
+      </div>
+      <div></div>
+    </div>
+    <div class="step-dots"><span id="dot1"></span><span id="dot2"></span><span id="dot3"></span></div>
+    <div class="overlay-body" id="addBody"></div>
+    <div class="footer-bar" id="addFooter"></div>
+  </div>
+
+  <!-- ACCOUNT MODAL -->
+  <div class="modal-scrim" id="modalAccount">
+    <div class="modal-sheet">
+      <h3 data-i18n="accountTitle">Konto (opcjonalne)</h3>
+      <p data-i18n="accountBody">Logowanie nie jest wymagane — Twoje karnety działają od razu. Załóż konto tylko, jeśli chcesz zsynchronizować dane między urządzeniami.</p>
+      <button class="primary-btn" id="btnLoginDemo" data-i18n="btnLogin">Zaloguj się</button>
+      <button class="secondary-btn" id="btnNoAccount" data-i18n="btnNoAccount">Kontynuuj bez konta</button>
+    </div>
+  </div>
+
+  <!-- VOUCHER LIGHTBOX -->
+  <div class="modal-scrim" id="modalVoucher">
+    <div class="modal-sheet" style="text-align:center">
+      <h3 data-i18n="voucherTitle">Podgląd vouchera</h3>
+      <div style="background:var(--surface-2); border-radius:16px; padding:36px 20px; margin-bottom:14px;">
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--mint-ink)"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7M14 20h7"/></svg>
+        <p style="margin-top:10px" data-i18n="voucherBody">Podgląd zdjęcia / kodu QR (prototyp)</p>
+      </div>
+      <button class="secondary-btn" id="btnCloseVoucher" style="margin-top:0" data-i18n="btnClose">Zamknij</button>
+    </div>
+  </div>
+
+  <!-- EDIT ENTRY MODAL -->
+  <div class="modal-scrim" id="modalEditEntry">
+    <div class="modal-sheet">
+      <h3 data-i18n="editEntryTitle">Edytuj wejście</h3>
+      <div class="field-row">
+        <div>
+          <div class="field-label" style="margin-top:0" data-i18n="fieldDate">Data</div>
+          <input type="date" id="editDateInput" />
+        </div>
+        <div>
+          <div class="field-label" style="margin-top:0" data-i18n="fieldTimeOpt">Godzina (opcjonalnie)</div>
+          <input type="time" id="editTimeInput" />
+        </div>
+      </div>
+      <div class="field-label" data-i18n="fieldNoteOpt">Notatka (opcjonalnie)</div>
+      <input type="text" id="editNoteInput" maxlength="80" data-i18n-placeholder="notePlaceholder" placeholder="np. trening nóg, świetne samopoczucie" />
+      <button class="primary-btn" id="btnSaveEntry" style="margin-top:18px;" data-i18n="btnSaveChanges">Zapisz zmiany</button>
+      <button class="secondary-btn" id="btnCancelEntry" data-i18n="btnCancel">Anuluj</button>
+    </div>
+  </div>
+
+  <!-- EDIT EXPIRY MODAL -->
+  <div class="modal-scrim" id="modalEditExpiry">
+    <div class="modal-sheet">
+      <h3 data-i18n="editExpiry">Edytuj datę ważności</h3>
+      <div class="field-label" style="margin-top:0" data-i18n="fieldDate">Data</div>
+      <input type="date" id="expiryEditInput" />
+      <div class="empty-note" id="expiryOptionalHint" style="padding:8px 0 0; text-align:left;"></div>
+      <button class="primary-btn" id="btnSaveExpiry" style="margin-top:16px;" data-i18n="btnSaveChanges">Zapisz zmiany</button>
+      <button class="secondary-btn" id="btnClearExpiry" data-i18n="btnRemoveExpiry" style="display:none;">Usuń termin ważności</button>
+      <button class="secondary-btn" id="btnCancelExpiry" data-i18n="btnCancel">Anuluj</button>
+    </div>
+  </div>
+
+  <!-- CONFIRM DELETE MODAL -->
+  <div class="modal-scrim" id="modalConfirmDelete">
+    <div class="modal-sheet" style="text-align:center">
+      <h3 data-i18n="confirmDeleteTitle">Usunąć karnet?</h3>
+      <p id="confirmDeleteBody"></p>
+      <button class="primary-btn" id="btnConfirmDeleteYes" style="background:var(--status-urgent);" data-i18n="btnDeleteConfirm">Usuń karnet</button>
+      <button class="secondary-btn" id="btnConfirmDeleteNo" data-i18n="btnCancel">Anuluj</button>
+    </div>
+  </div>
+
+  <!-- GOOGLE MAPS PICKER MODAL -->
+  <div class="modal-scrim" id="modalGmaps">
+    <div class="modal-sheet">
+      <h3 data-i18n="gmapsTitle">Wybierz firmę z Google Maps</h3>
+      <p data-i18n="gmapsHint">Podgląd — integracja z Google Maps w wersji docelowej</p>
+      <input type="text" id="gmapsSearch" data-i18n-placeholder="gmapsSearchPlaceholder" placeholder="Szukaj miejsca..." style="margin-bottom:12px;" />
+      <div id="gmapsList"></div>
+      <button class="secondary-btn" id="btnCloseGmaps" data-i18n="btnClose">Zamknij</button>
+    </div>
+  </div>
+
+  <!-- PARTNER DETAIL MODAL -->
+  <div class="modal-scrim" id="modalPartnerDetail">
+    <div class="modal-sheet" id="partnerDetailBody"></div>
+  </div>
+
+  <!-- HELP MODAL -->
+  <div class="modal-scrim" id="modalHelp">
+    <div class="modal-sheet">
+      <h3 data-i18n="helpTitle">Pomoc</h3>
+      <p data-i18n="helpIntro">Krótki przewodnik po funkcjach aplikacji:</p>
+      <div class="help-item"><b data-i18n="helpItem1Title">Twoje karnety</b><div data-i18n="helpItem1Body"></div></div>
+      <div class="help-item"><b data-i18n="helpItem2Title">Dodawanie karnetu</b><div data-i18n="helpItem2Body"></div></div>
+      <div class="help-item"><b data-i18n="helpItem3Title">Partnerzy</b><div data-i18n="helpItem3Body"></div></div>
+      <div class="help-item"><b data-i18n="helpItem4Title">Archiwum</b><div data-i18n="helpItem4Body"></div></div>
+      <div class="help-item"><b data-i18n="helpItem5Title">Język i wygląd</b><div data-i18n="helpItem5Body"></div></div>
+      <button class="secondary-btn" id="btnCloseHelp" style="margin-top:4px;" data-i18n="btnClose">Zamknij</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(() => {
+  const ICONS = {
+    silownia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h2M18 12h2M6 8v8M18 8v8M8 12h8"/></svg>',
+    basen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 17c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0M12 4a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM7 12l4-5 3 2 2-3"/></svg>',
+    zajecia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M12 7v6l-4 8M12 13l4 8M8 11l-3 2M16 11l3 2"/></svg>',
+    masaz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4-2-7-5-7-9a7 7 0 0 1 14 0c0 4-3 7-7 9z"/><path d="M12 8v5"/></svg>',
+    kosmetyka: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3z"/></svg>',
+  };
+  const CAT_LABEL = {
+    silownia: { pl: 'Siłownia', en: 'Gym' },
+    basen: { pl: 'Basen', en: 'Pool' },
+    zajecia: { pl: 'Zajęcia grupowe', en: 'Group classes' },
+    masaz: { pl: 'Masaż', en: 'Massage' },
+    kosmetyka: { pl: 'Kosmetyka', en: 'Beauty treatments' },
+  };
+  const CAT_STYLE = { silownia: 'sport', basen: 'sport', zajecia: 'sport', masaz: 'relax', kosmetyka: 'relax' };
+  const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L20 8l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+  const DEL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13"/></svg>';
+  const PIN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+  const SUN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  const MOON_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>';
+  const CAL_ICON = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>';
+
+  const I18N = {
+    pl: {
+      navKarnety: 'Karnety', navPartnerzy: 'Partnerzy', navArchiwum: 'Archiwum',
+      sectionYourCards: 'Twoje karnety', sectionArchive: 'Karnety w archiwum',
+      accountTitle: 'Konto (opcjonalne)',
+      accountBody: 'Logowanie nie jest wymagane — Twoje karnety działają od razu. Załóż konto tylko, jeśli chcesz zsynchronizować dane między urządzeniami.',
+      btnLogin: 'Zaloguj się', btnNoAccount: 'Kontynuuj bez konta',
+      voucherTitle: 'Podgląd vouchera', voucherBody: 'Podgląd zdjęcia / kodu QR (prototyp)', btnClose: 'Zamknij',
+      editEntryTitle: 'Edytuj wejście', fieldDate: 'Data', fieldTimeOpt: 'Godzina (opcjonalnie)',
+      fieldNoteOpt: 'Notatka (opcjonalnie)', notePlaceholder: 'np. trening nóg, świetne samopoczucie',
+      btnSaveChanges: 'Zapisz zmiany', btnCancel: 'Anuluj',
+      gmapsTitle: 'Wybierz firmę z Google Maps', gmapsHint: 'Podgląd — integracja z Google Maps w wersji docelowej',
+      gmapsSearchPlaceholder: 'Szukaj miejsca...', pickFromMaps: 'Wybierz z Google Maps',
+      partnerSearchPlaceholder: 'Szukaj partnera...', mapCaption: 'Podgląd mapy — integracja z Google Maps w wersji docelowej',
+      newCardTitle: 'Nowy karnet',
+      accountAria: 'Konto', backAria: 'Wstecz', closeAria: 'Zamknij', deleteCardAria: 'Usuń karnet',
+      themeAria: 'Przełącz tryb ciemny', helpAria: 'Pomoc',
+      emptyNoCards: 'Brak karnetów. Dodaj pierwszy przyciskiem „+”.',
+      emptyNoHistory: 'Brak jeszcze żadnych wejść.', emptyNoResults: 'Brak wyników.',
+      emptyArchive: 'Archiwum jest puste — trafią tu wygasłe lub w pełni wykorzystane karnety.',
+      visitWord: 'Wejście', todayTag: 'dziś', expired: 'Wygasł', today: 'Dziś',
+      visitsSuffix: 'wejść', unlimitedVisits: 'Bez limitu wejść', logged: 'zarejestrowanych',
+      addEntryBtn: '+ Dodaj wejście', untilExpiry: 'do końca ważności', expiryDateLabel: 'data ważności',
+      voucherQrLabel: 'Voucher / kod QR', voucherQrHint: 'Dotknij, aby zobaczyć podgląd', historyTitle: 'Historia wejść',
+      reasonExpired: 'Karnet w archiwum — wygasł {date}', reasonUsedUp: 'Karnet w archiwum — wykorzystano wszystkie wejścia',
+      usedUpTag: 'wykorzystany', noExpiry: 'Brak terminu',
+      editExpiry: 'Edytuj datę ważności', btnRemoveExpiry: 'Usuń termin ważności',
+      expiryOptionalHintLimit: 'Ten karnet nie musi mieć daty ważności — możesz ją usunąć.',
+      expiryOptionalHintUnlimited: 'Ten karnet wymaga daty ważności (karnet bez limitu wejść).',
+      toastExpiryUpdated: 'Zaktualizowano datę ważności', toastExpiryRemoved: 'Usunięto termin ważności',
+      confirmDeleteTitle: 'Usunąć karnet?',
+      confirmDeleteBody: 'Czy na pewno chcesz usunąć karnet „{name}”? Tej operacji nie można cofnąć.',
+      btnDeleteConfirm: 'Usuń karnet', optionalWord: 'opcjonalnie',
+      helpTitle: 'Pomoc', helpIntro: 'Krótki przewodnik po funkcjach aplikacji:',
+      helpItem1Title: 'Twoje karnety',
+      helpItem1Body: 'Stuknij „+” na kafelku, aby zapisać wejście. Stuknij sam kafelek, aby zobaczyć szczegóły, edytować wejścia lub zmienić datę ważności.',
+      helpItem2Title: 'Dodawanie karnetu',
+      helpItem2Body: 'Użyj pomarańczowego przycisku „+”, aby dodać nowy karnet — wybierz istniejącą firmę, znajdź ją w Google Maps albo wpisz nową.',
+      helpItem3Title: 'Partnerzy',
+      helpItem3Body: 'Przeglądaj firmy powiązane z Twoimi karnetami, oznaczaj ulubione i stuknij firmę, aby zobaczyć jej karnety.',
+      helpItem4Title: 'Archiwum',
+      helpItem4Body: 'Wygasłe lub w pełni wykorzystane karnety trafiają tu automatycznie — stąd łatwo dodasz nowy karnet w tej samej firmie.',
+      helpItem5Title: 'Język i wygląd',
+      helpItem5Body: 'Przełącznik PL/EN oraz ikona słońca/księżyca w górnym pasku zmieniają język i tryb ciemny.',
+      wizardCompany: 'Firma', wizardOrAddNew: 'lub dodaj nową firmę', wizardCategory: 'Kategoria',
+      newCompanyPlaceholder: 'Np. Studio Pilates Centrum',
+      wizardCardType: 'Typ karnetu', wizardVisitLimit: 'Limit wejść', wizardVisitLimitDesc: 'Karnet na określoną liczbę wejść',
+      wizardUnlimitedType: 'Czas ważności, bez limitu', wizardUnlimitedDesc: 'Nielimitowane wejścia do daty ważności',
+      wizardVisitCount: 'Liczba wejść w karnecie', wizardValidUntil: 'Ważny do',
+      wizardCodeVoucher: 'Kod / voucher dla wejść', wizardOneForAll: 'Jeden dla całego karnetu', wizardOnePerVisit: 'Osobny dla każdego wejścia',
+      wizardAddPhoto: 'Dodaj zdjęcie lub plik vouchera', wizardFileTypes: 'PNG, JPG lub PDF', wizardTapToChange: 'Dotknij, aby zmienić',
+      wizardSummary: 'Podsumowanie', untilWord: 'do', unlimitedShort: 'bez limitu',
+      btnNext: 'Dalej', btnBack: 'Wstecz', btnSaveCard: 'Zapisz karnet',
+      toastPickedFromMaps: 'Wybrano z Google Maps: {name}',
+      toastChooseCompany: 'Wybierz lub wpisz nazwę firmy', toastSetExpiry: 'Podaj datę ważności',
+      toastSetVisitDate: 'Podaj datę wejścia', toastEntryUpdated: 'Zaktualizowano wejście',
+      toastEntryRemoved: 'Usunięto wejście z {date}', toastVisitLogged: 'Dodano wejście — {name}',
+      toastCardRemoved: 'Usunięto karnet: {name}', toastCardAdded: 'Dodano karnet: {name}',
+      toastFavAdded: 'Dodano do ulubionych: {name}', toastFavRemoved: 'Usunięto z ulubionych: {name}',
+      toastLoginDemo: 'To prototyp — logowanie jest tylko wizualne',
+      cardsAtPartner: 'Karnety w tej firmie', noCardHere: 'Nie masz jeszcze karnetu w tej firmie.',
+      addCardHere: 'Dodaj karnet w tej firmie',
+    },
+    en: {
+      navKarnety: 'Cards', navPartnerzy: 'Partners', navArchiwum: 'Archive',
+      sectionYourCards: 'Your cards', sectionArchive: 'Archived cards',
+      accountTitle: 'Account (optional)',
+      accountBody: 'Signing in isn’t required — your cards work right away. Create an account only if you want to sync data across devices.',
+      btnLogin: 'Log in', btnNoAccount: 'Continue without an account',
+      voucherTitle: 'Voucher preview', voucherBody: 'Photo / QR code preview (prototype)', btnClose: 'Close',
+      editEntryTitle: 'Edit visit', fieldDate: 'Date', fieldTimeOpt: 'Time (optional)',
+      fieldNoteOpt: 'Note (optional)', notePlaceholder: 'e.g. leg day, felt great',
+      btnSaveChanges: 'Save changes', btnCancel: 'Cancel',
+      gmapsTitle: 'Choose a place from Google Maps', gmapsHint: 'Preview — Google Maps integration in the final version',
+      gmapsSearchPlaceholder: 'Search for a place...', pickFromMaps: 'Pick from Google Maps',
+      partnerSearchPlaceholder: 'Search partners...', mapCaption: 'Map preview — Google Maps integration in the final version',
+      newCardTitle: 'New card',
+      accountAria: 'Account', backAria: 'Back', closeAria: 'Close', deleteCardAria: 'Delete card',
+      themeAria: 'Toggle dark mode', helpAria: 'Help',
+      emptyNoCards: 'No cards yet. Add your first one with the “+” button.',
+      emptyNoHistory: 'No visits logged yet.', emptyNoResults: 'No results.',
+      emptyArchive: 'The archive is empty — expired or fully used cards will show up here.',
+      visitWord: 'Visit', todayTag: 'today', expired: 'Expired', today: 'Today',
+      visitsSuffix: 'visits', unlimitedVisits: 'Unlimited visits', logged: 'logged',
+      addEntryBtn: '+ Log a visit', untilExpiry: 'until expiry', expiryDateLabel: 'expiry date',
+      voucherQrLabel: 'Voucher / QR code', voucherQrHint: 'Tap to preview', historyTitle: 'Visit history',
+      reasonExpired: 'Archived — expired on {date}', reasonUsedUp: 'Archived — all visits used',
+      usedUpTag: 'used up', noExpiry: 'No expiry',
+      editExpiry: 'Edit expiry date', btnRemoveExpiry: 'Remove expiry date',
+      expiryOptionalHintLimit: 'This card doesn’t need an expiry date — you can remove it.',
+      expiryOptionalHintUnlimited: 'This card requires an expiry date (unlimited-visit card).',
+      toastExpiryUpdated: 'Expiry date updated', toastExpiryRemoved: 'Expiry date removed',
+      confirmDeleteTitle: 'Delete this card?',
+      confirmDeleteBody: 'Are you sure you want to delete “{name}”? This can’t be undone.',
+      btnDeleteConfirm: 'Delete card', optionalWord: 'optional',
+      helpTitle: 'Help', helpIntro: 'A quick guide to the app’s features:',
+      helpItem1Title: 'Your cards',
+      helpItem1Body: 'Tap “+” on a tile to log a visit. Tap the tile itself to see details, edit visits, or change the expiry date.',
+      helpItem2Title: 'Adding a card',
+      helpItem2Body: 'Use the orange “+” button to add a new card — pick an existing company, find one on Google Maps, or type a new one.',
+      helpItem3Title: 'Partners',
+      helpItem3Body: 'Browse companies linked to your cards, mark favorites, and tap one to see its cards.',
+      helpItem4Title: 'Archive',
+      helpItem4Body: 'Expired or fully used cards move here automatically — from here you can quickly add a new card at the same company.',
+      helpItem5Title: 'Language & appearance',
+      helpItem5Body: 'The PL/EN switch and the sun/moon icon in the top bar change the language and dark mode.',
+      wizardCompany: 'Company', wizardOrAddNew: 'or add a new company', wizardCategory: 'Category',
+      newCompanyPlaceholder: 'e.g. Pilates Studio Center',
+      wizardCardType: 'Card type', wizardVisitLimit: 'Visit limit', wizardVisitLimitDesc: 'A card for a set number of visits',
+      wizardUnlimitedType: 'Unlimited, time-based', wizardUnlimitedDesc: 'Unlimited visits until the expiry date',
+      wizardVisitCount: 'Number of visits', wizardValidUntil: 'Valid until',
+      wizardCodeVoucher: 'Code / voucher for visits', wizardOneForAll: 'One for the whole card', wizardOnePerVisit: 'Separate for each visit',
+      wizardAddPhoto: 'Add a photo or voucher file', wizardFileTypes: 'PNG, JPG or PDF', wizardTapToChange: 'Tap to change',
+      wizardSummary: 'Summary', untilWord: 'until', unlimitedShort: 'unlimited',
+      btnNext: 'Next', btnBack: 'Back', btnSaveCard: 'Save card',
+      toastPickedFromMaps: 'Picked from Google Maps: {name}',
+      toastChooseCompany: 'Choose or type a company name', toastSetExpiry: 'Set an expiry date',
+      toastSetVisitDate: 'Set a visit date', toastEntryUpdated: 'Visit updated',
+      toastEntryRemoved: 'Removed visit on {date}', toastVisitLogged: 'Visit logged — {name}',
+      toastCardRemoved: 'Card removed: {name}', toastCardAdded: 'Card added: {name}',
+      toastFavAdded: 'Added to favorites: {name}', toastFavRemoved: 'Removed from favorites: {name}',
+      toastLoginDemo: 'This is a prototype — login is visual only',
+      cardsAtPartner: 'Cards at this partner', noCardHere: 'You don’t have a card here yet.',
+      addCardHere: 'Add a card here',
+    },
+  };
+
+  let lang = 'pl';
+  function t(key, vars) {
+    let s = I18N[lang][key] ?? key;
+    if (vars) Object.keys(vars).forEach(k => { s = s.replace(`{${k}}`, vars[k]); });
+    return s;
+  }
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  let nextId = 100;
+  let cards = [
+    { id: 1, name: 'FitZone Siłownia', cat: 'silownia', type: 'limit', used: 8, total: 12, expiry: '2026-09-15',
+      history: [
+        { date: '2026-07-26', time: '', note: '' },
+        { date: '2026-07-22', time: '18:30', note: 'Nogi + trochę cardio' },
+        { date: '2026-07-18', time: '', note: '' },
+        { date: '2026-07-14', time: '07:15', note: 'Poranny trening' },
+      ] },
+    { id: 2, name: 'Aqua Basen Miejski', cat: 'basen', type: 'limit', used: 3, total: 10, expiry: '2026-08-30',
+      history: [
+        { date: '2026-07-20', time: '', note: '' },
+        { date: '2026-07-10', time: '', note: '20 długości, czuję się świetnie' },
+      ] },
+    { id: 3, name: 'Relax Studio Masażu', cat: 'masaz', type: 'limit', used: 4, total: 5, expiry: '2026-08-10',
+      history: [
+        { date: '2026-07-25', time: '16:00', note: 'Masaż relaksacyjny pleców' },
+        { date: '2026-07-11', time: '', note: '' },
+        { date: '2026-06-28', time: '', note: '' },
+      ] },
+    { id: 4, name: 'Beauty Bar Kosmetyka', cat: 'kosmetyka', type: 'limit', used: 1, total: 6, expiry: '2026-10-01',
+      history: [ { date: '2026-07-05', time: '', note: 'Zabieg oczyszczający' } ] },
+    { id: 5, name: 'Yoga Flow Studio', cat: 'zajecia', type: 'unlimited', expiry: '2026-12-31',
+      history: [
+        { date: '2026-07-28', time: '', note: '' },
+        { date: '2026-07-24', time: '', note: '' },
+        { date: '2026-07-21', time: '19:00', note: 'Vinyasa flow' },
+      ] },
+    { id: 6, name: 'CrossFit Nowa Huta', cat: 'silownia', type: 'limit', used: 10, total: 10, expiry: '2026-11-01',
+      history: [
+        { date: '2026-07-02', time: '', note: '' },
+        { date: '2026-06-20', time: '', note: 'Ostatnie wejście z karnetu' },
+      ] },
+    { id: 7, name: 'Spa Harmonia', cat: 'masaz', type: 'limit', used: 2, total: 8, expiry: '2026-06-15',
+      history: [
+        { date: '2026-06-10', time: '', note: '' },
+        { date: '2026-05-20', time: '', note: 'Zabieg SPA na urodziny' },
+      ] },
+    { id: 8, name: 'Fit Studio Kraków', cat: 'zajecia', type: 'limit', used: 2, total: 10, expiry: null,
+      history: [
+        { date: '2026-07-15', time: '', note: '' },
+        { date: '2026-06-30', time: '', note: 'Pierwsze zajęcia' },
+      ] },
+  ];
+
+  let partners = [
+    { name: 'FitZone Siłownia', cat: 'silownia', dist: 0.8, fav: true, x: 30, y: 60 },
+    { name: 'Aqua Basen Miejski', cat: 'basen', dist: 1.4, fav: false, x: 62, y: 30 },
+    { name: 'Relax Studio Masażu', cat: 'masaz', dist: 2.1, fav: true, x: 78, y: 68 },
+    { name: 'Beauty Bar Kosmetyka', cat: 'kosmetyka', dist: 0.5, fav: false, x: 45, y: 80 },
+    { name: 'Yoga Flow Studio', cat: 'zajecia', dist: 3.0, fav: false, x: 18, y: 25 },
+    { name: 'PowerGym Centrum', cat: 'silownia', dist: 4.2, fav: false, x: 85, y: 40 },
+    { name: 'CrossFit Nowa Huta', cat: 'silownia', dist: 5.5, fav: false, x: 55, y: 15 },
+    { name: 'Spa Harmonia', cat: 'masaz', dist: 6.0, fav: false, x: 12, y: 55 },
+    { name: 'Fit Studio Kraków', cat: 'zajecia', dist: 2.4, fav: false, x: 68, y: 78 },
+  ];
+
+  const GMAPS_MOCK = [
+    { name: 'PowerFit Club', cat: 'silownia', addr: 'ul. Sportowa 12' },
+    { name: 'Zen Beauty Spa', cat: 'kosmetyka', addr: 'ul. Kwiatowa 5' },
+    { name: 'Aqua Wellness Center', cat: 'basen', addr: 'ul. Nadrzeczna 3' },
+    { name: 'CrossTrain Box', cat: 'silownia', addr: 'ul. Przemysłowa 8' },
+    { name: 'Glow Studio', cat: 'masaz', addr: 'ul. Słoneczna 21' },
+    { name: 'Flexi Yoga Loft', cat: 'zajecia', addr: 'ul. Parkowa 14' },
+  ];
+
+  const $ = (sel) => document.querySelector(sel);
+  const todayMs = () => new Date().setHours(0,0,0,0);
+  const todayStr = () => new Date().toISOString().slice(0,10);
+
+  function daysLeft(dateStr) {
+    const d = new Date(dateStr).setHours(0,0,0,0);
+    return Math.round((d - todayMs()) / 86400000);
+  }
+  function fmtDateShort(dateStr) {
+    return new Date(dateStr).toLocaleDateString(lang === 'pl' ? 'pl-PL' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  function fmtDist(km) {
+    return lang === 'pl' ? `${km.toFixed(1).replace('.', ',')} km` : `${km.toFixed(1)} km`;
+  }
+  function statusClass(days) {
+    if (days <= 7) return 'urgent';
+    if (days <= 30) return 'soon';
+    return 'ok';
+  }
+  function daysLabel(days) {
+    if (days < 0) return t('expired');
+    if (days === 0) return t('today');
+    return lang === 'pl' ? `${days} dni` : `${days} ${days === 1 ? 'day' : 'days'}`;
+  }
+  function isArchived(card) {
+    const usedUp = card.type === 'limit' && card.used >= card.total;
+    const expired = card.expiry ? daysLeft(card.expiry) < 0 : false;
+    return usedUp || expired;
+  }
+  function expiryChipHtml(card) {
+    if (!card.expiry) return `<div class="expiry-chip neutral">${t('noExpiry')}</div>`;
+    const days = daysLeft(card.expiry);
+    return `<div class="expiry-chip ${statusClass(days)}">${daysLabel(days)}</div>`;
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 1900);
+  }
+
+  function applyStaticI18n() {
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  }
+
+  function openAddForCompany(name, cat) {
+    resetWizard();
+    wizard.company = name; wizard.companyMode = 'existing'; wizard.cat = cat;
+    renderWizard();
+    $('#overlayAdd').classList.add('open');
+  }
+
+  // ---------- LIST + ARCHIVE TABS ----------
+  function buildCardTile(card, { archivedTile }) {
+    const hasExpiry = !!card.expiry;
+    const days = hasExpiry ? daysLeft(card.expiry) : null;
+    const expired = hasExpiry && days < 0;
+    const style = CAT_STYLE[card.cat];
+    const usedUp = card.type === 'limit' && card.used >= card.total;
+    const tile = document.createElement('div');
+    tile.className = 'card-tile' + (archivedTile ? ' archived' : '');
+
+    let middle;
+    if (card.type === 'limit') {
+      const pct = Math.min(100, Math.round((card.used / card.total) * 100));
+      middle = `
+        <div class="progress-row">
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div class="progress-label">${card.used}/${card.total} ${t('visitsSuffix')}</div>
+        </div>`;
+    } else {
+      middle = `<div class="unlimited-row">${CAL_ICON} ${t('unlimitedVisits')} · ${card.history.length} ${t('logged')}</div>`;
+    }
+
+    const catExtra = (archivedTile && usedUp && !expired) ? ` · ${t('usedUpTag')}` : '';
+    let actionRow = '';
+    if (archivedTile) {
+      actionRow = `<div class="plus-row"><button class="archive-add-btn" data-name="${escapeHtml(card.name)}" data-cat="${card.cat}">${t('addCardHere')}</button></div>`;
+    } else {
+      const plusDisabled = card.type === 'limit' && card.used >= card.total;
+      actionRow = `<div class="plus-row"><button class="plus-btn" data-id="${card.id}" ${plusDisabled ? 'disabled' : ''} aria-label="+">+</button></div>`;
+    }
+
+    tile.innerHTML = `
+      <div class="card-top">
+        <div class="cat-icon ${style}">${ICONS[card.cat]}</div>
+        <div class="card-info">
+          <div class="name">${escapeHtml(card.name)}</div>
+          <div class="cat">${CAT_LABEL[card.cat][lang]}${catExtra}</div>
+        </div>
+        ${expiryChipHtml(card)}
+      </div>
+      ${middle}
+      ${actionRow}`;
+
+    tile.addEventListener('click', (e) => {
+      if (e.target.closest('.plus-btn') || e.target.closest('.archive-add-btn')) return;
+      openDetail(card.id);
+    });
+    const plusBtn = tile.querySelector('.plus-btn');
+    if (plusBtn) plusBtn.addEventListener('click', (e) => { e.stopPropagation(); addEntry(card.id, e.currentTarget); });
+    const archiveAddBtn = tile.querySelector('.archive-add-btn');
+    if (archiveAddBtn) archiveAddBtn.addEventListener('click', (e) => { e.stopPropagation(); openAddForCompany(archiveAddBtn.dataset.name, archiveAddBtn.dataset.cat); });
+    return tile;
+  }
+
+  function renderList() {
+    const wrap = $('#listWrap');
+    wrap.innerHTML = '';
+    const active = cards.filter(c => !isArchived(c));
+    if (!active.length) { wrap.innerHTML = `<div class="empty-note">${t('emptyNoCards')}</div>`; return; }
+    active.forEach(card => wrap.appendChild(buildCardTile(card, { archivedTile: false })));
+  }
+
+  function renderArchive() {
+    const wrap = $('#archiveWrap');
+    wrap.innerHTML = '';
+    const archived = cards.filter(isArchived);
+    if (!archived.length) { wrap.innerHTML = `<div class="empty-note">${t('emptyArchive')}</div>`; return; }
+    archived.forEach(card => wrap.appendChild(buildCardTile(card, { archivedTile: true })));
+  }
+
+  function refreshAll() { renderList(); renderArchive(); }
+
+  function addEntry(id, btn) {
+    const card = cards.find(c => c.id === id);
+    if (!card) return;
+    if (card.type === 'limit' && card.used >= card.total) return;
+    if (card.type === 'limit') card.used++;
+    card.history.unshift({ date: todayStr(), time: '', note: '' });
+    if (btn) { btn.classList.add('pulse'); setTimeout(() => btn.classList.remove('pulse'), 350); }
+    showToast(t('toastVisitLogged', { name: card.name }));
+    refreshAll();
+    if (!$('#overlayDetail').classList.contains('open')) return;
+    if (currentDetailId === id) renderDetail(id);
+  }
+
+  function deleteEntry(id, idx) {
+    const card = cards.find(c => c.id === id);
+    if (!card) return;
+    const entry = card.history[idx];
+    if (!entry) return;
+    card.history.splice(idx, 1);
+    if (card.type === 'limit' && card.used > 0) card.used--;
+    showToast(t('toastEntryRemoved', { date: fmtDateShort(entry.date) }));
+    refreshAll();
+    if (currentDetailId === id) renderDetail(id);
+  }
+
+  // ---------- EDIT ENTRY MODAL ----------
+  let editContext = { cardId: null, idx: null };
+  function openEditEntry(cardId, idx) {
+    const card = cards.find(c => c.id === cardId);
+    const entry = card && card.history[idx];
+    if (!entry) return;
+    editContext = { cardId, idx };
+    $('#editDateInput').value = entry.date;
+    $('#editTimeInput').value = entry.time || '';
+    $('#editNoteInput').value = entry.note || '';
+    $('#modalEditEntry').classList.add('open');
+  }
+  function closeEditEntry() { $('#modalEditEntry').classList.remove('open'); }
+  $('#btnCancelEntry').addEventListener('click', closeEditEntry);
+  $('#modalEditEntry').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditEntry(); });
+  $('#btnSaveEntry').addEventListener('click', () => {
+    const { cardId, idx } = editContext;
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return;
+    const date = $('#editDateInput').value;
+    if (!date) { showToast(t('toastSetVisitDate')); return; }
+    card.history[idx] = { date, time: $('#editTimeInput').value, note: $('#editNoteInput').value.trim() };
+    closeEditEntry();
+    showToast(t('toastEntryUpdated'));
+    refreshAll();
+    if (currentDetailId === cardId) renderDetail(cardId);
+  });
+
+  // ---------- EDIT EXPIRY MODAL ----------
+  let expiryEditCardId = null;
+  function openEditExpiry(cardId) {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return;
+    expiryEditCardId = cardId;
+    $('#expiryEditInput').value = card.expiry || '';
+    $('#btnClearExpiry').style.display = card.type === 'limit' ? 'block' : 'none';
+    $('#expiryOptionalHint').textContent = card.type === 'limit' ? t('expiryOptionalHintLimit') : t('expiryOptionalHintUnlimited');
+    $('#modalEditExpiry').classList.add('open');
+  }
+  function closeEditExpiry() { $('#modalEditExpiry').classList.remove('open'); }
+  $('#btnCancelExpiry').addEventListener('click', closeEditExpiry);
+  $('#modalEditExpiry').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditExpiry(); });
+  $('#btnSaveExpiry').addEventListener('click', () => {
+    const card = cards.find(c => c.id === expiryEditCardId);
+    if (!card) return;
+    const val = $('#expiryEditInput').value;
+    if (card.type === 'unlimited' && !val) { showToast(t('toastSetExpiry')); return; }
+    card.expiry = val || null;
+    closeEditExpiry();
+    showToast(t('toastExpiryUpdated'));
+    refreshAll();
+    if (currentDetailId === card.id) renderDetail(card.id);
+  });
+  $('#btnClearExpiry').addEventListener('click', () => {
+    const card = cards.find(c => c.id === expiryEditCardId);
+    if (!card) return;
+    card.expiry = null;
+    closeEditExpiry();
+    showToast(t('toastExpiryRemoved'));
+    refreshAll();
+    if (currentDetailId === card.id) renderDetail(card.id);
+  });
+
+  // ---------- DETAIL OVERLAY ----------
+  let currentDetailId = null;
+  function openDetail(id) {
+    currentDetailId = id;
+    renderDetail(id);
+    $('#overlayDetail').classList.add('open');
+  }
+  function closeDetail() { $('#overlayDetail').classList.remove('open'); currentDetailId = null; }
+
+  function renderDetail(id) {
+    const card = cards.find(c => c.id === id);
+    if (!card) return;
+    $('#detailTitle').textContent = card.name;
+    const hasExpiry = !!card.expiry;
+    const days = hasExpiry ? daysLeft(card.expiry) : null;
+    const style = CAT_STYLE[card.cat];
+    const archived = isArchived(card);
+
+    let ring = '';
+    if (card.type === 'limit') {
+      const pct = Math.min(1, card.used / card.total);
+      const r = 46, c = 2 * Math.PI * r;
+      ring = `
+        <div class="ring-wrap">
+          <svg width="128" height="128" viewBox="0 0 128 128">
+            <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="12"/>
+            <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--accent)" stroke-width="12"
+              stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"
+              transform="rotate(-90 64 64)"/>
+            <text x="64" y="60" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">${card.used}/${card.total}</text>
+            <text x="64" y="78" text-anchor="middle" font-size="11" fill="var(--ink-soft)">${t('visitsSuffix')}</text>
+          </svg>
+        </div>`;
+    } else {
+      ring = `
+        <div class="ring-wrap">
+          <div style="width:128px;height:128px;border-radius:50%;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--mint-ink)" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;">${t('unlimitedShort')}</div>
+          </div>
+        </div>`;
+    }
+
+    const today = todayStr();
+    const historyHtml = card.history.length
+      ? card.history.slice(0,8).map((entry,i) => `
+          <div class="history-item" data-idx="${i}">
+            <div class="d-wrap">
+              <div class="d-top">
+                <span>${t('visitWord')}${i===0 && entry.date===today ? ' (' + t('todayTag') + ')' : ''}</span>
+                <span class="d">${fmtDateShort(entry.date)}${entry.time ? ' · ' + entry.time : ''}</span>
+              </div>
+              ${entry.note ? `<div class="history-note">${escapeHtml(entry.note)}</div>` : ''}
+            </div>
+            <div class="history-actions">
+              <button class="history-action edit" data-idx="${i}" aria-label="edit">${EDIT_ICON}</button>
+              <button class="history-action del" data-idx="${i}" aria-label="delete">${DEL_ICON}</button>
+            </div>
+          </div>`).join('')
+      : `<div class="empty-note">${t('emptyNoHistory')}</div>`;
+
+    let actionArea;
+    if (archived) {
+      const expired = hasExpiry && days < 0;
+      const reason = expired ? t('reasonExpired', { date: fmtDateShort(card.expiry) }) : t('reasonUsedUp');
+      actionArea = `<div class="archived-banner">${reason}</div>
+        <button class="primary-btn" id="btnAddCardHereArchived" style="margin-top:10px;">${t('addCardHere')}</button>`;
+    } else {
+      actionArea = `<button class="primary-btn" id="btnAddEntryDetail">${t('addEntryBtn')}</button>`;
+    }
+
+    $('#detailBody').innerHTML = `
+      <div class="detail-hero">
+        <div class="cat-icon ${style}" style="margin:0 auto 8px;">${ICONS[card.cat]}</div>
+        <div class="name">${escapeHtml(card.name)}</div>
+        <div class="cat">${CAT_LABEL[card.cat][lang]}</div>
+      </div>
+      ${ring}
+      <div class="detail-stat-row">
+        <div class="stat-box"><div class="v">${hasExpiry ? daysLabel(days) : t('noExpiry')}</div><div class="l">${t('untilExpiry')}</div></div>
+        <div class="stat-box"><div class="v">${hasExpiry ? fmtDateShort(card.expiry) : '—'}</div><div class="l">${t('expiryDateLabel')}</div></div>
+      </div>
+      <button class="edit-expiry-link" id="btnEditExpiry">✏ ${t('editExpiry')}</button>
+      ${actionArea}
+      <div class="voucher-box" id="btnVoucher">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <div><div class="t">${t('voucherQrLabel')}</div><div class="s">${t('voucherQrHint')}</div></div>
+      </div>
+      <div class="field-label">${t('historyTitle')}</div>
+      ${historyHtml}`;
+
+    const addBtn = $('#btnAddEntryDetail');
+    if (addBtn) addBtn.addEventListener('click', () => addEntry(card.id, addBtn));
+    const addHereBtn = $('#btnAddCardHereArchived');
+    if (addHereBtn) addHereBtn.addEventListener('click', () => { closeDetail(); openAddForCompany(card.name, card.cat); });
+    $('#btnEditExpiry').addEventListener('click', () => openEditExpiry(card.id));
+    $('#btnVoucher').addEventListener('click', () => $('#modalVoucher').classList.add('open'));
+    document.querySelectorAll('.history-item').forEach(row => {
+      row.addEventListener('click', () => openEditEntry(card.id, +row.dataset.idx));
+    });
+    document.querySelectorAll('.history-action.edit').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); openEditEntry(card.id, +btn.dataset.idx); });
+    });
+    document.querySelectorAll('.history-action.del').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); deleteEntry(card.id, +btn.dataset.idx); });
+    });
+  }
+
+  $('#btnDetailBack').addEventListener('click', closeDetail);
+  $('#btnDetailDelete').addEventListener('click', () => {
+    if (currentDetailId == null) return;
+    const card = cards.find(c => c.id === currentDetailId);
+    if (!card) return;
+    $('#confirmDeleteBody').textContent = t('confirmDeleteBody', { name: card.name });
+    $('#modalConfirmDelete').classList.add('open');
+  });
+  $('#btnConfirmDeleteNo').addEventListener('click', () => $('#modalConfirmDelete').classList.remove('open'));
+  $('#modalConfirmDelete').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+  $('#btnConfirmDeleteYes').addEventListener('click', () => {
+    const card = cards.find(c => c.id === currentDetailId);
+    if (!card) return;
+    cards = cards.filter(c => c.id !== currentDetailId);
+    $('#modalConfirmDelete').classList.remove('open');
+    closeDetail();
+    refreshAll();
+    showToast(t('toastCardRemoved', { name: card.name }));
+  });
+
+  // ---------- PARTNERS TAB ----------
+  function selectPartner(p) {
+    renderPartners($('#partnerSearch').value, p.name);
+    openPartnerDetail(p);
+  }
+
+  function openPartnerDetail(p) {
+    const matching = cards.filter(c => c.name === p.name);
+    const rows = matching.map(c => {
+      const chip = expiryChipHtml(c);
+      const statusText = c.type === 'limit' ? `${c.used}/${c.total} ${t('visitsSuffix')}` : t('unlimitedShort');
+      return `<div class="partner-card-row" data-id="${c.id}">
+        <div><div class="n">${escapeHtml(c.name)}</div><div class="m">${statusText}</div></div>
+        ${chip}
+      </div>`;
+    }).join('');
+    $('#partnerDetailBody').innerHTML = `
+      <h3>${escapeHtml(p.name)}</h3>
+      <p>${CAT_LABEL[p.cat][lang]} · ${fmtDist(p.dist)}</p>
+      <div class="field-label" style="margin-top:0">${t('cardsAtPartner')}</div>
+      ${matching.length ? rows : `<div class="empty-note">${t('noCardHere')}</div>`}
+      <button class="primary-btn" id="btnAddCardHere" style="margin-top:16px;">${t('addCardHere')}</button>
+      <button class="secondary-btn" id="btnClosePartnerDetail">${t('btnClose')}</button>`;
+    $('#modalPartnerDetail').classList.add('open');
+    $('#partnerDetailBody').querySelectorAll('.partner-card-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const cardId = +row.dataset.id;
+        const card = cards.find(c => c.id === cardId);
+        $('#modalPartnerDetail').classList.remove('open');
+        switchTab(card && isArchived(card) ? 'tabArchive' : 'tabList');
+        openDetail(cardId);
+      });
+    });
+    $('#btnAddCardHere').addEventListener('click', () => {
+      $('#modalPartnerDetail').classList.remove('open');
+      openAddForCompany(p.name, p.cat);
+    });
+    $('#btnClosePartnerDetail').addEventListener('click', () => $('#modalPartnerDetail').classList.remove('open'));
+  }
+  $('#modalPartnerDetail').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+  function renderMap(highlightName) {
+    const panel = $('#mapPanel');
+    panel.querySelectorAll('.pin').forEach(p => p.remove());
+    partners.forEach(p => {
+      const pin = document.createElement('div');
+      pin.className = `pin ${CAT_STYLE[p.cat]}${p.name === highlightName ? ' highlight' : ''}`;
+      pin.style.left = p.x + '%';
+      pin.style.top = p.y + '%';
+      pin.title = p.name;
+      pin.innerHTML = ICONS[p.cat];
+      pin.addEventListener('click', () => selectPartner(p));
+      panel.appendChild(pin);
+    });
+  }
+
+  function renderPartners(filter = '', highlightName = null) {
+    renderMap(highlightName);
+    const list = $('#partnerList');
+    const f = filter.trim().toLowerCase();
+    const filtered = partners.filter(p => p.name.toLowerCase().includes(f));
+    list.innerHTML = '';
+    if (!filtered.length) { list.innerHTML = `<div class="empty-note">${t('emptyNoResults')}</div>`; return; }
+    filtered.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'partner-row';
+      row.innerHTML = `
+        <div class="cat-icon ${CAT_STYLE[p.cat]}" style="width:36px;height:36px;border-radius:10px;">${ICONS[p.cat]}</div>
+        <div>
+          <div class="name">${escapeHtml(p.name)}</div>
+          <div class="meta">${CAT_LABEL[p.cat][lang]} · ${fmtDist(p.dist)}</div>
+        </div>
+        <button class="star-btn ${p.fav ? 'on' : ''}" aria-label="favorite">
+          <svg viewBox="0 0 24 24" fill="${p.fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2.7 5.9 6.3.6-4.8 4.2 1.4 6.2L12 16.9 6.4 20l1.4-6.2L3 9.5l6.3-.6L12 3z"/></svg>
+        </button>`;
+      row.addEventListener('click', (e) => { if (e.target.closest('.star-btn')) return; selectPartner(p); });
+      row.querySelector('.star-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        p.fav = !p.fav;
+        showToast(t(p.fav ? 'toastFavAdded' : 'toastFavRemoved', { name: p.name }));
+        renderPartners($('#partnerSearch').value);
+      });
+      list.appendChild(row);
+    });
+  }
+  $('#partnerSearch').addEventListener('input', (e) => renderPartners(e.target.value));
+
+  // ---------- GOOGLE MAPS PICKER ----------
+  function renderGmapsList(filter = '') {
+    const list = $('#gmapsList');
+    const f = filter.trim().toLowerCase();
+    const filtered = GMAPS_MOCK.filter(p => p.name.toLowerCase().includes(f));
+    list.innerHTML = filtered.length
+      ? filtered.map(p => `
+        <div class="partner-row" data-name="${escapeHtml(p.name)}">
+          <div class="cat-icon ${CAT_STYLE[p.cat]}" style="width:36px;height:36px;border-radius:10px;">${ICONS[p.cat]}</div>
+          <div><div class="name">${escapeHtml(p.name)}</div><div class="meta">${p.addr}</div></div>
+        </div>`).join('')
+      : `<div class="empty-note">${t('emptyNoResults')}</div>`;
+    list.querySelectorAll('.partner-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const place = GMAPS_MOCK.find(p => p.name === row.dataset.name);
+        wizard.company = place.name; wizard.companyMode = 'new'; wizard.cat = place.cat;
+        $('#modalGmaps').classList.remove('open');
+        renderWizard();
+        showToast(t('toastPickedFromMaps', { name: place.name }));
+      });
+    });
+  }
+  function openGmapsPicker() {
+    $('#gmapsSearch').value = '';
+    renderGmapsList();
+    $('#modalGmaps').classList.add('open');
+  }
+  $('#gmapsSearch').addEventListener('input', (e) => renderGmapsList(e.target.value));
+  $('#btnCloseGmaps').addEventListener('click', () => $('#modalGmaps').classList.remove('open'));
+  $('#modalGmaps').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+  // ---------- TABS + NAV ----------
+  function switchTab(id) {
+    document.querySelectorAll('.tab-screen').forEach(s => s.classList.toggle('active', s.id === id));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $('#fabAdd').style.display = id === 'tabList' ? 'flex' : 'none';
+  }
+  document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+  // ---------- ADD CARD WIZARD ----------
+  const existingCompanies = () => [...new Set(partners.map(p => p.name))];
+  let wizard = { step: 1, companyMode: 'existing', company: '', cat: 'silownia', type: 'limit', total: 10, expiry: '', qrMode: 'one', attached: false, fileName: '' };
+
+  function resetWizard() {
+    wizard = { step: 1, companyMode: 'existing', company: '', cat: 'silownia', type: 'limit', total: 10, expiry: '', qrMode: 'one', attached: false, fileName: '' };
+  }
+  function openAdd() { resetWizard(); renderWizard(); $('#overlayAdd').classList.add('open'); }
+  function closeAdd() { $('#overlayAdd').classList.remove('open'); }
+
+  function renderWizard() {
+    ['dot1','dot2','dot3'].forEach((id, i) => $('#' + id).classList.toggle('done', wizard.step >= i + 1));
+    const body = $('#addBody');
+    const footer = $('#addFooter');
+
+    if (wizard.step === 1) {
+      body.innerHTML = `
+        <div class="field-label">${t('wizardCompany')}</div>
+        <div class="chip-row">
+          ${existingCompanies().map(name => `<button class="chip ${wizard.company === name ? 'selected' : ''}" data-company="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('')}
+        </div>
+        <div class="field-label">${t('wizardOrAddNew')}</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="newCompanyInput" style="flex:1" placeholder="${escapeHtml(t('newCompanyPlaceholder'))}" value="${wizard.companyMode === 'new' ? escapeHtml(wizard.company) : ''}" />
+          <button class="icon-btn maps-pick-btn" id="btnPickMaps" type="button" title="${escapeHtml(t('pickFromMaps'))}" aria-label="${escapeHtml(t('pickFromMaps'))}">${PIN_ICON}</button>
+        </div>
+        <div class="field-label">${t('wizardCategory')}</div>
+        <div class="chip-row">
+          ${Object.keys(CAT_LABEL).map(cat => `<button class="chip ${wizard.cat === cat ? 'selected' : ''}" data-cat="${cat}">${CAT_LABEL[cat][lang]}</button>`).join('')}
+        </div>`;
+      body.querySelectorAll('[data-company]').forEach(el => el.addEventListener('click', () => {
+        wizard.company = el.dataset.company; wizard.companyMode = 'existing';
+        const found = partners.find(p => p.name === el.dataset.company);
+        if (found) wizard.cat = found.cat;
+        renderWizard();
+      }));
+      body.querySelectorAll('[data-cat]').forEach(el => el.addEventListener('click', () => { wizard.cat = el.dataset.cat; renderWizard(); }));
+      $('#newCompanyInput').addEventListener('input', (e) => { wizard.company = e.target.value; wizard.companyMode = 'new'; });
+      $('#btnPickMaps').addEventListener('click', openGmapsPicker);
+      footer.innerHTML = `<button class="primary-btn" id="wNext">${t('btnNext')}</button>`;
+      $('#wNext').addEventListener('click', () => {
+        if (!wizard.company.trim()) { showToast(t('toastChooseCompany')); return; }
+        wizard.step = 2; renderWizard();
+      });
+    }
+
+    else if (wizard.step === 2) {
+      const expiryLabel = t('wizardValidUntil') + (wizard.type === 'limit' ? ` (${t('optionalWord')})` : '');
+      body.innerHTML = `
+        <div class="field-label">${t('wizardCardType')}</div>
+        <div class="choice-card ${wizard.type === 'limit' ? 'selected' : ''}" data-type="limit">
+          <div class="radio"></div>
+          <div><div class="t">${t('wizardVisitLimit')}</div><div class="s">${t('wizardVisitLimitDesc')}</div></div>
+        </div>
+        <div class="choice-card ${wizard.type === 'unlimited' ? 'selected' : ''}" data-type="unlimited">
+          <div class="radio"></div>
+          <div><div class="t">${t('wizardUnlimitedType')}</div><div class="s">${t('wizardUnlimitedDesc')}</div></div>
+        </div>
+        ${wizard.type === 'limit' ? `
+          <div class="field-label">${t('wizardVisitCount')}</div>
+          <input type="number" id="totalInput" min="1" value="${wizard.total}" />` : ''}
+        <div class="field-label">${expiryLabel}</div>
+        <input type="date" id="expiryInput" value="${wizard.expiry}" />`;
+      body.querySelectorAll('[data-type]').forEach(el => el.addEventListener('click', () => { wizard.type = el.dataset.type; renderWizard(); }));
+      if (wizard.type === 'limit') $('#totalInput').addEventListener('input', (e) => wizard.total = +e.target.value || 1);
+      $('#expiryInput').addEventListener('input', (e) => wizard.expiry = e.target.value);
+      footer.innerHTML = `<button class="ghost-btn" id="wBack">${t('btnBack')}</button><button class="primary-btn" id="wNext">${t('btnNext')}</button>`;
+      $('#wBack').addEventListener('click', () => { wizard.step = 1; renderWizard(); });
+      $('#wNext').addEventListener('click', () => {
+        if (wizard.type === 'unlimited' && !wizard.expiry) { showToast(t('toastSetExpiry')); return; }
+        wizard.step = 3; renderWizard();
+      });
+    }
+
+    else if (wizard.step === 3) {
+      body.innerHTML = `
+        <div class="field-label">${t('wizardCodeVoucher')}</div>
+        <div class="toggle-row">
+          <button class="${wizard.qrMode === 'one' ? 'active' : ''}" data-mode="one">${t('wizardOneForAll')}</button>
+          <button class="${wizard.qrMode === 'many' ? 'active' : ''}" data-mode="many">${t('wizardOnePerVisit')}</button>
+        </div>
+        <div class="voucher-box" id="attachBox" style="margin-top:14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><rect x="3" y="16" width="18" height="5" rx="2"/></svg>
+          <div>
+            <div class="t">${wizard.attached ? escapeHtml(wizard.fileName) + ' ✓' : t('wizardAddPhoto')}</div>
+            <div class="s">${wizard.attached ? t('wizardTapToChange') : t('wizardFileTypes')}</div>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none" />
+        <div class="field-label">${t('wizardSummary')}</div>
+        <div class="stat-box" style="text-align:left; padding:14px;">
+          <div style="font-weight:700; font-size:14px;">${escapeHtml(wizard.company) || '—'}</div>
+          <div style="font-size:12.5px; color:var(--ink-soft); margin-top:3px;">
+            ${CAT_LABEL[wizard.cat][lang]} · ${wizard.type === 'limit' ? wizard.total + ' ' + t('visitsSuffix') : t('unlimitedShort')} · ${t('untilWord')} ${wizard.expiry ? fmtDateShort(wizard.expiry) : '—'}
+          </div>
+        </div>`;
+      body.querySelectorAll('[data-mode]').forEach(el => el.addEventListener('click', () => { wizard.qrMode = el.dataset.mode; renderWizard(); }));
+      $('#attachBox').addEventListener('click', () => $('#fileInput').click());
+      $('#fileInput').addEventListener('change', (e) => {
+        const f = e.target.files[0];
+        if (f) { wizard.attached = true; wizard.fileName = f.name; renderWizard(); }
+      });
+      footer.innerHTML = `<button class="ghost-btn" id="wBack">${t('btnBack')}</button><button class="primary-btn" id="wSave">${t('btnSaveCard')}</button>`;
+      $('#wBack').addEventListener('click', () => { wizard.step = 2; renderWizard(); });
+      $('#wSave').addEventListener('click', saveCard);
+    }
+  }
+
+  function saveCard() {
+    const newCard = { id: nextId++, name: wizard.company.trim(), cat: wizard.cat, type: wizard.type, expiry: wizard.expiry || null, history: [] };
+    if (wizard.type === 'limit') { newCard.used = 0; newCard.total = wizard.total; }
+    cards.unshift(newCard);
+    if (!partners.find(p => p.name === newCard.name)) {
+      partners.push({ name: newCard.name, cat: newCard.cat, dist: Math.round((1 + Math.random()*6)*10)/10, fav: false, x: 15 + Math.random()*70, y: 15 + Math.random()*70 });
+    }
+    closeAdd();
+    switchTab('tabList');
+    refreshAll();
+    renderPartners($('#partnerSearch').value);
+    showToast(t('toastCardAdded', { name: newCard.name }));
+  }
+
+  $('#fabAdd').addEventListener('click', openAdd);
+  $('#btnAddClose').addEventListener('click', closeAdd);
+
+  // ---------- ACCOUNT MODAL ----------
+  $('#btnAccount').addEventListener('click', () => $('#modalAccount').classList.add('open'));
+  $('#modalAccount').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+  $('#btnNoAccount').addEventListener('click', () => $('#modalAccount').classList.remove('open'));
+  $('#btnLoginDemo').addEventListener('click', () => { showToast(t('toastLoginDemo')); $('#modalAccount').classList.remove('open'); });
+
+  $('#modalVoucher').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+  $('#btnCloseVoucher').addEventListener('click', () => $('#modalVoucher').classList.remove('open'));
+
+  // ---------- HELP MODAL ----------
+  $('#btnHelp').addEventListener('click', () => $('#modalHelp').classList.add('open'));
+  $('#btnCloseHelp').addEventListener('click', () => $('#modalHelp').classList.remove('open'));
+  $('#modalHelp').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+  // ---------- LANGUAGE ----------
+  function setLang(newLang) {
+    lang = newLang;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    applyStaticI18n();
+    refreshAll();
+    renderPartners($('#partnerSearch').value);
+    if (currentDetailId != null) renderDetail(currentDetailId);
+    if ($('#overlayAdd').classList.contains('open')) renderWizard();
+  }
+  document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+  // ---------- THEME ----------
+  let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', theme);
+    $('#btnTheme').innerHTML = theme === 'dark' ? SUN_ICON : MOON_ICON;
+  }
+  $('#btnTheme').addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; applyTheme(); });
+
+  // ---------- INIT ----------
+  applyStaticI18n();
+  applyTheme();
+  refreshAll();
+  renderPartners();
+})();
+</script>
