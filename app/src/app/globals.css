@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Design tokeny z prototypu (karnet-asist-prototyp_v6.html) — tryb jasny */
+  --mint: #82d2b9;
+  --mint-ink: #175e4b;
+  --coral: #f7b9a5;
+  --coral-ink: #8a3e2c;
+  --accent: #f2825a;
+  --accent-deep: #de6b41;
+  --status-ok: #22a876;
+  --status-soon: #d69a3e;
+  --status-urgent: #dd5f58;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-mint: var(--mint);
+  --color-mint-ink: var(--mint-ink);
+  --color-coral: var(--coral);
+  --color-coral-ink: var(--coral-ink);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-status-ok: var(--status-ok);
+  --color-status-soon: var(--status-soon);
+  --color-status-urgent: var(--status-urgent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+
+    --mint: #24705b;
+    --mint-ink: #c2f2e0;
+    --coral: #934830;
+    --coral-ink: #ffdecf;
+    --accent: #ff9470;
+    --accent-deep: #ed7b4e;
+    --status-ok: #3adda6;
+    --status-soon: #f0be5e;
+    --status-urgent: #f2726e;
+  }
+}
+
+/* Ręczny przełącznik trybu (Sesja 7 — i18n/dark mode) korzysta z tych samych
+   selektorów co prototyp; wartości tokenów zdefiniowane tu z wyprzedzeniem. */
+:root[data-theme="dark"] {
+  --mint: #24705b;
+  --mint-ink: #c2f2e0;
+  --coral: #934830;
+  --coral-ink: #ffdecf;
+  --accent: #ff9470;
+  --accent-deep: #ed7b4e;
+  --status-ok: #3adda6;
+  --status-soon: #f0be5e;
+  --status-urgent: #f2726e;
+}
+
+:root[data-theme="light"] {
+  --mint: #82d2b9;
+  --mint-ink: #175e4b;
+  --coral: #f7b9a5;
+  --coral-ink: #8a3e2c;
+  --accent: #f2825a;
+  --accent-deep: #de6b41;
+  --status-ok: #22a876;
+  --status-soon: #d69a3e;
+  --status-urgent: #dd5f58;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}

@@ -1,0 +1,132 @@
+// Prisma schema — Karnet.asist
+// Źródło: docs/DATABASE.md (v3_paczka_dok/v2/docs/DATABASE.md), status tam: DRAFT.
+// Nazwy pól w schemacie: camelCase (konwencja TS/Prisma), zmapowane na snake_case
+// w bazie przez @map/@@map, zgodnie z nazwami kolumn z DATABASE.md.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// Connection URL skonfigurowany w prisma.config.ts (Prisma 7 nie wspiera już
+// `url` bezpośrednio w bloku datasource schema.prisma).
+datasource db {
+  provider = "postgresql"
+}
+
+enum CompanyCategory {
+  gym
+  pool
+  group_classes
+  massage
+  beauty
+
+  @@map("company_category")
+}
+
+enum CardType {
+  limit
+  unlimited
+
+  @@map("card_type")
+}
+
+enum VoucherMode {
+  single
+  per_visit
+
+  @@map("voucher_mode")
+}
+
+/// Konto opcjonalne — brak konta = brak wiersza (ADR-003).
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String?  @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  cards            Card[]
+  favorites        Favorite[]
+  createdCompanies Company[] @relation("CompanyCreatedBy")
+
+  @@map("users")
+}
+
+/// Partner (firma), np. siłownia, basen, salon masażu.
+model Company {
+  id              String          @id @default(uuid()) @db.Uuid
+  name            String
+  category        CompanyCategory
+  lat             Float?
+  lng             Float?
+  googlePlaceId   String?         @map("google_place_id")
+  createdByUserId String?         @map("created_by_user_id") @db.Uuid
+
+  createdBy User?      @relation("CompanyCreatedBy", fields: [createdByUserId], references: [id])
+  cards     Card[]
+  favorites Favorite[]
+
+  @@index([category])
+  @@map("companies")
+}
+
+/// Karnet użytkownika. Reguła biznesowa (egzekwowana w API, docelowo też CHECK w DB —
+/// patrz DATABASE.md): type = 'unlimited' ⇒ expiryDate IS NOT NULL.
+/// Status ok/soon/urgent i archived liczone w locie, nie są kolumnami (patrz DATABASE.md).
+model Card {
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String?     @map("user_id") @db.Uuid
+  deviceId       String?     @map("device_id")
+  companyId      String      @map("company_id") @db.Uuid
+  type           CardType
+  totalVisits    Int?        @map("total_visits")
+  usedVisits     Int         @default(0) @map("used_visits")
+  expiryDate     DateTime?   @map("expiry_date") @db.Date
+  voucherMode    VoucherMode @map("voucher_mode")
+  voucherFileUrl String?     @map("voucher_file_url")
+  deletedAt      DateTime?   @map("deleted_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  user    User?   @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+  visits  Visit[]
+
+  @@index([userId])
+  @@index([deviceId])
+  @@index([companyId])
+  @@map("cards")
+}
+
+/// Pojedyncze wejście na karnecie.
+model Visit {
+  id        String    @id @default(uuid()) @db.Uuid
+  cardId    String    @map("card_id") @db.Uuid
+  visitDate DateTime  @map("visit_date") @db.Date
+  visitTime DateTime? @map("visit_time") @db.Time
+  note      String?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@index([cardId, visitDate(sort: Desc)])
+  @@map("visits")
+}
+
+/// Ulubiony partner — klucz po userId (konto) lub deviceId (bez konta).
+/// DATABASE.md proponuje złożony PK (user_id, company_id) lub (device_id, company_id),
+/// ale Prisma/Postgres nie pozwalają na nullable kolumnę w PK — stąd osobne `id` (uuid)
+/// jak w pozostałych tabelach, plus unikalność pilnowana osobno dla obu ścieżek
+/// (NULL nie koliduje z NULL w unique constraint w Postgresie).
+model Favorite {
+  id        String  @id @default(uuid()) @db.Uuid
+  userId    String? @map("user_id") @db.Uuid
+  deviceId  String? @map("device_id")
+  companyId String  @map("company_id") @db.Uuid
+
+  user    User?   @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([userId, companyId])
+  @@unique([deviceId, companyId])
+  @@map("favorites")
+}
