@@ -9,6 +9,7 @@ import { emptyVisitFormValues, VisitForm, VisitFormValues } from "@/components/V
 import { CardType } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate, formatTime } from "@/lib/format";
+import { isCardArchived } from "@/server/card-status";
 import { VisitInputErrorCode } from "@/server/visit-rules";
 
 interface ApiVisit {
@@ -26,15 +27,6 @@ interface ApiCard {
   expiryDate: string | null;
   company: { id: string; name: string; category: string };
   visits: ApiVisit[];
-}
-
-function isArchived(card: ApiCard): boolean {
-  const limitExhausted =
-    card.type === CardType.limit &&
-    card.totalVisits != null &&
-    card.usedVisits >= card.totalVisits;
-  const expired = card.expiryDate != null && new Date(card.expiryDate) < new Date();
-  return limitExhausted || expired;
 }
 
 function visitToFormValues(visit: ApiVisit): VisitFormValues {
@@ -201,6 +193,15 @@ export default function CardDetailsPage() {
   const tVisitForm = useTranslations("visitForm");
   const tDeleteDialog = useTranslations("deleteVisitDialog");
 
+  const archived =
+    card != null &&
+    isCardArchived({
+      type: card.type,
+      totalVisits: card.totalVisits,
+      usedVisits: card.usedVisits,
+      expiryDate: card.expiryDate ? new Date(card.expiryDate) : null,
+    });
+
   if (notFound) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10">
@@ -235,7 +236,7 @@ export default function CardDetailsPage() {
                   : t("noExpiryLabel")}
               </p>
             </div>
-            {!isArchived(card) && (
+            {!archived && (
               <button
                 type="button"
                 onClick={openAddForm}
@@ -246,7 +247,7 @@ export default function CardDetailsPage() {
             )}
           </div>
 
-          {isArchived(card) && (
+          {archived && (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("archivedNotice")}</p>
           )}
 

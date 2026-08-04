@@ -17,7 +17,7 @@ mobile).
 |---|---|---|
 | `GET` | `/api/cards` | lista aktywnych karnetów użytkownika/urządzenia |
 | `GET` | `/api/cards?archived=true` | lista zarchiwizowanych |
-| `POST` | `/api/cards` | dodanie karnetu (kreator krok 1–3 z prototypu) |
+| `POST` | `/api/cards` | dodanie karnetu (kreator krok 1–3 z prototypu); używane też przez „Odnów” z widoku archiwum — nie ma osobnego endpointu na odnowienie |
 | `GET` | `/api/cards/:id` | szczegóły karnetu + historia wejść |
 | `PATCH` | `/api/cards/:id` | edycja (m.in. `expiry_date`, w tym ustawienie na `null`) |
 | `DELETE` | `/api/cards/:id` | usunięcie (po potwierdzeniu w UI) |

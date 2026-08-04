@@ -8,9 +8,13 @@
     "title": "Twoje karnety",
     "addButton": "Dodaj karnet",
     "emptyState": "Nie masz jeszcze żadnego karnetu. Dodaj pierwszy, żeby mieć go zawsze pod ręką.",
+    "archiveEmptyState": "Nie masz jeszcze żadnych zarchiwizowanych karnetów.",
     "loadError": "Nie udało się pobrać listy karnetów. Spróbuj odświeżyć stronę.",
+    "tabActive": "Aktywne",
+    "tabArchived": "Archiwum",
     "editButton": "Edytuj",
-    "deleteButton": "Usuń"
+    "deleteButton": "Usuń",
+    "renewButton": "Odnów"
   },
   "cardStatus": {
     "ok": "Ważny",
@@ -22,6 +26,7 @@
   "cardForm": {
     "addTitle": "Nowy karnet",
     "editTitle": "Edytuj karnet",
+    "renewTitle": "Odnów karnet",
     "companyLabel": "Firma",
     "companyPlaceholder": "Wybierz firmę",
     "companyModeOptions": {

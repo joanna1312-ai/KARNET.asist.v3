@@ -41,7 +41,7 @@ type NewCompanyErrorCode = "newCompanyNameRequired" | "newCompanyCategoryRequire
 type FormErrorCode = CardInputErrorCode | NewCompanyErrorCode;
 
 interface CardFormProps {
-  mode: "add" | "edit";
+  mode: "add" | "edit" | "renew";
   companies: CompanyOption[];
   initialValues?: CardFormValues;
   submitting: boolean;
@@ -126,7 +126,7 @@ export function CardForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold">
-        {mode === "add" ? t("addTitle") : t("editTitle")}
+        {mode === "edit" ? t("editTitle") : mode === "renew" ? t("renewTitle") : t("addTitle")}
       </h2>
 
       <div className="flex flex-col gap-2">

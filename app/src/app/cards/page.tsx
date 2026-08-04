@@ -58,13 +58,22 @@ function cardToFormValues(card: ApiCard): CardFormValues {
   };
 }
 
-async function fetchCardsAndCompanies(): Promise<{
+// Do "Odnów" z archiwum: ta sama firma/typ/liczba wejść/voucher co karnet źródłowy, ale
+// bez daty ważności — karnet trafił do archiwum właśnie przez upłynięcie starej daty (lub
+// wyczerpanie limitu), więc nowa musi zostać świadomie podana od nowa.
+function renewFormValues(card: ApiCard): CardFormValues {
+  return { ...cardToFormValues(card), expiryDate: "" };
+}
+
+type CardsTab = "active" | "archived";
+
+async function fetchCardsAndCompanies(tab: CardsTab): Promise<{
   companies: CompanyOption[];
   cards: ApiCard[];
 }> {
   const [companiesRes, cardsRes] = await Promise.all([
     deviceFetch("/api/companies"),
-    deviceFetch("/api/cards"),
+    deviceFetch(tab === "archived" ? "/api/cards?archived=true" : "/api/cards"),
   ]);
   if (!companiesRes.ok || !cardsRes.ok) throw new Error("load_failed");
   const companiesBody: { companies: CompanyOption[] } = await companiesRes.json();
@@ -73,12 +82,14 @@ async function fetchCardsAndCompanies(): Promise<{
 }
 
 export default function CardsPage() {
+  const [tab, setTab] = useState<CardsTab>("active");
   const [companies, setCompanies] = useState<CompanyOption[]>([]);
   const [cards, setCards] = useState<ApiCard[] | null>(null);
   const [loadError, setLoadError] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<ApiCard | null>(null);
+  const [renewSource, setRenewSource] = useState<ApiCard | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverErrors, setServerErrors] = useState<CardInputErrorCode[]>([]);
 
@@ -86,21 +97,21 @@ export default function CardsPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (forTab: CardsTab = tab) => {
     try {
-      const data = await fetchCardsAndCompanies();
+      const data = await fetchCardsAndCompanies(forTab);
       setCompanies(data.companies);
       setCards(data.cards);
       setLoadError(false);
     } catch {
       setLoadError(true);
     }
-  }, []);
+  }, [tab]);
 
   useEffect(() => {
     let ignore = false;
 
-    fetchCardsAndCompanies()
+    fetchCardsAndCompanies(tab)
       .then((data) => {
         if (ignore) return;
         setCompanies(data.companies);
@@ -114,16 +125,25 @@ export default function CardsPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [tab]);
 
   function openAddForm() {
     setEditingCard(null);
+    setRenewSource(null);
     setServerErrors([]);
     setFormOpen(true);
   }
 
   function openEditForm(card: ApiCard) {
     setEditingCard(card);
+    setRenewSource(null);
+    setServerErrors([]);
+    setFormOpen(true);
+  }
+
+  function openRenewForm(card: ApiCard) {
+    setEditingCard(null);
+    setRenewSource(card);
     setServerErrors([]);
     setFormOpen(true);
   }
@@ -131,6 +151,7 @@ export default function CardsPage() {
   function closeForm() {
     setFormOpen(false);
     setEditingCard(null);
+    setRenewSource(null);
     setServerErrors([]);
   }
 
@@ -196,8 +217,17 @@ export default function CardsPage() {
       return;
     }
 
+    const wasRenewing = renewSource !== null;
     closeForm();
-    await reload();
+
+    if (wasRenewing) {
+      // Nowy karnet jest aktywny, choćby odnawiany był z zakładki Archiwum —
+      // pokaż go tam, gdzie faktycznie wyląduje.
+      setTab("active");
+      await reload("active");
+    } else {
+      await reload();
+    }
   }
 
   async function handleConfirmDelete() {
@@ -237,12 +267,35 @@ export default function CardsPage() {
         </button>
       </div>
 
+      <div className="flex gap-1 rounded-full border border-black/10 p-1 dark:border-white/10 w-fit">
+        {(["active", "archived"] as const).map((tabOption) => (
+          <button
+            key={tabOption}
+            type="button"
+            onClick={() => setTab(tabOption)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium ${
+              tab === tabOption
+                ? "bg-mint text-mint-ink"
+                : "hover:bg-black/5 dark:hover:bg-white/10"
+            }`}
+          >
+            {t(tabOption === "active" ? "tabActive" : "tabArchived")}
+          </button>
+        ))}
+      </div>
+
       {formOpen && (
         <div className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
           <CardForm
-            mode={editingCard ? "edit" : "add"}
+            mode={editingCard ? "edit" : renewSource ? "renew" : "add"}
             companies={companies}
-            initialValues={editingCard ? cardToFormValues(editingCard) : emptyCardFormValues}
+            initialValues={
+              editingCard
+                ? cardToFormValues(editingCard)
+                : renewSource
+                  ? renewFormValues(renewSource)
+                  : emptyCardFormValues
+            }
             submitting={submitting}
             serverErrors={serverErrors}
             onSubmit={handleFormSubmit}
@@ -258,7 +311,9 @@ export default function CardsPage() {
       )}
 
       {cards !== null && cards.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("emptyState")}</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          {t(tab === "archived" ? "archiveEmptyState" : "emptyState")}
+        </p>
       )}
 
       {cards !== null && cards.length > 0 && (
@@ -294,13 +349,23 @@ export default function CardsPage() {
                 </p>
               </Link>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEditForm(card)}
-                  className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                >
-                  {t("editButton")}
-                </button>
+                {tab === "archived" ? (
+                  <button
+                    type="button"
+                    onClick={() => openRenewForm(card)}
+                    className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    {t("renewButton")}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(card)}
+                    className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    {t("editButton")}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {

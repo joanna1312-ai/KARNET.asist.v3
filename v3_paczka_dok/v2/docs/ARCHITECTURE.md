@@ -62,6 +62,13 @@ zapisanym ręcznie: `archived = usedUp || (expiry && expiry < dziś)`. W produkc
 przeliczać tak samo w API/na żądanie, albo dodać kolumnę `status` aktualizowaną przy
 zapisie i cronem/edge-function dla przypadków „czas minął bez akcji użytkownika”.
 
+**Odnowienie karnetu** — z widoku archiwum (`/cards`, zakładka „Archiwum”) użytkownik może
+jednym dotknięciem otworzyć kreator nowego karnetu wstępnie wypełniony danymi karnetu
+archiwalnego (ta sama firma, typ, liczba wejść, sposób pokazywania vouchera), z wyczyszczoną
+datą ważności — musi ją podać od nowa. To **nie jest edycja** starego karnetu: powstaje nowy
+rekord przez ten sam `POST /api/cards` co zwykłe dodanie (bez osobnego endpointu), z
+`usedVisits = 0`; archiwalny karnet i jego historia wejść zostają nienaruszone.
+
 **Status ostrzegawczy karnetu** (`ok`/`soon`/`urgent`/`wygasł`/`brak terminu`) —
 osobna etykieta liczona równolegle do `archived`, widoczna zanim karnet trafi do
 archiwum. Konkretne progi dni/wejść: patrz `DATABASE.md`, sekcja „Status karnetu —

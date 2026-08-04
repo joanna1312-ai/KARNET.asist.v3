@@ -8,9 +8,13 @@
     "title": "Your cards",
     "addButton": "Add card",
     "emptyState": "You don't have any cards yet. Add your first one to keep it handy.",
+    "archiveEmptyState": "You don't have any archived cards yet.",
     "loadError": "Couldn't load your cards. Try refreshing the page.",
+    "tabActive": "Active",
+    "tabArchived": "Archive",
     "editButton": "Edit",
-    "deleteButton": "Delete"
+    "deleteButton": "Delete",
+    "renewButton": "Renew"
   },
   "cardStatus": {
     "ok": "Valid",
@@ -22,6 +26,7 @@
   "cardForm": {
     "addTitle": "New card",
     "editTitle": "Edit card",
+    "renewTitle": "Renew card",
     "companyLabel": "Company",
     "companyPlaceholder": "Choose a company",
     "companyModeOptions": {

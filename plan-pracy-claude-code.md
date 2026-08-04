@@ -88,6 +88,224 @@ Prompt (skróć/dostosuj):
 - [ ] Miejsce w UI pod przyszłą integrację Google Places, ale bez podłączonego API
 - [ ] lint/test + commit
 
+## Sesja 9 — Widok archiwum karnetów + porządek w regule `archived`
+
+Kontekst: `GET /api/cards?archived=true` już istnieje, ale UI (`/cards`) nigdy go nie
+wywołuje — zarchiwizowany karnet po prostu znika bez możliwości podglądu. Przy okazji:
+`src/app/cards/[id]/page.tsx` ma własną, zduplikowaną kopię `isArchived()` zamiast
+importować `isCardArchived` z `@/server/card-status` — ryzyko rozjazdu, jeśli reguła się
+kiedyś zmieni.
+
+Prompt (skróć/dostosuj):
+> Dodaj w widoku listy karnetów (`/cards`) przełącznik/zakładkę "Aktywne" / "Archiwum",
+> korzystający z istniejącego `GET /api/cards?archived=true`. Karnety w archiwum widoczne
+> tylko do odczytu — bez przycisku dodania wejścia (API i tak zwraca `409 card_archived`,
+> ale UI nie powinno w ogóle proponować tej akcji). Przy okazji zamień lokalną kopię
+> `isArchived()` w `src/app/cards/[id]/page.tsx` na import `isCardArchived` z
+> `@/server/card-status`, żeby reguła archiwizacji żyła w jednym miejscu.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [x] Plan zaakceptowany
+- [x] Zakładka/przełącznik archiwum w UI
+- [x] Duplikat `isArchived` usunięty na rzecz wspólnej funkcji
+- [x] lint/test + commit
+
+Dodatkowo (na wyraźną prośbę, poza pierwotnym opisem sesji): przycisk „Odnów” przy
+zarchiwizowanym karnecie (nowy karnet POST-em, wstępnie wypełniony danymi z karnetu
+archiwalnego, bez daty ważności) i potwierdzenie przed usunięciem karnetu z archiwum
+(ten sam współdzielony `ConfirmDialog`, co przy usuwaniu z listy aktywnych).
+
+## Sesja 10 — Ekran firm/partnerów + podgląd partnera
+
+Kontekst: `ARCHITECTURE.md` (sekcja "Przepływy najważniejszych operacji") opisuje
+przepływ "Podgląd partnera" jako jeden z kluczowych, prototyp ma go w całości
+(`openPartnerDetail()`), ale w `CLAUDE.md` nie jest on wprost wymieniony na liście "musi
+działać w MVP" ani na liście "może wejść później" — **to nie jest jednoznacznie
+rozstrzygnięte w dokumentacji**. Zanim odpalisz tę sesję w Claude Code, zdecyduj, czy ma
+wejść teraz, czy poczekać.
+
+Prompt (skróć/dostosuj):
+> Dodaj `GET /api/companies/:id` wg `docs/API.md` (szczegóły firmy + karnety
+> użytkownika/urządzenia powiązane z tą firmą — filtr po `companyId`, nie po nazwie jak w
+> prototypie). Dodaj ekran `/companies` z listą firm (z danych z `GET /api/companies`) oraz
+> `/companies/:id` pokazujący karnety danej firmy, analogicznie do `openPartnerDetail()` w
+> `karnet-asist-prototyp_v6.html`. Bez integracji Google Maps/Places (ADR-004 nadal
+> odłożone) — tylko lista tekstowa, bez mapy/pinezek. Dodaj link do tego ekranu w
+> nawigacji (`Header.tsx` lub podobne miejsce).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Zakres potwierdzony (czy ta funkcja wchodzi teraz)
+- [ ] Plan zaakceptowany
+- [ ] `GET /api/companies/:id`
+- [ ] Ekrany `/companies` i `/companies/:id`
+- [ ] lint/test + commit
+
+## Sesja 11 — Voucher jako pole tekstowe (placeholder, bez uploadu pliku)
+
+Kontekst: `CLAUDE.md` dopuszcza wprost, żeby na start voucher/QR był "polem
+tekstowym/placeholderem" zamiast realnego uploadu. Kolumna `voucherFileUrl` już istnieje
+w schemacie, ale nigdzie nie jest ustawiana ani wyświetlana.
+
+Prompt (skróć/dostosuj):
+> Dodaj w formularzu karnetu (`CardForm.tsx`) opcjonalne pole tekstowe na treść/link
+> vouchera, zapisywane do istniejącej kolumny `voucherFileUrl` (bez uploadu pliku, bez
+> object storage — to świadomie odłożone, patrz `CLAUDE.md`). Wyświetl tę wartość w
+> widoku szczegółów karnetu (`cards/[id]/page.tsx`), jeśli jest ustawiona. Dodaj brakujące
+> klucze w słowniku i18n (PL/EN), zgodnie z tonem z `docs/user/faq.md`.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Pole vouchera w formularzu + zapis do API
+- [ ] Wyświetlenie w szczegółach karnetu
+- [ ] i18n uzupełnione
+- [ ] lint/test + commit
+
+## Sesja 12 — Ulubieni partnerzy (favorites)
+
+Kontekst: `CLAUDE.md` wprost stawia to na liście "może wejść w kolejnym kroku, nie
+blokuje MVP". Model `Favorite` już istnieje w schemacie, ale bez tego jest martwym kodem.
+**Zależy od Sesji 10** (potrzebny ekran listy firm, żeby było gdzie pokazać gwiazdkę).
+
+Prompt (skróć/dostosuj):
+> Dodaj `POST /api/companies/favorites/:id` i `DELETE /api/companies/favorites/:id` wg
+> `docs/API.md`, oparte o zweryfikowany `deviceId` (ADR-007, ten sam mechanizm co
+> `/api/cards`). Dodaj przycisk/gwiazdkę ulubionych na ekranie `/companies` (Sesja 10),
+> analogicznie do `star-btn` w prototypie. Rozważ też opcjonalny filtr
+> `GET /api/companies?favorites=true`, jeśli lista firm ma pokazywać ulubione osobno.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Sesja 10 ukończona (wymagana zależność)
+- [ ] Plan zaakceptowany
+- [ ] Endpointy favorites
+- [ ] Gwiazdka w UI listy firm
+- [ ] lint/test + commit
+
+## Sesja 13 — Testy e2e (Playwright)
+
+Kontekst: `docs/TESTING.md` zakłada testy jednostkowe + integracyjne (już są, Vitest) +
+e2e (Playwright) dla kluczowych ścieżek z prototypu. Playwright nie jest jeszcze
+zależnością projektu — nowy pakiet, więc przy dodawaniu sprawdzić (zgodnie z regułą z
+`CLAUDE.md`), że jest aktywnie utrzymywany, zanim wejdzie do `package.json`.
+
+Prompt (skróć/dostosuj):
+> Skonfiguruj Playwright wg `docs/TESTING.md`. Napisz testy e2e dla ścieżek wymienionych w
+> tym dokumencie, które są już zaimplementowane: (1) dodanie karnetu przez kreator/formularz
+> (firma istniejąca), (2) zalogowanie wejścia i aktualizacja licznika, (3) edycja i
+> usunięcie wejścia z historii, (4) edycja daty ważności, w tym wyczyszczenie jej dla
+> karnetu typu `limit`, (5) usunięcie karnetu — dialog potwierdzający, anulowanie nie
+> usuwa danych, (6) karnet znika z listy głównej i trafia do widoku archiwum po
+> wyczerpaniu limitu/dacie ważności (patrz Sesja 9), (7) przełączenie PL/EN i trybu
+> ciemnego. Pomiń na razie punkty dotyczące Google Maps (nie zaimplementowane, ADR-004).
+> Baza testowa odizolowana od dev, resetowana przed przebiegiem — zaproponuj podejście,
+> zanim zaczniesz pisać testy.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany (w tym: nowa zależność sprawdzona pod kątem utrzymania/CVE)
+- [ ] Playwright skonfigurowany, baza testowa izolowana
+- [ ] Testy z listy wyżej napisane i przechodzą
+- [ ] commit
+
+## Sesja 14 — Logowanie/synchronizacja konta (NextAuth) — wymaga decyzji przed startem
+
+Kontekst: `ADR-003` zakłada auth token-based (JWT, nie cookie sesyjne) jako *nadbudowę*
+nad trybem bez konta, `API.md` opisuje `/api/auth/sign-in` (np. magic link/OAuth) i
+`/api/auth/link-device`. Obecnie nie ma żadnego z tego — `next-auth` nawet nie jest
+zainstalowany, `NEXTAUTH_SECRET` w `.env.example` jest niewykorzystany.
+
+**Nie odpalaj tej sesji bez wcześniejszej odpowiedzi na poniższe — to rzeczy "do
+pytania, nie zgadywania" wg `CLAUDE.md`:**
+- Metoda logowania: magic link e-mail (wymaga dostawcy wysyłki maili — Resend/Postmark/
+  inny) czy OAuth (Google?) — czy oba?
+- Jeśli magic link: jaki dostawca e-mail i czy masz już do niego klucz API?
+- Docelowa domena produkcyjna (potrzebna do `NEXTAUTH_URL` i konfiguracji OAuth redirect)
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Dodaj logowanie przez [ustalona metoda] z użyciem Auth.js/NextAuth, zgodnie z
+> `ADR-003` (token-based, nie cookie sesyjne — pod kątem przyszłego mobile) i
+> `docs/API.md`. Dodaj `POST /api/auth/link-device`: weryfikuje istniejący podpisany
+> token urządzenia (ADR-007), wyciąga zaufany `deviceId` i przypina powiązane karnety do
+> zalogowanego konta (`userId = ...`, `deviceId = null`) — nie dotykaj kart innych
+> urządzeń. Zaloguj, jeśli reguła "konto zawsze opcjonalne" (CLAUDE.md) jest gdziekolwiek
+> zagrożona tym API.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Decyzje z listy wyżej podjęte i potwierdzone
+- [ ] Plan zaakceptowany
+- [ ] Logowanie + `/api/auth/link-device`
+- [ ] Zweryfikowane: żadna funkcja rdzeniowa nadal nie wymaga logowania
+- [ ] lint/test + commit
+
+## Sesja 15 — Logo w headerze prowadzi do strony głównej
+
+Kontekst: `Header.tsx` renderuje logo (kropka + nazwa marki) jako statyczny `<span>`, bez
+linku — kliknięcie nic nie robi.
+
+Prompt (skróć/dostosuj):
+> W `Header.tsx` opakuj logo (kropkę + nazwę marki) w link do strony głównej (`/`, która
+> i tak przekierowuje do `/cards` — `src/app/page.tsx`). Zachowaj dotychczasowy wygląd,
+> dodaj tylko sensowny `aria-label`/`title` jeśli potrzebne dla dostępności.
+
+- [ ] Logo klikalne, wraca na `/`
+- [ ] lint/test + commit
+
+## Sesja 16 — Własne kategorie firm dodawane przez użytkowników
+
+Kontekst: `CompanyCategory` jest obecnie enumem Prisma o ustalonych 5 wartościach
+(`gym`, `pool`, `group_classes`, `massage`, `beauty`), zgodnym z `DATABASE.md` —
+kategoria "determinuje styl (sport/relax) i ikonę" (`ARCHITECTURE.md`). Umożliwienie
+użytkownikom dodawania własnych kategorii to **zmiana modelu danych**, nie tylko UI
+(enum → coś bardziej otwartego, np. tabela `categories`), więc zanim odpalisz tę sesję,
+rozstrzygnij (zasada "nie zgaduj" z `CLAUDE.md`):
+
+- Czy własna kategoria jest prywatna dla urządzenia, czy widoczna globalnie (tak jak
+  `companies` są dziś współdzielone między urządzeniami)?
+- Czy przy tworzeniu własnej kategorii użytkownik wybiera styl/kolor/ikonę ręcznie, czy
+  nowa kategoria dostaje zawsze domyślny wygląd?
+- Czy 5 obecnych kategorii zostaje jako "systemowe" obok kategorii użytkownika, czy
+  wszystko przechodzi na w pełni dynamiczny model bez rozróżnienia?
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Zamień enum `CompanyCategory` na tabelę `categories` w Prisma (pola: `id`, `name`,
+> reprezentacja stylu/koloru [ustalona wyżej], `createdByDeviceId` nullable — na wzór
+> `companies.createdByUserId`), z danymi początkowymi (seed) dla 5 obecnych kategorii
+> jako [ustalone: systemowe/zwykłe]. Dodaj `POST /api/categories` do tworzenia własnej
+> kategorii (autoryzacja jak w `/api/companies` — zweryfikowany device token, ADR-007) i
+> `GET /api/categories`. Zaktualizuj `CardForm.tsx`, słownik i18n oraz każde miejsce
+> hardkodujące dotychczasowy enum. Zaktualizuj też `docs/DATABASE.md` i
+> `docs/ARCHITECTURE.md` opisem tej zmiany w tym samym kroku (`CLAUDE.md`: przy większych
+> zmianach architektonicznych aktualizować odpowiedni plik w `docs/`).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Decyzje z listy wyżej podjęte
+- [ ] Plan zaakceptowany
+- [ ] Migracja `categories` + seed danych systemowych
+- [ ] `POST`/`GET /api/categories`
+- [ ] UI i i18n zaktualizowane
+- [ ] `docs/DATABASE.md` i `docs/ARCHITECTURE.md` zaktualizowane
+- [ ] lint/test + commit
+
+## Sesja 17 — Widok dostosowany do przeglądarek mobilnych (Android/iOS)
+
+Kontekst: to **nie** jest natywna aplikacja mobilna ani PWA (`MOBILE_ROADMAP.md` — to
+nadal poza zakresem) — chodzi o to, żeby istniejąca wersja webowa dobrze działała w
+przeglądarce na telefonie (Safari iOS, Chrome Android). Layout nie był jeszcze
+systematycznie sprawdzony pod kątem wąskich ekranów.
+
+Prompt (skróć/dostosuj):
+> Przejrzyj i dostosuj layout aplikacji (Header, lista karnetów, formularz karnetu,
+> formularz wejścia, dialogi potwierdzenia) pod kątem wąskich ekranów telefonów (od ok.
+> 375px szerokości wzwyż). Sprawdź: rozmiar obszarów klikalnych na przyciskach (min.
+> ok. 44px, wytyczne dostępności dotykowej), zachowanie pól `select`/`date`/`number` na
+> mobilnym Safari i Chrome, brak poziomego przewijania strony, czytelność w trybie
+> ciemnym na małym ekranie. Zweryfikuj w przeglądarce z emulacją mobilną (np. viewport
+> 375×812) w jasnym i ciemnym motywie.
+> Najpierw krótki plan (które ekrany/komponenty wymagają zmian), poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Ekrany dostosowane, zweryfikowane przy szerokości ~375px
+- [ ] Sprawdzone w jasnym i ciemnym motywie
+- [ ] lint/test + commit
+
 ## Przed pierwszym wdrożeniem produkcyjnym
 
 Checklista z `docs/DEPLOYMENT.md`:
