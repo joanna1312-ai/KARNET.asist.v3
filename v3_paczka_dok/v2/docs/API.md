@@ -46,6 +46,12 @@ Przykład odpowiedzi `GET /api/cards/:id`:
 | `PATCH` | `/api/cards/:id/visits/:visitId` | edycja daty/godziny/notatki |
 | `DELETE` | `/api/cards/:id/visits/:visitId` | usunięcie błędnie dodanego wejścia |
 
+`POST /api/cards/:id/visits` zwraca `409 { "error": "card_archived" }`, gdy karnet jest już
+zarchiwizowany (limit wejść wyczerpany lub minęła data ważności — formuła `archived` w
+`DATABASE.md`) — nie da się dodać wejścia do wykorzystanego/przeterminowanego karnetu.
+`PATCH`/`DELETE` na istniejącym wpisie **nie** mają tego ograniczenia — korektę lub
+usunięcie błędnie dodanego wejścia można wykonać także po archiwizacji karnetu.
+
 ## Firmy / partnerzy
 
 | Metoda | Ścieżka | Opis |
