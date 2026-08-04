@@ -24,6 +24,16 @@
     "editTitle": "Edytuj karnet",
     "companyLabel": "Firma",
     "companyPlaceholder": "Wybierz firmę",
+    "companyModeOptions": {
+      "existing": "Wybierz z listy",
+      "new": "Dodaj nową firmę"
+    },
+    "mapsSearchPlaceholder": "Szukaj na mapie (wkrótce)",
+    "mapsSearchHint": "Wyszukiwanie firm na mapie Google pojawi się w kolejnej wersji. Na razie podaj nazwę i kategorię ręcznie.",
+    "newCompanyNameLabel": "Nazwa firmy",
+    "newCompanyNamePlaceholder": "Np. Studio Pilates Centrum",
+    "categoryLabel": "Kategoria",
+    "categoryPlaceholder": "Wybierz kategorię",
     "typeLabel": "Typ karnetu",
     "typeOptions": {
       "limit": "Limit wejść",
@@ -48,6 +58,8 @@
       "totalVisitsRequiredForLimit": "Podaj liczbę wejść dla karnetu z limitem.",
       "totalVisitsPositive": "Liczba wejść musi być większa od zera.",
       "voucherModeRequired": "Wybierz sposób pokazywania vouchera.",
+      "newCompanyNameRequired": "Podaj nazwę firmy.",
+      "newCompanyCategoryRequired": "Wybierz kategorię firmy.",
       "saveFailed": "Nie udało się zapisać karnetu. Spróbuj ponownie."
     }
   },

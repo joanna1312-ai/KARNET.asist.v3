@@ -47,7 +47,10 @@ interface ApiCard {
 
 function cardToFormValues(card: ApiCard): CardFormValues {
   return {
+    companyMode: "existing",
     companyId: card.company.id,
+    newCompanyName: "",
+    newCompanyCategory: "",
     type: card.type,
     totalVisits: card.totalVisits != null ? String(card.totalVisits) : "",
     expiryDate: card.expiryDate ? card.expiryDate.slice(0, 10) : "",
@@ -135,8 +138,36 @@ export default function CardsPage() {
     setSubmitting(true);
     setServerErrors([]);
 
+    let companyId = values.companyId;
+
+    if (values.companyMode === "new") {
+      const companyResponse = await deviceFetch("/api/companies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.newCompanyName.trim(),
+          category: values.newCompanyCategory,
+        }),
+      });
+
+      if (!companyResponse.ok) {
+        setSubmitting(false);
+        // Sentinel: CardForm nie renderuje selecta firmy w trybie "new", więc to
+        // tylko odpala generyczny komunikat "Nie udało się zapisać" (errors.saveFailed),
+        // nie podświetla żadnego konkretnego pola.
+        setServerErrors(["companyRequired"]);
+        return;
+      }
+
+      const companyBody: { company: CompanyOption } = await companyResponse.json();
+      companyId = companyBody.company.id;
+      setCompanies((prev) =>
+        [...prev, companyBody.company].sort((a, b) => a.name.localeCompare(b.name))
+      );
+    }
+
     const payload = {
-      companyId: values.companyId,
+      companyId,
       type: values.type,
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,

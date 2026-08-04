@@ -24,6 +24,16 @@
     "editTitle": "Edit card",
     "companyLabel": "Company",
     "companyPlaceholder": "Choose a company",
+    "companyModeOptions": {
+      "existing": "Choose from the list",
+      "new": "Add a new company"
+    },
+    "mapsSearchPlaceholder": "Search on the map (coming soon)",
+    "mapsSearchHint": "Searching for companies on Google Maps is coming in a future version. For now, enter the name and category manually.",
+    "newCompanyNameLabel": "Company name",
+    "newCompanyNamePlaceholder": "e.g. Pilates Studio Center",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "Choose a category",
     "typeLabel": "Card type",
     "typeOptions": {
       "limit": "Visit limit",
@@ -48,6 +58,8 @@
       "totalVisitsRequiredForLimit": "Enter the number of visits for a limited card.",
       "totalVisitsPositive": "The number of visits must be greater than zero.",
       "voucherModeRequired": "Choose how the voucher is shown.",
+      "newCompanyNameRequired": "Enter the company name.",
+      "newCompanyCategoryRequired": "Choose the company category.",
       "saveFailed": "Couldn't save the card. Try again."
     }
   },
