@@ -30,6 +30,27 @@ po stronie serwera.
 `.env.example` powinien być commitowany z pustymi/placeholderowymi wartościami;
 `.env` — nigdy.
 
+**Supabase + `DATABASE_URL` — dopisz `?sslmode=require&uselibpqcompat=true`.** Sam
+`?sslmode=require` nie wystarczy: nowsza wersja sterownika `pg` (używanego przez
+`@prisma/adapter-pg`, wymagany driver adapter w Prisma 7 — patrz niżej) traktuje
+`sslmode=require` jako pełną weryfikację łańcucha certyfikatów (`verify-full`), a
+certyfikat Supabase jej nie przechodzi (błąd: `self-signed certificate in certificate
+chain` / `TlsConnectionError`). Parametr `uselibpqcompat=true` przywraca dawne,
+"łagodniejsze" zachowanie `sslmode=require` (szyfrowanie bez pełnej weryfikacji
+certyfikatu) — to jest to, czego Supabase faktycznie oczekuje. Przykład:
+```
+DATABASE_URL=postgresql://postgres:HASŁO@db.<project-ref>.supabase.co:5432/postgres?sslmode=require&uselibpqcompat=true
+```
+Na stronie "Connect to your project" w Supabase wybieraj **Direct connection** (nie
+pooler) — `npx prisma migrate dev` wymaga bezpośredniego połączenia, poolery (zwłaszcza
+transaction pooler) go nie obsługują.
+
+**Prisma 7 wymaga jawnego driver adaptera** — sam `DATABASE_URL` w `.env` nie
+wystarczy, żeby `PrismaClient` się połączył (Prisma 7 nie ma już wbudowanego silnika
+zapytań). W kodzie musi być zainstalowany i skonfigurowany `@prisma/adapter-pg` +
+`pg` (patrz `src/lib/db.ts`) oraz `@prisma/client` w zależnościach — bez tego kompilacja
+się nie powiedzie (`Module not found: Can't resolve '@prisma/client/runtime/client'`).
+
 ## Kroki
 
 1. `git clone ...`
