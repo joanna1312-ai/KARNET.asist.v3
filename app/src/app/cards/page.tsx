@@ -14,6 +14,25 @@ import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
 import { dictionary } from "@/lib/i18n/dictionary";
 import { CardInputErrorCode } from "@/server/card-rules";
+import { CardWarningStatus, getCardWarningStatus } from "@/server/card-status";
+
+const STATUS_BADGE_STYLES: Record<CardWarningStatus, string> = {
+  ok: "bg-status-ok/15 text-status-ok",
+  soon: "bg-status-soon/15 text-status-soon",
+  urgent: "bg-status-urgent/15 text-status-urgent",
+  "wygasł": "bg-status-urgent/15 text-status-urgent",
+  "brak terminu": "bg-black/5 text-zinc-500 dark:bg-white/10 dark:text-zinc-400",
+};
+
+function StatusBadge({ status }: { status: CardWarningStatus }) {
+  return (
+    <span
+      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_BADGE_STYLES[status]}`}
+    >
+      {dictionary.cardStatus[status]}
+    </span>
+  );
+}
 
 interface ApiCard {
   id: string;
@@ -216,7 +235,17 @@ export default function CardsPage() {
               className="flex items-center justify-between rounded-2xl border border-black/10 p-4 dark:border-white/10"
             >
               <Link href={`/cards/${card.id}`} className="hover:underline">
-                <p className="font-medium">{card.company.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{card.company.name}</p>
+                  <StatusBadge
+                    status={getCardWarningStatus({
+                      type: card.type,
+                      totalVisits: card.totalVisits,
+                      usedVisits: card.usedVisits,
+                      expiryDate: card.expiryDate ? new Date(card.expiryDate) : null,
+                    })}
+                  />
+                </div>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   {card.type === CardType.limit
                     ? `${card.usedVisits}/${card.totalVisits} wejść`

@@ -1,4 +1,5 @@
 import { CardType, CompanyCategory, VoucherMode } from "@/generated/prisma/enums";
+import { CardWarningStatus } from "@/server/card-status";
 
 // Prowizoryczny, lokalny słownik tekstów PL na czas Sesji 3-6, zanim next-intl
 // wejdzie w Sesji 7 (patrz plan-pracy-claude-code.md). Cel: żaden tekst widoczny dla
@@ -14,6 +15,13 @@ export const dictionary = {
     editButton: "Edytuj",
     deleteButton: "Usuń",
   },
+  cardStatus: {
+    ok: "Ważny",
+    soon: "Kończy się",
+    urgent: "Kończy się już",
+    "wygasł": "Zakończony",
+    "brak terminu": "Bez terminu",
+  } satisfies Record<CardWarningStatus, string>,
   cardForm: {
     addTitle: "Nowy karnet",
     editTitle: "Edytuj karnet",
