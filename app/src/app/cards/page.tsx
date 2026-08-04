@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import {
   CardForm,
@@ -12,7 +13,6 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
-import { dictionary } from "@/lib/i18n/dictionary";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { CardWarningStatus, getCardWarningStatus } from "@/server/card-status";
 
@@ -25,11 +25,12 @@ const STATUS_BADGE_STYLES: Record<CardWarningStatus, string> = {
 };
 
 function StatusBadge({ status }: { status: CardWarningStatus }) {
+  const t = useTranslations("cardStatus");
   return (
     <span
       className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_BADGE_STYLES[status]}`}
     >
-      {dictionary.cardStatus[status]}
+      {t(status)}
     </span>
   );
 }
@@ -188,18 +189,20 @@ export default function CardsPage() {
     await reload();
   }
 
-  const t = dictionary.cardsPage;
+  const t = useTranslations("cardsPage");
+  const tDetails = useTranslations("cardDetailsPage");
+  const tDeleteDialog = useTranslations("deleteCardDialog");
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t.title}</h1>
+        <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <button
           type="button"
           onClick={openAddForm}
           className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95"
         >
-          {t.addButton}
+          {t("addButton")}
         </button>
       </div>
 
@@ -217,14 +220,14 @@ export default function CardsPage() {
         </div>
       )}
 
-      {loadError && <p className="text-sm text-status-urgent">{t.loadError}</p>}
+      {loadError && <p className="text-sm text-status-urgent">{t("loadError")}</p>}
 
       {cards === null && !loadError && (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">…</p>
       )}
 
       {cards !== null && cards.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t.emptyState}</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("emptyState")}</p>
       )}
 
       {cards !== null && cards.length > 0 && (
@@ -247,13 +250,16 @@ export default function CardsPage() {
                   />
                 </div>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {card.type === CardType.limit
-                    ? `${card.usedVisits}/${card.totalVisits} wejść`
-                    : "Bez limitu wejść"}
+                  {card.type === CardType.limit && card.totalVisits != null
+                    ? tDetails("limitCounter", {
+                        used: card.usedVisits,
+                        total: card.totalVisits,
+                      })
+                    : tDetails("unlimitedLabel")}
                   {" · "}
                   {card.expiryDate
-                    ? `ważny do ${formatDate(card.expiryDate)}`
-                    : "bez terminu ważności"}
+                    ? tDetails("expiryLabel", { date: formatDate(card.expiryDate) })
+                    : tDetails("noExpiryLabel")}
                 </p>
               </Link>
               <div className="flex gap-2">
@@ -262,7 +268,7 @@ export default function CardsPage() {
                   onClick={() => openEditForm(card)}
                   className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
                 >
-                  {t.editButton}
+                  {t("editButton")}
                 </button>
                 <button
                   type="button"
@@ -272,7 +278,7 @@ export default function CardsPage() {
                   }}
                   className="rounded-full px-3 py-1.5 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
                 >
-                  {t.deleteButton}
+                  {t("deleteButton")}
                 </button>
               </div>
             </li>
@@ -282,14 +288,10 @@ export default function CardsPage() {
 
       <ConfirmDialog
         open={deleteTarget !== null}
-        title={dictionary.deleteCardDialog.title}
-        body={
-          deleteError
-            ? dictionary.deleteCardDialog.deleteFailed
-            : dictionary.deleteCardDialog.body
-        }
-        confirmLabel={dictionary.deleteCardDialog.confirmButton}
-        cancelLabel={dictionary.deleteCardDialog.cancelButton}
+        title={tDeleteDialog("title")}
+        body={deleteError ? tDeleteDialog("deleteFailed") : tDeleteDialog("body")}
+        confirmLabel={tDeleteDialog("confirmButton")}
+        cancelLabel={tDeleteDialog("cancelButton")}
         confirmDisabled={deleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}

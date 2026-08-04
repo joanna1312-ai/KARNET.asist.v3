@@ -1,0 +1,108 @@
+{
+  "header": {
+    "brand": "Karnet.asist",
+    "themeAria": "Przełącz tryb ciemny",
+    "localeToggleAria": "Wybór języka"
+  },
+  "cardsPage": {
+    "title": "Twoje karnety",
+    "addButton": "Dodaj karnet",
+    "emptyState": "Nie masz jeszcze żadnego karnetu. Dodaj pierwszy, żeby mieć go zawsze pod ręką.",
+    "loadError": "Nie udało się pobrać listy karnetów. Spróbuj odświeżyć stronę.",
+    "editButton": "Edytuj",
+    "deleteButton": "Usuń"
+  },
+  "cardStatus": {
+    "ok": "Ważny",
+    "soon": "Kończy się",
+    "urgent": "Kończy się już",
+    "wygasł": "Zakończony",
+    "brak terminu": "Bez terminu"
+  },
+  "cardForm": {
+    "addTitle": "Nowy karnet",
+    "editTitle": "Edytuj karnet",
+    "companyLabel": "Firma",
+    "companyPlaceholder": "Wybierz firmę",
+    "typeLabel": "Typ karnetu",
+    "typeOptions": {
+      "limit": "Limit wejść",
+      "unlimited": "Bez limitu"
+    },
+    "totalVisitsLabel": "Liczba wejść",
+    "expiryDateLabel": "Data ważności",
+    "expiryDateHintRequired": "Wymagana dla karnetu bez limitu.",
+    "expiryDateHintOptional": "Opcjonalna — możesz zostawić puste.",
+    "voucherModeLabel": "Sposób pokazywania vouchera",
+    "voucherModeOptions": {
+      "single": "Jednorazowy (jeden kod/plik)",
+      "per_visit": "Przy każdej wizycie"
+    },
+    "saveButton": "Zapisz",
+    "cancelButton": "Anuluj",
+    "savingButton": "Zapisywanie…",
+    "errors": {
+      "companyRequired": "Wybierz firmę.",
+      "typeRequired": "Wybierz typ karnetu.",
+      "expiryDateRequiredForUnlimited": "Karnet bez limitu wymaga daty ważności.",
+      "totalVisitsRequiredForLimit": "Podaj liczbę wejść dla karnetu z limitem.",
+      "totalVisitsPositive": "Liczba wejść musi być większa od zera.",
+      "voucherModeRequired": "Wybierz sposób pokazywania vouchera.",
+      "saveFailed": "Nie udało się zapisać karnetu. Spróbuj ponownie."
+    }
+  },
+  "deleteCardDialog": {
+    "title": "Usunąć ten karnet?",
+    "body": "Tej operacji nie da się cofnąć z poziomu listy — karnet zniknie z Twojego widoku. Historia wejść pozostaje zapisana.",
+    "confirmButton": "Usuń karnet",
+    "cancelButton": "Anuluj",
+    "deleteFailed": "Nie udało się usunąć karnetu. Spróbuj ponownie."
+  },
+  "cardDetailsPage": {
+    "backLink": "Wróć do listy karnetów",
+    "loadError": "Nie udało się pobrać danych karnetu. Spróbuj odświeżyć stronę.",
+    "notFound": "Nie znaleziono tego karnetu.",
+    "limitCounter": "{used}/{total} wejść",
+    "unlimitedLabel": "Bez limitu wejść",
+    "expiryLabel": "ważny do {date}",
+    "noExpiryLabel": "bez terminu ważności",
+    "visitsTitle": "Historia wejść",
+    "addVisitButton": "Dodaj wejście",
+    "emptyState": "Ten karnet nie ma jeszcze żadnych wejść. Dodaj pierwsze, gdy z niego skorzystasz.",
+    "archivedNotice": "Ten karnet jest zarchiwizowany — nie można już dodawać do niego wejść.",
+    "editButton": "Edytuj",
+    "deleteButton": "Usuń"
+  },
+  "visitForm": {
+    "addTitle": "Nowe wejście",
+    "editTitle": "Edytuj wejście",
+    "visitDateLabel": "Data",
+    "visitTimeLabel": "Godzina",
+    "visitTimeHint": "Opcjonalna.",
+    "noteLabel": "Notatka",
+    "noteHint": "Opcjonalna, do 80 znaków.",
+    "saveButton": "Zapisz",
+    "cancelButton": "Anuluj",
+    "savingButton": "Zapisywanie…",
+    "errors": {
+      "visitDateInvalid": "Podaj poprawną datę.",
+      "noteTooLong": "Notatka może mieć maksymalnie 80 znaków.",
+      "saveFailed": "Nie udało się zapisać wejścia. Spróbuj ponownie.",
+      "cardArchived": "Ten karnet jest zarchiwizowany — nie można już dodawać do niego wejść."
+    }
+  },
+  "deleteVisitDialog": {
+    "title": "Usunąć to wejście?",
+    "body": "Licznik wykorzystanych wejść zostanie odpowiednio zmniejszony. Tej operacji nie da się cofnąć.",
+    "confirmButton": "Usuń wejście",
+    "cancelButton": "Anuluj",
+    "deleteFailed": "Nie udało się usunąć wejścia. Spróbuj ponownie."
+  },
+  "companyCategory": {
+    "gym": "Siłownia",
+    "pool": "Basen",
+    "group_classes": "Zajęcia grupowe",
+    "massage": "Masaż",
+    "beauty": "Uroda"
+  }
+}

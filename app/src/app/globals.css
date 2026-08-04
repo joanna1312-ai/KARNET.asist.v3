@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
+/* Wariant `dark:` reaguje na atrybut data-theme (ustawiany ręcznym przełącznikiem
+   w Header/ThemeToggle), a nie tylko na prefers-color-scheme systemu — patrz
+   THEME_INIT_SCRIPT w layout.tsx, który ustawia atrybut przed pierwszym renderem. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --background/--foreground = --bg/--ink z prototypu (tryb jasny) */
+  --background: #faf9f7;
+  --foreground: #232629;
 
   /* Design tokeny z prototypu (karnet-asist-prototyp_v6.html) — tryb jasny */
   --mint: #82d2b9;
@@ -35,8 +41,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #121316;
+    --foreground: #f2f1ec;
 
     --mint: #24705b;
     --mint-ink: #c2f2e0;
@@ -53,6 +59,8 @@
 /* Ręczny przełącznik trybu (Sesja 7 — i18n/dark mode) korzysta z tych samych
    selektorów co prototyp; wartości tokenów zdefiniowane tu z wyprzedzeniem. */
 :root[data-theme="dark"] {
+  --background: #121316;
+  --foreground: #f2f1ec;
   --mint: #24705b;
   --mint-ink: #c2f2e0;
   --coral: #934830;
@@ -65,6 +73,8 @@
 }
 
 :root[data-theme="light"] {
+  --background: #faf9f7;
+  --foreground: #232629;
   --mint: #82d2b9;
   --mint-ink: #175e4b;
   --coral: #f7b9a5;

@@ -1,0 +1,108 @@
+{
+  "header": {
+    "brand": "Karnet.asist",
+    "themeAria": "Toggle dark mode",
+    "localeToggleAria": "Language selection"
+  },
+  "cardsPage": {
+    "title": "Your cards",
+    "addButton": "Add card",
+    "emptyState": "You don't have any cards yet. Add your first one to keep it handy.",
+    "loadError": "Couldn't load your cards. Try refreshing the page.",
+    "editButton": "Edit",
+    "deleteButton": "Delete"
+  },
+  "cardStatus": {
+    "ok": "Valid",
+    "soon": "Ending soon",
+    "urgent": "Ending very soon",
+    "wygasł": "Ended",
+    "brak terminu": "No expiry"
+  },
+  "cardForm": {
+    "addTitle": "New card",
+    "editTitle": "Edit card",
+    "companyLabel": "Company",
+    "companyPlaceholder": "Choose a company",
+    "typeLabel": "Card type",
+    "typeOptions": {
+      "limit": "Visit limit",
+      "unlimited": "Unlimited"
+    },
+    "totalVisitsLabel": "Number of visits",
+    "expiryDateLabel": "Expiry date",
+    "expiryDateHintRequired": "Required for unlimited cards.",
+    "expiryDateHintOptional": "Optional — you can leave it blank.",
+    "voucherModeLabel": "How the voucher is shown",
+    "voucherModeOptions": {
+      "single": "One-time (single code/file)",
+      "per_visit": "For every visit"
+    },
+    "saveButton": "Save",
+    "cancelButton": "Cancel",
+    "savingButton": "Saving…",
+    "errors": {
+      "companyRequired": "Choose a company.",
+      "typeRequired": "Choose a card type.",
+      "expiryDateRequiredForUnlimited": "An unlimited card requires an expiry date.",
+      "totalVisitsRequiredForLimit": "Enter the number of visits for a limited card.",
+      "totalVisitsPositive": "The number of visits must be greater than zero.",
+      "voucherModeRequired": "Choose how the voucher is shown.",
+      "saveFailed": "Couldn't save the card. Try again."
+    }
+  },
+  "deleteCardDialog": {
+    "title": "Delete this card?",
+    "body": "This can't be undone from the list view — the card will disappear from your view. Visit history stays saved.",
+    "confirmButton": "Delete card",
+    "cancelButton": "Cancel",
+    "deleteFailed": "Couldn't delete the card. Try again."
+  },
+  "cardDetailsPage": {
+    "backLink": "Back to your cards",
+    "loadError": "Couldn't load this card. Try refreshing the page.",
+    "notFound": "This card wasn't found.",
+    "limitCounter": "{used}/{total} visits",
+    "unlimitedLabel": "Unlimited visits",
+    "expiryLabel": "valid until {date}",
+    "noExpiryLabel": "no expiry date",
+    "visitsTitle": "Visit history",
+    "addVisitButton": "Log a visit",
+    "emptyState": "This card doesn't have any visits yet. Add the first one once you use it.",
+    "archivedNotice": "This card is archived — you can no longer add visits to it.",
+    "editButton": "Edit",
+    "deleteButton": "Delete"
+  },
+  "visitForm": {
+    "addTitle": "New visit",
+    "editTitle": "Edit visit",
+    "visitDateLabel": "Date",
+    "visitTimeLabel": "Time",
+    "visitTimeHint": "Optional.",
+    "noteLabel": "Note",
+    "noteHint": "Optional, up to 80 characters.",
+    "saveButton": "Save",
+    "cancelButton": "Cancel",
+    "savingButton": "Saving…",
+    "errors": {
+      "visitDateInvalid": "Enter a valid date.",
+      "noteTooLong": "The note can be up to 80 characters long.",
+      "saveFailed": "Couldn't save the visit. Try again.",
+      "cardArchived": "This card is archived — you can no longer add visits to it."
+    }
+  },
+  "deleteVisitDialog": {
+    "title": "Delete this visit?",
+    "body": "The used-visits count will be reduced accordingly. This can't be undone.",
+    "confirmButton": "Delete visit",
+    "cancelButton": "Cancel",
+    "deleteFailed": "Couldn't delete the visit. Try again."
+  },
+  "companyCategory": {
+    "gym": "Gym",
+    "pool": "Pool",
+    "group_classes": "Group classes",
+    "massage": "Massage",
+    "beauty": "Beauty"
+  }
+}

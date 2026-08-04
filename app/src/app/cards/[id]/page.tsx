@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -8,7 +9,6 @@ import { emptyVisitFormValues, VisitForm, VisitFormValues } from "@/components/V
 import { CardType } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate, formatTime } from "@/lib/format";
-import { dictionary } from "@/lib/i18n/dictionary";
 import { VisitInputErrorCode } from "@/server/visit-rules";
 
 interface ApiVisit {
@@ -197,14 +197,16 @@ export default function CardDetailsPage() {
     await reload();
   }
 
-  const t = dictionary.cardDetailsPage;
+  const t = useTranslations("cardDetailsPage");
+  const tVisitForm = useTranslations("visitForm");
+  const tDeleteDialog = useTranslations("deleteVisitDialog");
 
   if (notFound) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10">
-        <p className="text-sm text-status-urgent">{t.notFound}</p>
+        <p className="text-sm text-status-urgent">{t("notFound")}</p>
         <Link href="/cards" className="text-sm font-medium hover:underline">
-          {t.backLink}
+          {t("backLink")}
         </Link>
       </div>
     );
@@ -213,10 +215,10 @@ export default function CardDetailsPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
       <Link href="/cards" className="text-sm font-medium hover:underline">
-        {t.backLink}
+        {t("backLink")}
       </Link>
 
-      {loadError && <p className="text-sm text-status-urgent">{t.loadError}</p>}
+      {loadError && <p className="text-sm text-status-urgent">{t("loadError")}</p>}
 
       {card && (
         <>
@@ -225,10 +227,12 @@ export default function CardDetailsPage() {
               <h1 className="text-2xl font-semibold">{card.company.name}</h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {card.type === CardType.limit && card.totalVisits != null
-                  ? t.limitCounter(card.usedVisits, card.totalVisits)
-                  : t.unlimitedLabel}
+                  ? t("limitCounter", { used: card.usedVisits, total: card.totalVisits })
+                  : t("unlimitedLabel")}
                 {" · "}
-                {card.expiryDate ? t.expiryLabel(formatDate(card.expiryDate)) : t.noExpiryLabel}
+                {card.expiryDate
+                  ? t("expiryLabel", { date: formatDate(card.expiryDate) })
+                  : t("noExpiryLabel")}
               </p>
             </div>
             {!isArchived(card) && (
@@ -237,20 +241,20 @@ export default function CardDetailsPage() {
                 onClick={openAddForm}
                 className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95"
               >
-                {t.addVisitButton}
+                {t("addVisitButton")}
               </button>
             )}
           </div>
 
           {isArchived(card) && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{t.archivedNotice}</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("archivedNotice")}</p>
           )}
 
           {formOpen && (
             <div className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
               {archivedError ? (
                 <p className="text-sm text-status-urgent">
-                  {dictionary.visitForm.errors.cardArchived}
+                  {tVisitForm("errors.cardArchived")}
                 </p>
               ) : (
                 <VisitForm
@@ -268,9 +272,9 @@ export default function CardDetailsPage() {
           )}
 
           <div>
-            <h2 className="text-lg font-semibold">{t.visitsTitle}</h2>
+            <h2 className="text-lg font-semibold">{t("visitsTitle")}</h2>
             {card.visits.length === 0 ? (
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{t.emptyState}</p>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{t("emptyState")}</p>
             ) : (
               <ul className="mt-3 flex flex-col gap-3">
                 {card.visits.map((visit) => (
@@ -293,7 +297,7 @@ export default function CardDetailsPage() {
                         onClick={() => openEditForm(visit)}
                         className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
                       >
-                        {t.editButton}
+                        {t("editButton")}
                       </button>
                       <button
                         type="button"
@@ -303,7 +307,7 @@ export default function CardDetailsPage() {
                         }}
                         className="rounded-full px-3 py-1.5 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
                       >
-                        {t.deleteButton}
+                        {t("deleteButton")}
                       </button>
                     </div>
                   </li>
@@ -316,14 +320,10 @@ export default function CardDetailsPage() {
 
       <ConfirmDialog
         open={deleteTarget !== null}
-        title={dictionary.deleteVisitDialog.title}
-        body={
-          deleteError
-            ? dictionary.deleteVisitDialog.deleteFailed
-            : dictionary.deleteVisitDialog.body
-        }
-        confirmLabel={dictionary.deleteVisitDialog.confirmButton}
-        cancelLabel={dictionary.deleteVisitDialog.cancelButton}
+        title={tDeleteDialog("title")}
+        body={deleteError ? tDeleteDialog("deleteFailed") : tDeleteDialog("body")}
+        confirmLabel={tDeleteDialog("confirmButton")}
+        cancelLabel={tDeleteDialog("cancelButton")}
         confirmDisabled={deleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}

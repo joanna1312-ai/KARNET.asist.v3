@@ -1,8 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
-import { dictionary } from "@/lib/i18n/dictionary";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
 
 export interface CompanyOption {
@@ -86,17 +86,17 @@ export function CardForm({
     }
   }
 
-  const t = dictionary.cardForm;
+  const t = useTranslations("cardForm");
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold">
-        {mode === "add" ? t.addTitle : t.editTitle}
+        {mode === "add" ? t("addTitle") : t("editTitle")}
       </h2>
 
       <div className="flex flex-col gap-1">
         <label htmlFor={`${formId}-company`} className="text-sm font-medium">
-          {t.companyLabel}
+          {t("companyLabel")}
         </label>
         <select
           id={`${formId}-company`}
@@ -108,7 +108,7 @@ export function CardForm({
           className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         >
           <option value="" disabled>
-            {t.companyPlaceholder}
+            {t("companyPlaceholder")}
           </option>
           {companies.map((company) => (
             <option key={company.id} value={company.id}>
@@ -118,13 +118,13 @@ export function CardForm({
         </select>
         {errorFor("companyId") && (
           <p className="text-sm text-status-urgent">
-            {t.errors[errorFor("companyId")!]}
+            {t(`errors.${errorFor("companyId")}`)}
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-1">
-        <span className="text-sm font-medium">{t.typeLabel}</span>
+        <span className="text-sm font-medium">{t("typeLabel")}</span>
         <div className="flex gap-4">
           {(Object.values(CardType) as CardType[]).map((type) => (
             <label key={type} className="flex items-center gap-2 text-sm">
@@ -142,19 +142,19 @@ export function CardForm({
                   }))
                 }
               />
-              {t.typeOptions[type]}
+              {t(`typeOptions.${type}`)}
             </label>
           ))}
         </div>
         {errorFor("type") && (
-          <p className="text-sm text-status-urgent">{t.errors[errorFor("type")!]}</p>
+          <p className="text-sm text-status-urgent">{t(`errors.${errorFor("type")}`)}</p>
         )}
       </div>
 
       {values.type === CardType.limit && (
         <div className="flex flex-col gap-1">
           <label htmlFor={`${formId}-total-visits`} className="text-sm font-medium">
-            {t.totalVisitsLabel}
+            {t("totalVisitsLabel")}
           </label>
           <input
             id={`${formId}-total-visits`}
@@ -169,7 +169,7 @@ export function CardForm({
           />
           {errorFor("totalVisits") && (
             <p className="text-sm text-status-urgent">
-              {t.errors[errorFor("totalVisits")!]}
+              {t(`errors.${errorFor("totalVisits")}`)}
             </p>
           )}
         </div>
@@ -177,7 +177,7 @@ export function CardForm({
 
       <div className="flex flex-col gap-1">
         <label htmlFor={`${formId}-expiry`} className="text-sm font-medium">
-          {t.expiryDateLabel}
+          {t("expiryDateLabel")}
         </label>
         <input
           id={`${formId}-expiry`}
@@ -191,19 +191,19 @@ export function CardForm({
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {values.type === CardType.unlimited
-            ? t.expiryDateHintRequired
-            : t.expiryDateHintOptional}
+            ? t("expiryDateHintRequired")
+            : t("expiryDateHintOptional")}
         </p>
         {errorFor("expiryDate") && (
           <p className="text-sm text-status-urgent">
-            {t.errors[errorFor("expiryDate")!]}
+            {t(`errors.${errorFor("expiryDate")}`)}
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-1">
         <label htmlFor={`${formId}-voucher-mode`} className="text-sm font-medium">
-          {t.voucherModeLabel}
+          {t("voucherModeLabel")}
         </label>
         <select
           id={`${formId}-voucher-mode`}
@@ -219,19 +219,19 @@ export function CardForm({
         >
           {(Object.values(VoucherMode) as VoucherMode[]).map((mode) => (
             <option key={mode} value={mode}>
-              {t.voucherModeOptions[mode]}
+              {t(`voucherModeOptions.${mode}`)}
             </option>
           ))}
         </select>
         {errorFor("voucherMode") && (
           <p className="text-sm text-status-urgent">
-            {t.errors[errorFor("voucherMode")!]}
+            {t(`errors.${errorFor("voucherMode")}`)}
           </p>
         )}
       </div>
 
       {serverErrors.length > 0 && clientErrors.length === 0 && (
-        <p className="text-sm text-status-urgent">{t.errors.saveFailed}</p>
+        <p className="text-sm text-status-urgent">{t("errors.saveFailed")}</p>
       )}
 
       <div className="mt-2 flex justify-end gap-3">
@@ -241,14 +241,14 @@ export function CardForm({
           disabled={submitting}
           className="rounded-full px-4 py-2 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
         >
-          {t.cancelButton}
+          {t("cancelButton")}
         </button>
         <button
           type="submit"
           disabled={submitting}
           className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
         >
-          {submitting ? t.savingButton : t.saveButton}
+          {submitting ? t("savingButton") : t("saveButton")}
         </button>
       </div>
     </form>

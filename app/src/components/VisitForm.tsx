@@ -1,7 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
-import { dictionary } from "@/lib/i18n/dictionary";
 import { getVisitInputErrors, VisitInputErrorCode } from "@/server/visit-rules";
 
 export interface VisitFormValues {
@@ -68,15 +68,15 @@ export function VisitForm({
     }
   }
 
-  const t = dictionary.visitForm;
+  const t = useTranslations("visitForm");
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold">{mode === "add" ? t.addTitle : t.editTitle}</h2>
+      <h2 className="text-lg font-semibold">{mode === "add" ? t("addTitle") : t("editTitle")}</h2>
 
       <div className="flex flex-col gap-1">
         <label htmlFor={`${formId}-date`} className="text-sm font-medium">
-          {t.visitDateLabel}
+          {t("visitDateLabel")}
         </label>
         <input
           id={`${formId}-date`}
@@ -89,13 +89,13 @@ export function VisitForm({
           className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         {errorFor("visitDate") && (
-          <p className="text-sm text-status-urgent">{t.errors[errorFor("visitDate")!]}</p>
+          <p className="text-sm text-status-urgent">{t(`errors.${errorFor("visitDate")}`)}</p>
         )}
       </div>
 
       <div className="flex flex-col gap-1">
         <label htmlFor={`${formId}-time`} className="text-sm font-medium">
-          {t.visitTimeLabel}
+          {t("visitTimeLabel")}
         </label>
         <input
           id={`${formId}-time`}
@@ -107,12 +107,12 @@ export function VisitForm({
           }
           className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t.visitTimeHint}</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("visitTimeHint")}</p>
       </div>
 
       <div className="flex flex-col gap-1">
         <label htmlFor={`${formId}-note`} className="text-sm font-medium">
-          {t.noteLabel}
+          {t("noteLabel")}
         </label>
         <input
           id={`${formId}-note`}
@@ -123,14 +123,14 @@ export function VisitForm({
           onChange={(event) => setValues((prev) => ({ ...prev, note: event.target.value }))}
           className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t.noteHint}</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("noteHint")}</p>
         {errorFor("note") && (
-          <p className="text-sm text-status-urgent">{t.errors[errorFor("note")!]}</p>
+          <p className="text-sm text-status-urgent">{t(`errors.${errorFor("note")}`)}</p>
         )}
       </div>
 
       {serverErrors.length > 0 && clientErrors.length === 0 && (
-        <p className="text-sm text-status-urgent">{t.errors.saveFailed}</p>
+        <p className="text-sm text-status-urgent">{t("errors.saveFailed")}</p>
       )}
 
       <div className="mt-2 flex justify-end gap-3">
@@ -140,14 +140,14 @@ export function VisitForm({
           disabled={submitting}
           className="rounded-full px-4 py-2 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
         >
-          {t.cancelButton}
+          {t("cancelButton")}
         </button>
         <button
           type="submit"
           disabled={submitting}
           className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
         >
-          {submitting ? t.savingButton : t.saveButton}
+          {submitting ? t("savingButton") : t("saveButton")}
         </button>
       </div>
     </form>
