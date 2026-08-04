@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   CardForm,
@@ -10,6 +11,7 @@ import {
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
+import { formatDate } from "@/lib/format";
 import { dictionary } from "@/lib/i18n/dictionary";
 import { CardInputErrorCode } from "@/server/card-rules";
 
@@ -21,14 +23,6 @@ interface ApiCard {
   expiryDate: string | null;
   voucherMode: VoucherMode;
   company: { id: string; name: string; category: string };
-}
-
-function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString("pl-PL", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 }
 
 function cardToFormValues(card: ApiCard): CardFormValues {
@@ -221,7 +215,7 @@ export default function CardsPage() {
               key={card.id}
               className="flex items-center justify-between rounded-2xl border border-black/10 p-4 dark:border-white/10"
             >
-              <div>
+              <Link href={`/cards/${card.id}`} className="hover:underline">
                 <p className="font-medium">{card.company.name}</p>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   {card.type === CardType.limit
@@ -232,7 +226,7 @@ export default function CardsPage() {
                     ? `ważny do ${formatDate(card.expiryDate)}`
                     : "bez terminu ważności"}
                 </p>
-              </div>
+              </Link>
               <div className="flex gap-2">
                 <button
                   type="button"
