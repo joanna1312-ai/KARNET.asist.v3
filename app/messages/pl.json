@@ -70,7 +70,7 @@
   },
   "deleteCardDialog": {
     "title": "Usunąć ten karnet?",
-    "body": "Tej operacji nie da się cofnąć z poziomu listy — karnet zniknie z Twojego widoku. Historia wejść pozostaje zapisana.",
+    "body": "Tej operacji nie da się cofnąć — karnet i cała jego historia wejść znikną z aplikacji i nie będziesz mieć już do nich dostępu.",
     "confirmButton": "Usuń karnet",
     "cancelButton": "Anuluj",
     "deleteFailed": "Nie udało się usunąć karnetu. Spróbuj ponownie."

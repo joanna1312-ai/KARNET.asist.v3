@@ -70,7 +70,7 @@
   },
   "deleteCardDialog": {
     "title": "Delete this card?",
-    "body": "This can't be undone from the list view — the card will disappear from your view. Visit history stays saved.",
+    "body": "This can't be undone — the card and its entire visit history will disappear from the app and you won't have access to them anymore.",
     "confirmButton": "Delete card",
     "cancelButton": "Cancel",
     "deleteFailed": "Couldn't delete the card. Try again."
