@@ -174,11 +174,11 @@ Prompt (skróć/dostosuj):
 > `GET /api/companies?favorites=true`, jeśli lista firm ma pokazywać ulubione osobno.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Sesja 10 ukończona (wymagana zależność)
-- [ ] Plan zaakceptowany
-- [ ] Endpointy favorites
-- [ ] Gwiazdka w UI listy firm
-- [ ] lint/test + commit
+- [x] Sesja 10 ukończona (wymagana zależność)
+- [x] Plan zaakceptowany
+- [x] Endpointy favorites
+- [x] Gwiazdka w UI listy firm
+- [x] lint/test + commit
 
 ## Sesja 13 — Testy e2e (Playwright)
 
