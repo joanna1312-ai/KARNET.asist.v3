@@ -32,11 +32,16 @@ Przykład odpowiedzi `GET /api/cards/:id`:
   "totalVisits": 12,
   "usedVisits": 8,
   "expiryDate": "2026-09-15",
+  "voucherMode": "single",
+  "voucherFileUrl": null,
   "visits": [
     { "id": "v1", "date": "2026-07-26", "time": null, "note": null }
   ]
 }
 ```
+
+`voucherFileUrl` przyjmowane w `POST`/`PATCH /api/cards` jako zwykły string (treść lub link
+do vouchera) — na start bez uploadu pliku/object storage, patrz `CLAUDE.md`.
 
 ## Wejścia (visits)
 

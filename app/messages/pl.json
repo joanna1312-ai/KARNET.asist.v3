@@ -67,6 +67,9 @@
       "single": "Jednorazowy (jeden kod/plik)",
       "per_visit": "Przy każdej wizycie"
     },
+    "voucherFileUrlLabel": "Treść lub link do vouchera",
+    "voucherFileUrlPlaceholder": "Np. kod rabatowy albo link do vouchera",
+    "voucherFileUrlHint": "Opcjonalne. Na razie pole tekstowe — dołączanie pliku/zdjęcia planujemy w kolejnej wersji.",
     "saveButton": "Zapisz",
     "cancelButton": "Anuluj",
     "savingButton": "Zapisywanie…",
@@ -101,6 +104,7 @@
     "addVisitButton": "Dodaj wejście",
     "emptyState": "Ten karnet nie ma jeszcze żadnych wejść. Dodaj pierwsze, gdy z niego skorzystasz.",
     "archivedNotice": "Ten karnet jest zarchiwizowany — nie można już dodawać do niego wejść.",
+    "voucherLabel": "Voucher",
     "editButton": "Edytuj",
     "deleteButton": "Usuń"
   },

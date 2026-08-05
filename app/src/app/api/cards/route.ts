@@ -70,6 +70,7 @@ export async function POST(request: Request) {
       totalVisits: input.totalVisits ?? null,
       expiryDate: input.expiryDate ?? null,
       voucherMode: input.voucherMode!,
+      voucherFileUrl: input.voucherFileUrl ?? null,
     },
     include: { company: { select: companySelect } },
   });

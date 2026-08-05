@@ -24,6 +24,7 @@ interface ApiCard {
   usedVisits: number;
   expiryDate: string | null;
   voucherMode: VoucherMode;
+  voucherFileUrl: string | null;
   company: { id: string; name: string; category: string };
 }
 
@@ -37,6 +38,7 @@ function cardToFormValues(card: ApiCard): CardFormValues {
     totalVisits: card.totalVisits != null ? String(card.totalVisits) : "",
     expiryDate: card.expiryDate ? card.expiryDate.slice(0, 10) : "",
     voucherMode: card.voucherMode,
+    voucherFileUrl: card.voucherFileUrl ?? "",
   };
 }
 
@@ -175,6 +177,7 @@ export default function CardsPage() {
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,
       voucherMode: values.voucherMode,
+      voucherFileUrl: values.voucherFileUrl.trim() === "" ? null : values.voucherFileUrl.trim(),
     };
 
     const response = editingCard

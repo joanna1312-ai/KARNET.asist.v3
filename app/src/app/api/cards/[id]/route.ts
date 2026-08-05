@@ -69,6 +69,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     expiryDate: patch.expiryDate !== undefined ? patch.expiryDate : existing.expiryDate,
     voucherMode:
       patch.voucherMode !== undefined ? patch.voucherMode : existing.voucherMode,
+    voucherFileUrl:
+      patch.voucherFileUrl !== undefined
+        ? patch.voucherFileUrl
+        : existing.voucherFileUrl,
   };
 
   const errors = getCardInputErrors(merged);
@@ -93,6 +97,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       totalVisits: merged.totalVisits ?? null,
       expiryDate: merged.expiryDate ?? null,
       voucherMode: merged.voucherMode!,
+      voucherFileUrl: merged.voucherFileUrl ?? null,
     },
     include: { company: { select: companySelect } },
   });

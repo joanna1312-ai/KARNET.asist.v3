@@ -21,6 +21,7 @@ export interface CardFormValues {
   totalVisits: string;
   expiryDate: string;
   voucherMode: VoucherMode;
+  voucherFileUrl: string;
 }
 
 export const emptyCardFormValues: CardFormValues = {
@@ -32,6 +33,7 @@ export const emptyCardFormValues: CardFormValues = {
   totalVisits: "",
   expiryDate: "",
   voucherMode: VoucherMode.single,
+  voucherFileUrl: "",
 };
 
 // Kody błędów walidowane tylko po stronie klienta (dot. nowej firmy) — nie istnieją w
@@ -72,6 +74,7 @@ function toCandidate(values: CardFormValues) {
     totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
     expiryDate: values.expiryDate === "" ? null : new Date(values.expiryDate),
     voucherMode: values.voucherMode,
+    voucherFileUrl: values.voucherFileUrl === "" ? null : values.voucherFileUrl,
   };
 }
 
@@ -354,6 +357,26 @@ export function CardForm({
             {t(`errors.${errorFor("voucherMode")}`)}
           </p>
         )}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor={`${formId}-voucher-file-url`} className="text-sm font-medium">
+          {t("voucherFileUrlLabel")}
+        </label>
+        <input
+          id={`${formId}-voucher-file-url`}
+          type="text"
+          value={values.voucherFileUrl}
+          disabled={submitting}
+          placeholder={t("voucherFileUrlPlaceholder")}
+          onChange={(event) =>
+            setValues((prev) => ({ ...prev, voucherFileUrl: event.target.value }))
+          }
+          className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+        />
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          {t("voucherFileUrlHint")}
+        </p>
       </div>
 
       {serverErrors.length > 0 && clientErrors.length === 0 && (

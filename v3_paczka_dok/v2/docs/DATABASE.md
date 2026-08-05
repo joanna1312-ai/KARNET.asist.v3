@@ -42,7 +42,7 @@ dystansu względem lokalizacji użytkownika.
 | `used_visits` | int, default 0 | |
 | `expiry_date` | date, **nullable** | **opcjonalna dla `limit`, wymagana dla `unlimited`** — reguła z v5/v6 |
 | `voucher_mode` | enum: `single`, `per_visit` | |
-| `voucher_file_url` | text, nullable | plik w object storage |
+| `voucher_file_url` | text, nullable | docelowo plik w object storage; **na start (MVP) zwykłe pole tekstowe** (treść/link vouchera), bez uploadu — patrz `CLAUDE.md` |
 | `deleted_at` | timestamptz, nullable | miękkie usuwanie (rekomendacja) |
 | `created_at`, `updated_at` | timestamptz | |
 

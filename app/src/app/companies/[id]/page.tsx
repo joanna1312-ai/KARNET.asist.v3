@@ -113,6 +113,7 @@ export default function CompanyDetailsPage() {
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,
       voucherMode: values.voucherMode,
+      voucherFileUrl: values.voucherFileUrl.trim() === "" ? null : values.voucherFileUrl.trim(),
     };
 
     const response = await deviceFetch("/api/cards", {

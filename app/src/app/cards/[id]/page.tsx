@@ -25,6 +25,7 @@ interface ApiCard {
   totalVisits: number | null;
   usedVisits: number;
   expiryDate: string | null;
+  voucherFileUrl: string | null;
   company: { id: string; name: string; category: string };
   visits: ApiVisit[];
 }
@@ -249,6 +250,26 @@ export default function CardDetailsPage() {
 
           {archived && (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("archivedNotice")}</p>
+          )}
+
+          {card.voucherFileUrl && (
+            <div className="rounded-2xl border border-black/10 p-4 dark:border-white/10">
+              <h2 className="text-sm font-medium">{t("voucherLabel")}</h2>
+              {/^https?:\/\//.test(card.voucherFileUrl) ? (
+                <a
+                  href={card.voucherFileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 block break-all text-sm font-medium hover:underline"
+                >
+                  {card.voucherFileUrl}
+                </a>
+              ) : (
+                <p className="mt-1 break-words text-sm text-zinc-600 dark:text-zinc-300">
+                  {card.voucherFileUrl}
+                </p>
+              )}
+            </div>
           )}
 
           {formOpen && (

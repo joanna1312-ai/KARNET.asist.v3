@@ -67,6 +67,9 @@
       "single": "One-time (single code/file)",
       "per_visit": "For every visit"
     },
+    "voucherFileUrlLabel": "Voucher content or link",
+    "voucherFileUrlPlaceholder": "e.g. a discount code or a link to the voucher",
+    "voucherFileUrlHint": "Optional. For now this is a text field — attaching a file/photo is planned for a future version.",
     "saveButton": "Save",
     "cancelButton": "Cancel",
     "savingButton": "Saving…",
@@ -101,6 +104,7 @@
     "addVisitButton": "Log a visit",
     "emptyState": "This card doesn't have any visits yet. Add the first one once you use it.",
     "archivedNotice": "This card is archived — you can no longer add visits to it.",
+    "voucherLabel": "Voucher",
     "editButton": "Edit",
     "deleteButton": "Delete"
   },

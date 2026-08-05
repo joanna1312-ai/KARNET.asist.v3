@@ -14,6 +14,11 @@ export interface CardInputCandidate {
   totalVisits: number | null | undefined;
   expiryDate: Date | null | undefined;
   voucherMode: VoucherMode | null | undefined;
+  // Pole tekstowe (treść/link vouchera) — świadomie bez uploadu pliku/object
+  // storage na start (patrz CLAUDE.md), więc bez własnego kodu błędu walidacji.
+  // Opcjonalny klucz (nie tylko opcjonalna wartość), żeby nie wymagać go w
+  // każdym miejscu budującym kandydata tylko po to, by wyliczyć błędy walidacji.
+  voucherFileUrl?: string | null;
 }
 
 // Reguła biznesowa (docs/DATABASE.md): `unlimited` ⇒ expiryDate wymagane, `limit` —
@@ -63,6 +68,12 @@ function readExpiryDate(value: unknown): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function readVoucherFileUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
 // Parsuje ciało żądania POST /api/cards (wszystkie pola nowego karnetu).
 export function parseCardInput(body: unknown): CardInputCandidate {
   const record =
@@ -76,6 +87,7 @@ export function parseCardInput(body: unknown): CardInputCandidate {
     totalVisits: readTotalVisits(record.totalVisits),
     expiryDate: readExpiryDate(record.expiryDate),
     voucherMode: readVoucherMode(record.voucherMode),
+    voucherFileUrl: readVoucherFileUrl(record.voucherFileUrl),
   };
 }
 
@@ -103,6 +115,9 @@ export function parseCardPatch(body: unknown): Partial<CardInputCandidate> {
   }
   if ("voucherMode" in record) {
     patch.voucherMode = readVoucherMode(record.voucherMode);
+  }
+  if ("voucherFileUrl" in record) {
+    patch.voucherFileUrl = readVoucherFileUrl(record.voucherFileUrl);
   }
 
   return patch;
