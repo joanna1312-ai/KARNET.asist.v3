@@ -7,6 +7,9 @@ const prismaMock = {
     findMany: vi.fn(),
     create: vi.fn(),
   },
+  favorite: {
+    findMany: vi.fn(),
+  },
 };
 
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
@@ -29,17 +32,69 @@ async function authHeaders(deviceId = "device-1") {
 }
 
 describe("GET /api/companies", () => {
-  it("returns the list of companies without requiring auth (public read)", async () => {
+  it("returns the list of companies without requiring auth (public read), isFavorite false", async () => {
     prismaMock.company.findMany.mockResolvedValue([
       { id: "c1", name: "FitZone", category: CompanyCategory.gym },
     ]);
 
-    const response = await GET();
+    const response = await GET(new Request(endpoint));
     const body = await response.json();
 
     expect(response.status).toBe(200);
+    expect(prismaMock.favorite.findMany).not.toHaveBeenCalled();
     expect(body.companies).toEqual([
+      { id: "c1", name: "FitZone", category: CompanyCategory.gym, isFavorite: false },
+    ]);
+  });
+
+  it("marks isFavorite for the caller's device when a token is present", async () => {
+    prismaMock.favorite.findMany.mockResolvedValue([{ companyId: "c1" }]);
+    prismaMock.company.findMany.mockResolvedValue([
       { id: "c1", name: "FitZone", category: CompanyCategory.gym },
+      { id: "c2", name: "PoolClub", category: CompanyCategory.pool },
+    ]);
+
+    const response = await GET(
+      new Request(endpoint, { headers: await authHeaders("device-1") })
+    );
+    const body = await response.json();
+
+    expect(prismaMock.favorite.findMany).toHaveBeenCalledWith({
+      where: { deviceId: "device-1" },
+      select: { companyId: true },
+    });
+    expect(body.companies).toEqual([
+      { id: "c1", name: "FitZone", category: CompanyCategory.gym, isFavorite: true },
+      { id: "c2", name: "PoolClub", category: CompanyCategory.pool, isFavorite: false },
+    ]);
+  });
+
+  it("rejects ?favorites=true without a verified device token", async () => {
+    const response = await GET(new Request(`${endpoint}?favorites=true`));
+    expect(response.status).toBe(401);
+    expect(prismaMock.company.findMany).not.toHaveBeenCalled();
+  });
+
+  it("filters to only favorited companies when ?favorites=true", async () => {
+    prismaMock.favorite.findMany.mockResolvedValue([{ companyId: "c1" }]);
+    prismaMock.company.findMany.mockResolvedValue([
+      { id: "c1", name: "FitZone", category: CompanyCategory.gym },
+    ]);
+
+    const response = await GET(
+      new Request(`${endpoint}?favorites=true`, {
+        headers: await authHeaders("device-1"),
+      })
+    );
+    const body = await response.json();
+
+    expect(prismaMock.company.findMany).toHaveBeenCalledWith({
+      where: { id: { in: ["c1"] } },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, category: true },
+    });
+    expect(body.companies).toEqual([
+      { id: "c1", name: "FitZone", category: CompanyCategory.gym, isFavorite: true },
     ]);
   });
 });

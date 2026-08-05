@@ -5,13 +5,41 @@ import { getVerifiedDeviceId } from "@/server/request-device";
 
 // Firmy nie są danymi osobowymi użytkownika — lista jest publiczna do odczytu
 // (docs/DATABASE.md, sekcja RLS). Potrzebna, żeby kreator karnetu miał z czego wybierać.
-export async function GET() {
+// Device token opcjonalny (jak dotąd): jeśli obecny, dokłada `isFavorite` per firma
+// (Sesja 12) — ulubione są prywatne per urządzenie, więc bez tokena zawsze `false`.
+// `?favorites=true` filtruje do samych ulubionych i wymaga tokena.
+export async function GET(request: Request) {
+  const deviceId = await getVerifiedDeviceId(request);
+  const url = new URL(request.url);
+  const favoritesOnly = url.searchParams.get("favorites") === "true";
+
+  if (favoritesOnly && !deviceId) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const favoriteCompanyIds = deviceId
+    ? new Set(
+        (
+          await prisma.favorite.findMany({
+            where: { deviceId },
+            select: { companyId: true },
+          })
+        ).map((favorite) => favorite.companyId)
+      )
+    : new Set<string>();
+
   const companies = await prisma.company.findMany({
+    where: favoritesOnly ? { id: { in: [...favoriteCompanyIds] } } : undefined,
     orderBy: { name: "asc" },
     select: { id: true, name: true, category: true },
   });
 
-  return NextResponse.json({ companies });
+  const result = companies.map((company) => ({
+    ...company,
+    isFavorite: favoriteCompanyIds.has(company.id),
+  }));
+
+  return NextResponse.json({ companies: result });
 }
 
 // POST /api/companies — ręczne dodanie nowej firmy (Sesja 8, docs/API.md). Bez

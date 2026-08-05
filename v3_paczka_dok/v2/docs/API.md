@@ -62,9 +62,14 @@ usunięcie błędnie dodanego wejścia można wykonać także po archiwizacji ka
 | Metoda | Ścieżka | Opis |
 |---|---|---|
 | `GET` | `/api/companies?query=&near=lat,lng` | lista/wyszukiwanie partnerów |
+| `GET` | `/api/companies?favorites=true` | tylko ulubione partnery zweryfikowanego urządzenia (wymaga tokena) |
 | `GET` | `/api/companies/:id` | szczegóły + karnety użytkownika w tej firmie |
 | `POST` | `/api/companies` | dodanie nowej firmy ręcznie |
-| `POST` | `/api/companies/favorites/:id` / `DELETE` | ulubione |
+| `POST` | `/api/companies/favorites/:id` / `DELETE` | oznaczenie/zdjęcie ulubionego partnera (idempotentne, wymaga tokena) |
+
+`GET /api/companies` przyjmuje opcjonalny nagłówek `Authorization: Device <token>` — bez
+niego lista działa jak dotąd (publiczny odczyt), z nim każda firma ma dodatkowo pole
+`isFavorite` (ulubione są prywatne per urządzenie/konto, nigdy globalne).
 
 ## Wyszukiwanie miejsc (Google Maps)
 

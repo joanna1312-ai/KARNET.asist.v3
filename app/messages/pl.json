@@ -8,7 +8,9 @@
   "companiesPage": {
     "title": "Firmy",
     "loadError": "Nie udało się pobrać listy firm. Spróbuj odświeżyć stronę.",
-    "emptyState": "Nie ma jeszcze żadnych firm. Dodaj pierwszą podczas tworzenia karnetu."
+    "emptyState": "Nie ma jeszcze żadnych firm. Dodaj pierwszą podczas tworzenia karnetu.",
+    "addFavorite": "Dodaj do ulubionych",
+    "removeFavorite": "Usuń z ulubionych"
   },
   "companyDetailsPage": {
     "backLink": "Wróć do listy firm",

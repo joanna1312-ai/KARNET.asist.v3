@@ -10,6 +10,22 @@ interface ApiCompany {
   id: string;
   name: string;
   category: CompanyCategory;
+  isFavorite: boolean;
+}
+
+function StarIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M12 3l2.7 5.9 6.3.6-4.8 4.2 1.4 6.2L12 16.9 6.4 20l1.4-6.2L3 9.5l6.3-.6L12 3z" />
+    </svg>
+  );
 }
 
 export default function CompaniesPage() {
@@ -37,6 +53,29 @@ export default function CompaniesPage() {
     };
   }, []);
 
+  async function toggleFavorite(company: ApiCompany) {
+    const nextIsFavorite = !company.isFavorite;
+    setCompanies(
+      (current) =>
+        current?.map((item) =>
+          item.id === company.id ? { ...item, isFavorite: nextIsFavorite } : item
+        ) ?? current
+    );
+
+    const response = await deviceFetch(`/api/companies/favorites/${company.id}`, {
+      method: nextIsFavorite ? "POST" : "DELETE",
+    });
+
+    if (!response.ok) {
+      setCompanies(
+        (current) =>
+          current?.map((item) =>
+            item.id === company.id ? { ...item, isFavorite: company.isFavorite } : item
+          ) ?? current
+      );
+    }
+  }
+
   const t = useTranslations("companiesPage");
   const tCategory = useTranslations("companyCategory");
 
@@ -57,16 +96,34 @@ export default function CompaniesPage() {
       {companies !== null && companies.length > 0 && (
         <ul className="flex flex-col gap-3">
           {companies.map((company) => (
-            <li key={company.id}>
+            <li
+              key={company.id}
+              className="flex items-center gap-3 rounded-2xl border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+            >
               <Link
                 href={`/companies/${company.id}`}
-                className="flex items-center justify-between rounded-2xl border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+                className="flex flex-1 items-center justify-between gap-3"
               >
                 <p className="font-medium">{company.name}</p>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   {tCategory(company.category)}
                 </p>
               </Link>
+              <button
+                type="button"
+                onClick={() => toggleFavorite(company)}
+                aria-pressed={company.isFavorite}
+                aria-label={
+                  company.isFavorite ? t("removeFavorite") : t("addFavorite")
+                }
+                className={
+                  company.isFavorite
+                    ? "shrink-0 text-accent-deep"
+                    : "shrink-0 text-zinc-400 hover:text-accent-deep dark:text-zinc-500"
+                }
+              >
+                <StarIcon filled={company.isFavorite} />
+              </button>
             </li>
           ))}
         </ul>

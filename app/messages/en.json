@@ -8,7 +8,9 @@
   "companiesPage": {
     "title": "Companies",
     "loadError": "Couldn't load the list of companies. Try refreshing the page.",
-    "emptyState": "There are no companies yet. Add your first one while creating a card."
+    "emptyState": "There are no companies yet. Add your first one while creating a card.",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites"
   },
   "companyDetailsPage": {
     "backLink": "Back to companies",
