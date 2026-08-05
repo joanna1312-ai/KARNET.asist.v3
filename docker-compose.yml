@@ -1,0 +1,18 @@
+# Lokalny Postgres do developmentu — patrz v3_paczka_dok/v2/docs/SETUP.md.
+# Produkcja nadal celuje w Supabase; to jest wyłącznie zamiennik na czas pracy lokalnej,
+# gdy Direct connection do Supabase jest nieosiągalne z tego środowiska (IPv6-only host).
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: karnet_asist
+    ports:
+      - "5432:5432"
+    volumes:
+      - karnet_asist_pgdata:/var/lib/postgresql/data
+
+volumes:
+  karnet_asist_pgdata:
