@@ -2,7 +2,21 @@
   "header": {
     "brand": "Karnet.asist",
     "themeAria": "Toggle dark mode",
-    "localeToggleAria": "Language selection"
+    "localeToggleAria": "Language selection",
+    "companiesNav": "Companies"
+  },
+  "companiesPage": {
+    "title": "Companies",
+    "loadError": "Couldn't load the list of companies. Try refreshing the page.",
+    "emptyState": "There are no companies yet. Add your first one while creating a card."
+  },
+  "companyDetailsPage": {
+    "backLink": "Back to companies",
+    "loadError": "Couldn't load this company. Try refreshing the page.",
+    "notFound": "This company wasn't found.",
+    "cardsTitle": "Your cards here",
+    "emptyState": "You don't have a card at this company yet.",
+    "addCardButton": "Add a card here"
   },
   "cardsPage": {
     "title": "Your cards",

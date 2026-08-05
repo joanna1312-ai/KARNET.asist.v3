@@ -2,7 +2,21 @@
   "header": {
     "brand": "Karnet.asist",
     "themeAria": "Przełącz tryb ciemny",
-    "localeToggleAria": "Wybór języka"
+    "localeToggleAria": "Wybór języka",
+    "companiesNav": "Firmy"
+  },
+  "companiesPage": {
+    "title": "Firmy",
+    "loadError": "Nie udało się pobrać listy firm. Spróbuj odświeżyć stronę.",
+    "emptyState": "Nie ma jeszcze żadnych firm. Dodaj pierwszą podczas tworzenia karnetu."
+  },
+  "companyDetailsPage": {
+    "backLink": "Wróć do listy firm",
+    "loadError": "Nie udało się pobrać danych firmy. Spróbuj odświeżyć stronę.",
+    "notFound": "Nie znaleziono tej firmy.",
+    "cardsTitle": "Twoje karnety tutaj",
+    "emptyState": "Nie masz jeszcze karnetu w tej firmie.",
+    "addCardButton": "Dodaj karnet tutaj"
   },
   "cardsPage": {
     "title": "Twoje karnety",

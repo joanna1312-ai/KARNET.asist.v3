@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -11,6 +12,14 @@ export async function Header() {
         <span className="size-2.5 shrink-0 rounded-full bg-accent" />
         <span className="truncate text-base font-bold tracking-tight">{t("brand")}</span>
       </div>
+      <nav className="flex min-w-0 items-center gap-1">
+        <Link
+          href="/companies"
+          className="truncate rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+        >
+          {t("companiesNav")}
+        </Link>
+      </nav>
       <div className="flex shrink-0 items-center gap-1.5">
         <LocaleToggle />
         <ThemeToggle />
