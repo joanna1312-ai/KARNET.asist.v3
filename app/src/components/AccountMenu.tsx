@@ -34,7 +34,7 @@ export function AccountMenu() {
       <button
         type="button"
         onClick={() => signIn("google")}
-        className="truncate rounded-full bg-black/5 px-3 py-1.5 text-sm font-medium hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
+        className="flex min-h-11 items-center truncate rounded-full bg-black/5 px-3 text-sm font-medium hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
       >
         {t("signInButton")}
       </button>
@@ -60,7 +60,7 @@ export function AccountMenu() {
       <button
         type="button"
         onClick={() => signOut()}
-        className="truncate rounded-full bg-black/5 px-3 py-1.5 text-sm font-medium hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
+        className="flex min-h-11 items-center truncate rounded-full bg-black/5 px-3 text-sm font-medium hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
       >
         {t("signOutButton")}
       </button>

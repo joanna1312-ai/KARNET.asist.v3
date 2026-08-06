@@ -111,10 +111,10 @@ export default function CompaniesPage() {
             >
               <Link
                 href={`/companies/${company.id}`}
-                className="flex flex-1 items-center justify-between gap-3"
+                className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 gap-y-1"
               >
-                <p className="font-medium">{company.name}</p>
-                <p className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="min-w-0 truncate font-medium">{company.name}</p>
+                <p className="flex shrink-0 items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
                   <span
                     aria-hidden="true"
                     className={`h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[company.category.color]}`}
@@ -131,8 +131,8 @@ export default function CompaniesPage() {
                 }
                 className={
                   company.isFavorite
-                    ? "shrink-0 text-accent-deep"
-                    : "shrink-0 text-zinc-400 hover:text-accent-deep dark:text-zinc-500"
+                    ? "flex size-11 shrink-0 items-center justify-center text-accent-deep"
+                    : "flex size-11 shrink-0 items-center justify-center text-zinc-400 hover:text-accent-deep dark:text-zinc-500"
                 }
               >
                 <StarIcon filled={company.isFavorite} />

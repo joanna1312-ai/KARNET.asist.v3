@@ -8,7 +8,7 @@ export async function Header() {
   const t = await getTranslations("header");
 
   return (
-    <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-black/10 px-4 dark:border-white/10">
+    <header className="flex min-h-[60px] shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-black/10 px-4 py-2 dark:border-white/10">
       <Link
         href="/"
         aria-label={t("homeAria")}
@@ -21,12 +21,12 @@ export async function Header() {
       <nav className="flex min-w-0 items-center gap-1">
         <Link
           href="/companies"
-          className="truncate rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+          className="flex min-h-11 items-center truncate rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
         >
           {t("companiesNav")}
         </Link>
       </nav>
-      <div className="flex min-w-0 shrink-0 items-center gap-1.5">
+      <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-1.5">
         <AccountMenu />
         <LocaleToggle />
         <ThemeToggle />

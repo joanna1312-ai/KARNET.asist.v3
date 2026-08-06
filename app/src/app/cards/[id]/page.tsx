@@ -224,9 +224,9 @@ export default function CardDetailsPage() {
 
       {card && (
         <>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold">{card.company.name}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-semibold">{card.company.name}</h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {card.type === CardType.limit && card.totalVisits != null
                   ? t("limitCounter", { used: card.usedVisits, total: card.totalVisits })
@@ -241,7 +241,7 @@ export default function CardDetailsPage() {
               <button
                 type="button"
                 onClick={openAddForm}
-                className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95"
+                className="flex min-h-11 shrink-0 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
               >
                 {t("addVisitButton")}
               </button>
@@ -302,22 +302,24 @@ export default function CardDetailsPage() {
                 {card.visits.map((visit) => (
                   <li
                     key={visit.id}
-                    className="flex items-center justify-between rounded-2xl border border-black/10 p-4 dark:border-white/10"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 p-4 dark:border-white/10"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-medium">
                         {formatDate(visit.visitDate)}
                         {visit.visitTime && ` · ${formatTime(visit.visitTime)}`}
                       </p>
                       {visit.note && (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">{visit.note}</p>
+                        <p className="break-words text-sm text-zinc-500 dark:text-zinc-400">
+                          {visit.note}
+                        </p>
                       )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex shrink-0 gap-2">
                       <button
                         type="button"
                         onClick={() => openEditForm(visit)}
-                        className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+                        className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
                       >
                         {t("editButton")}
                       </button>
@@ -327,7 +329,7 @@ export default function CardDetailsPage() {
                           setDeleteError(false);
                           setDeleteTarget(visit);
                         }}
-                        className="rounded-full px-3 py-1.5 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
+                        className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
                       >
                         {t("deleteButton")}
                       </button>

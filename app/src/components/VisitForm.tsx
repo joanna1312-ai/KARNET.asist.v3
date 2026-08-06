@@ -86,7 +86,7 @@ export function VisitForm({
           onChange={(event) =>
             setValues((prev) => ({ ...prev, visitDate: event.target.value }))
           }
-          className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+          className="min-h-11 w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         {errorFor("visitDate") && (
           <p className="text-sm text-status-urgent">{t(`errors.${errorFor("visitDate")}`)}</p>
@@ -105,7 +105,7 @@ export function VisitForm({
           onChange={(event) =>
             setValues((prev) => ({ ...prev, visitTime: event.target.value }))
           }
-          className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+          className="min-h-11 w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("visitTimeHint")}</p>
       </div>
@@ -121,7 +121,7 @@ export function VisitForm({
           value={values.note}
           disabled={submitting}
           onChange={(event) => setValues((prev) => ({ ...prev, note: event.target.value }))}
-          className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+          className="min-h-11 w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("noteHint")}</p>
         {errorFor("note") && (
@@ -133,19 +133,19 @@ export function VisitForm({
         <p className="text-sm text-status-urgent">{t("errors.saveFailed")}</p>
       )}
 
-      <div className="mt-2 flex justify-end gap-3">
+      <div className="mt-2 flex flex-wrap justify-end gap-3">
         <button
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          className="rounded-full px-4 py-2 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+          className="flex min-h-11 items-center rounded-full px-4 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
         >
           {t("cancelButton")}
         </button>
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
+          className="flex min-h-11 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
         >
           {submitting ? t("savingButton") : t("saveButton")}
         </button>

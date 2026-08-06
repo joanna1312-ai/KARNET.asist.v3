@@ -168,7 +168,7 @@ export function CardForm({
 
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium">{t("companyLabel")}</span>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           {(["existing", "new"] as const).map((companyModeOption) => (
             <label key={companyModeOption} className="flex items-center gap-2 text-sm">
               <input
@@ -195,7 +195,7 @@ export function CardForm({
               onChange={(event) =>
                 setValues((prev) => ({ ...prev, companyId: event.target.value }))
               }
-              className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+              className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
             >
               <option value="" disabled>
                 {t("companyPlaceholder")}
@@ -239,7 +239,7 @@ export function CardForm({
                 onChange={(event) =>
                   setValues((prev) => ({ ...prev, newCompanyName: event.target.value }))
                 }
-                className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+                className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
               />
               {errorFor("newCompanyName") && (
                 <p className="text-sm text-status-urgent">
@@ -265,7 +265,7 @@ export function CardForm({
                     newCompanyCategorySelection: event.target.value,
                   }))
                 }
-                className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+                className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
               >
                 <option value="" disabled>
                   {t("categoryPlaceholder")}
@@ -302,7 +302,7 @@ export function CardForm({
                     onChange={(event) =>
                       setValues((prev) => ({ ...prev, newCategoryName: event.target.value }))
                     }
-                    className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+                    className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
                   />
                   {errorFor("newCategoryName") && (
                     <p className="text-sm text-status-urgent">
@@ -313,7 +313,7 @@ export function CardForm({
 
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium">{t("newCategoryColorLabel")}</span>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {CATEGORY_COLOR_PALETTE.map((color) => (
                       <button
                         key={color}
@@ -325,7 +325,7 @@ export function CardForm({
                         onClick={() =>
                           setValues((prev) => ({ ...prev, newCategoryColor: color }))
                         }
-                        className={`h-8 w-8 rounded-full ${CATEGORY_COLOR_CLASS[color]} ${
+                        className={`size-11 rounded-full ${CATEGORY_COLOR_CLASS[color]} ${
                           values.newCategoryColor === color
                             ? "ring-2 ring-offset-2 ring-black/60 dark:ring-white/60 dark:ring-offset-black"
                             : ""
@@ -347,7 +347,7 @@ export function CardForm({
 
       <div className="flex flex-col gap-1">
         <span className="text-sm font-medium">{t("typeLabel")}</span>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           {(Object.values(CardType) as CardType[]).map((type) => (
             <label key={type} className="flex items-center gap-2 text-sm">
               <input
@@ -387,7 +387,7 @@ export function CardForm({
             onChange={(event) =>
               setValues((prev) => ({ ...prev, totalVisits: event.target.value }))
             }
-            className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+            className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
           />
           {errorFor("totalVisits") && (
             <p className="text-sm text-status-urgent">
@@ -409,7 +409,7 @@ export function CardForm({
           onChange={(event) =>
             setValues((prev) => ({ ...prev, expiryDate: event.target.value }))
           }
-          className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+          className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {values.type === CardType.unlimited
@@ -437,7 +437,7 @@ export function CardForm({
               voucherMode: event.target.value as VoucherMode,
             }))
           }
-          className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+          className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         >
           {(Object.values(VoucherMode) as VoucherMode[]).map((mode) => (
             <option key={mode} value={mode}>
@@ -465,7 +465,7 @@ export function CardForm({
           onChange={(event) =>
             setValues((prev) => ({ ...prev, voucherFileUrl: event.target.value }))
           }
-          className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+          className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {t("voucherFileUrlHint")}
@@ -476,19 +476,19 @@ export function CardForm({
         <p className="text-sm text-status-urgent">{t("errors.saveFailed")}</p>
       )}
 
-      <div className="mt-2 flex justify-end gap-3">
+      <div className="mt-2 flex flex-wrap justify-end gap-3">
         <button
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          className="rounded-full px-4 py-2 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+          className="flex min-h-11 items-center rounded-full px-4 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
         >
           {t("cancelButton")}
         </button>
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
+          className="flex min-h-11 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
         >
           {submitting ? t("savingButton") : t("saveButton")}
         </button>

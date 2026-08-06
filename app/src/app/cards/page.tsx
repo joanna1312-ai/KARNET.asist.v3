@@ -289,24 +289,24 @@ export default function CardsPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="min-w-0 text-2xl font-semibold">{t("title")}</h1>
         <button
           type="button"
           onClick={openAddForm}
-          className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95"
+          className="flex min-h-11 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
         >
           {t("addButton")}
         </button>
       </div>
 
-      <div className="flex gap-1 rounded-full border border-black/10 p-1 dark:border-white/10 w-fit">
+      <div className="flex w-fit gap-1 rounded-full border border-black/10 p-1 dark:border-white/10">
         {(["active", "archived"] as const).map((tabOption) => (
           <button
             key={tabOption}
             type="button"
             onClick={() => setTab(tabOption)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium ${
+            className={`flex min-h-11 items-center rounded-full px-4 text-sm font-medium ${
               tab === tabOption
                 ? "bg-mint text-mint-ink"
                 : "hover:bg-black/5 dark:hover:bg-white/10"
@@ -355,11 +355,11 @@ export default function CardsPage() {
           {cards.map((card) => (
             <li
               key={card.id}
-              className="flex items-center justify-between rounded-2xl border border-black/10 p-4 dark:border-white/10"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 p-4 dark:border-white/10"
             >
-              <Link href={`/cards/${card.id}`} className="hover:underline">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium">{card.company.name}</p>
+              <Link href={`/cards/${card.id}`} className="min-w-0 flex-1 hover:underline">
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="min-w-0 truncate font-medium">{card.company.name}</p>
                   <StatusBadge
                     status={getCardWarningStatus({
                       type: card.type,
@@ -382,12 +382,12 @@ export default function CardsPage() {
                     : tDetails("noExpiryLabel")}
                 </p>
               </Link>
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2">
                 {tab === "archived" ? (
                   <button
                     type="button"
                     onClick={() => openRenewForm(card)}
-                    className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+                    className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
                   >
                     {t("renewButton")}
                   </button>
@@ -395,7 +395,7 @@ export default function CardsPage() {
                   <button
                     type="button"
                     onClick={() => openEditForm(card)}
-                    className="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+                    className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
                   >
                     {t("editButton")}
                   </button>
@@ -406,7 +406,7 @@ export default function CardsPage() {
                     setDeleteError(false);
                     setDeleteTarget(card);
                   }}
-                  className="rounded-full px-3 py-1.5 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
+                  className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
                 >
                   {t("deleteButton")}
                 </button>

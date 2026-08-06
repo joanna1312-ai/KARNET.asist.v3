@@ -48,7 +48,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={t("themeAria")}
       suppressHydrationWarning
-      className="flex size-8 shrink-0 items-center justify-center rounded-full bg-black/5 text-foreground hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
+      className="flex size-11 shrink-0 items-center justify-center rounded-full bg-black/5 text-foreground hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
     >
       {theme === "dark" ? <SunIcon /> : <MoonIcon />}
     </button>

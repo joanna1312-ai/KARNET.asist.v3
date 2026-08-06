@@ -179,9 +179,9 @@ export default function CompanyDetailsPage() {
 
       {company && (
         <>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold">{company.name}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-semibold">{company.name}</h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 <span
                   aria-hidden="true"
@@ -194,7 +194,7 @@ export default function CompanyDetailsPage() {
               <button
                 type="button"
                 onClick={openAddForm}
-                className="rounded-full bg-mint px-4 py-2 text-sm font-semibold text-mint-ink hover:brightness-95"
+                className="flex min-h-11 shrink-0 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
               >
                 {t("addCardButton")}
               </button>
@@ -234,9 +234,9 @@ export default function CompanyDetailsPage() {
                   <li key={card.id}>
                     <Link
                       href={`/cards/${card.id}`}
-                      className="flex items-center justify-between rounded-2xl border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         <StatusBadge
                           status={getCardWarningStatus({
                             type: card.type,

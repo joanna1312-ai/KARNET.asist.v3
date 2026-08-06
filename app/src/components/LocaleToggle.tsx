@@ -32,7 +32,7 @@ export function LocaleToggle() {
           onClick={() => switchTo(option)}
           aria-pressed={locale === option}
           disabled={isPending}
-          className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide disabled:opacity-60 ${
+          className={`flex min-h-11 min-w-11 items-center justify-center rounded-full px-2.5 text-[11px] font-bold uppercase tracking-wide disabled:opacity-60 ${
             locale === option
               ? "bg-white text-foreground shadow-sm dark:bg-zinc-800"
               : "text-zinc-500 dark:text-zinc-400"
