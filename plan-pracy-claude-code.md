@@ -306,6 +306,31 @@ Prompt (skróć/dostosuj):
 - [ ] Sprawdzone w jasnym i ciemnym motywie
 - [ ] lint/test + commit
 
+## Sesja 18 — Aktualizacja Next.js (CVE w postcss/sharp)
+
+Kontekst: `npm audit` w `app/` zgłasza 3 podatności wysokiego ryzyka — PostCSS (XSS przez
+nieescapowany `</style>`, arbitrary file read przez `sourceMappingURL` — kilka GHSA) i
+sharp (CVE-2026-33327/33328/35590/35591, dziedziczone z libvips) — wciągnięte tranzytywnie
+przez obecną wersję `next` (`16.2.12`, `node_modules/next/node_modules/postcss` i
+`node_modules/sharp`). `npm audit fix --force` proponuje `next@16.3.0`, co wykracza poza
+obecny zakres semver w `package.json`, więc to świadoma aktualizacja, nie automatyczny fix.
+Zauważone przy okazji Sesji 13 (konfiguracja Playwrighta), poza jej zakresem.
+
+Prompt (skróć/dostosuj):
+> Sprawdź release notes Next.js 16.3.0 pod kątem breaking changes względem 16.2.12.
+> Zaktualizuj `next` w `app/package.json`, `npm install`, potem `npm run lint`,
+> `npm run test`, `npm run test:e2e` i `npm run build` — zaraportuj wynik. Zwróć uwagę,
+> czy `next-intl` (`^4.13.5`) i `@prisma/adapter-pg` nie wymagają dociągnięcia razem z tą
+> zmianą. Po aktualizacji uruchom `npm audit` ponownie i potwierdź, że te 3 podatności
+> zniknęły. Nie dotykaj kodu biznesowego — tylko wersja zależności i ewentualne
+> dostosowania wynikające z upgrade'u.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany (breaking changes 16.2→16.3 sprawdzone)
+- [ ] `next` zaktualizowany, `npm install`
+- [ ] `npm audit` czysty (3 podatności zniknęły)
+- [ ] lint/test/test:e2e/build przechodzą + commit
+
 ## Przed pierwszym wdrożeniem produkcyjnym
 
 Checklista z `docs/DEPLOYMENT.md`:

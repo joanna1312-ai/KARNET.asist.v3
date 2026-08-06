@@ -33,7 +33,13 @@ describe("signDeviceToken / verifyDeviceToken (ADR-007)", () => {
   it("rejects a tampered token", async () => {
     const deviceId = "33333333-3333-4333-8333-333333333333";
     const token = await signDeviceToken(deviceId);
-    const tampered = token.slice(0, -1) + (token.at(-1) === "a" ? "b" : "a");
+    // Flips the second-to-last character, not the last one: base64url's last character
+    // of a group can carry unused padding bits, so swapping it sometimes decodes to the
+    // same byte and leaves the signature valid — that made this test flaky (it was
+    // observed passing only ~4 times out of 5). The second-to-last character always
+    // encodes real signature bits, so this deterministically invalidates it.
+    const tampered =
+      token.slice(0, -2) + (token.at(-2) === "a" ? "b" : "a") + token.at(-1);
 
     await expect(verifyDeviceToken(tampered)).resolves.toBeNull();
   });
