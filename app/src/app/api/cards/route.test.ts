@@ -12,7 +12,10 @@ const prismaMock = {
   },
 };
 
+const getServerSessionMock = vi.fn().mockResolvedValue(null);
+
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
+vi.mock("next-auth/next", () => ({ getServerSession: getServerSessionMock }));
 
 const { GET, POST } = await import("./route");
 
@@ -24,6 +27,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  getServerSessionMock.mockResolvedValue(null);
 });
 
 async function authHeaders(deviceId = "device-1") {
@@ -32,9 +36,42 @@ async function authHeaders(deviceId = "device-1") {
 }
 
 describe("GET /api/cards (ADR-007)", () => {
-  it("rejects requests without a verified device token", async () => {
+  it("rejects requests without a verified device token and without a session", async () => {
     const response = await GET(new Request(endpoint));
     expect(response.status).toBe(401);
+  });
+
+  it("accepts requests with a logged-in session but no device token (Sesja 14)", async () => {
+    getServerSessionMock.mockResolvedValue({ user: { id: "user-1" } });
+    prismaMock.card.findMany.mockResolvedValue([]);
+
+    const response = await GET(new Request(endpoint));
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { deletedAt: null, userId: "user-1" },
+      })
+    );
+  });
+
+  it("matches cards by device OR account when both a session and a device token are present (Sesja 14 — post link-device)", async () => {
+    getServerSessionMock.mockResolvedValue({ user: { id: "user-1" } });
+    prismaMock.card.findMany.mockResolvedValue([]);
+
+    const response = await GET(
+      new Request(endpoint, { headers: await authHeaders("device-1") })
+    );
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          deletedAt: null,
+          OR: [{ deviceId: "device-1" }, { userId: "user-1" }],
+        },
+      })
+    );
   });
 
   it("returns only non-archived cards by default, scoped to the caller's device", async () => {

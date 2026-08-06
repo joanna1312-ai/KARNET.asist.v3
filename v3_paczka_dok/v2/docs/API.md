@@ -11,6 +11,14 @@ na `deviceId` odczytanym z **podpisanego** tokena urządzenia (nagłówek
 [DECISIONS.md](DECISIONS.md), mechanizm współdzielony z auth token-based pod kątem
 mobile).
 
+**Własność karnetów/wejść przy zalogowanym koncie (Sesja 14):** endpointy `/api/cards*`
+dopasowują rekord po **`deviceId` LUB `userId`**, cokolwiek jest dostępne u wywołującego
+(`src/server/caller-identity.ts`, `src/server/card-owner.ts`) — nie tylko po `deviceId`.
+To celowe: `POST /api/auth/link-device` po zalogowaniu ustawia na przypiętych karnetach
+`deviceId = null`, więc samo dopasowanie po `deviceId` przestałoby je pokazywać zaraz po
+zalogowaniu. Wywołujący z obiema tożsamościami (token urządzenia + sesja) widzi zarówno
+karnety już połączone z kontem, jak i te jeszcze nie zsynchronizowane z tego urządzenia.
+
 ## Karnety
 
 | Metoda | Ścieżka | Opis |

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
+import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
 import { getCardInputErrors, parseCardInput } from "@/server/card-rules";
 import { isCardArchived } from "@/server/card-status";
+import { ownerFilter } from "@/server/card-owner";
 import { getVerifiedDeviceId } from "@/server/request-device";
 
 const categorySelect = {
@@ -20,18 +22,19 @@ type CardWithCompany = Prisma.CardGetPayload<{
   include: { company: { select: typeof companySelect } };
 }>;
 
-// GET /api/cards[?archived=true] — lista karnetów bieżącego urządzenia (ADR-007).
-// `archived` liczone w locie wg formuły z docs/DATABASE.md, nie jest kolumną.
+// GET /api/cards[?archived=true] — lista karnetów bieżącego urządzenia i/lub
+// zalogowanego konta (ADR-007, Sesja 14 — patrz caller-identity.ts). `archived` liczone w
+// locie wg formuły z docs/DATABASE.md, nie jest kolumną.
 export async function GET(request: Request) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const wantArchived = new URL(request.url).searchParams.get("archived") === "true";
 
   const cards: CardWithCompany[] = await prisma.card.findMany({
-    where: { deviceId, deletedAt: null },
+    where: { deletedAt: null, ...ownerFilter(identity) },
     include: { company: { select: companySelect } },
     orderBy: { createdAt: "desc" },
   });

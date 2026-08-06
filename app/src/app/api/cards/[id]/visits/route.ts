@@ -1,28 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
+import { findOwnedCard } from "@/server/card-owner";
 import { isCardArchived } from "@/server/card-status";
-import { getVerifiedDeviceId } from "@/server/request-device";
 import { getVisitInputErrors, parseVisitInput } from "@/server/visit-rules";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// Skopowane po `deviceId` (ADR-007), tak jak trasy /api/cards — wejście można dodać
-// tylko do karnetu należącego do wywołującego urządzenia.
-async function findOwnedCard(id: string, deviceId: string) {
-  return prisma.card.findFirst({ where: { id, deviceId, deletedAt: null } });
-}
-
-// POST /api/cards/:id/visits — dodaje wejście (docs/API.md). Zablokowane dla karnetu
-// już zarchiwizowanego (limit wyczerpany / minęła data ważności — docs/DATABASE.md),
-// żeby used_visits nie rosło ponad sens po archiwizacji.
+// POST /api/cards/:id/visits — dodaje wejście (docs/API.md). Skopowane po tożsamości
+// wywołującego (ADR-007 + Sesja 14, patrz caller-identity.ts/card-owner.ts) — wejście
+// można dodać tylko do karnetu należącego do wywołującego urządzenia/konta. Zablokowane
+// dla karnetu już zarchiwizowanego (limit wyczerpany / minęła data ważności —
+// docs/DATABASE.md), żeby used_visits nie rosło ponad sens po archiwizacji.
 export async function POST(request: Request, { params }: RouteParams) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
-  const card = await findOwnedCard(id, deviceId);
+  const card = await findOwnedCard(id, identity);
   if (!card) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

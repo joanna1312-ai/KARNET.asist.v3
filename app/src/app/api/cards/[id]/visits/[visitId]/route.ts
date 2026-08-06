@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getVerifiedDeviceId } from "@/server/request-device";
+import { getCallerIdentity, hasIdentity, type CallerIdentity } from "@/server/caller-identity";
+import { findOwnedCard } from "@/server/card-owner";
 import {
   getVisitInputErrors,
   parseVisitPatch,
@@ -9,12 +10,11 @@ import {
 
 type RouteParams = { params: Promise<{ id: string; visitId: string }> };
 
-// Skopowane po `deviceId` (ADR-007) i przynależności wpisu do karnetu — wejście innego
-// urządzenia lub innego karnetu nigdy nie jest widoczne ani edytowalne.
-async function findOwnedVisit(cardId: string, visitId: string, deviceId: string) {
-  const card = await prisma.card.findFirst({
-    where: { id: cardId, deviceId, deletedAt: null },
-  });
+// Skopowane po tożsamości wywołującego (ADR-007 + Sesja 14, patrz
+// caller-identity.ts/card-owner.ts) i przynależności wpisu do karnetu — wejście innego
+// urządzenia/konta lub innego karnetu nigdy nie jest widoczne ani edytowalne.
+async function findOwnedVisit(cardId: string, visitId: string, identity: CallerIdentity) {
+  const card = await findOwnedCard(cardId, identity);
   if (!card) return null;
 
   const visit = await prisma.visit.findFirst({ where: { id: visitId, cardId: card.id } });
@@ -26,13 +26,13 @@ async function findOwnedVisit(cardId: string, visitId: string, deviceId: string)
 // PATCH /api/cards/:id/visits/:visitId — edycja daty/godziny/notatki (docs/API.md).
 // Nie zmienia usedVisits — to tylko korekta danych istniejącego wpisu.
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const { id, visitId } = await params;
-  const found = await findOwnedVisit(id, visitId, deviceId);
+  const found = await findOwnedVisit(id, visitId, identity);
   if (!found) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
@@ -72,13 +72,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 // (docs/API.md), wywoływane dopiero po potwierdzeniu w UI. Dekrementuje usedVisits,
 // nie schodząc poniżej zera.
 export async function DELETE(request: Request, { params }: RouteParams) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const { id, visitId } = await params;
-  const found = await findOwnedVisit(id, visitId, deviceId);
+  const found = await findOwnedVisit(id, visitId, identity);
   if (!found) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

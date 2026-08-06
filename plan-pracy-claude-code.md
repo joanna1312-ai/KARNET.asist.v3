@@ -236,6 +236,13 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 - [x] Zweryfikowane: żadna funkcja rdzeniowa nadal nie wymaga logowania
 - [x] lint/test + commit
 
+Dodatkowo (znalezione i naprawione podczas ręcznego testu logowania end-to-end, poza
+pierwotnym opisem sesji): `GET/PATCH/DELETE /api/cards*` filtrowały karnety wyłącznie po
+`deviceId` — po zalogowaniu (`link-device` ustawia `deviceId = null`) karnety znikały z
+widoku zamiast zostać widoczne dalej. Naprawione przez wspólny filtr własności
+`deviceId LUB userId` (`src/server/caller-identity.ts`, `src/server/card-owner.ts`),
+zweryfikowane end-to-end (testy jednostkowe + ręczny test przez API z realną sesją).
+
 ## Sesja 15 — Logo w headerze prowadzi do strony głównej
 
 Kontekst: `Header.tsx` renderuje logo (kropka + nazwa marki) jako statyczny `<span>`, bez
@@ -303,10 +310,10 @@ Prompt (skróć/dostosuj):
 > 375×812) w jasnym i ciemnym motywie.
 > Najpierw krótki plan (które ekrany/komponenty wymagają zmian), poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Ekrany dostosowane, zweryfikowane przy szerokości ~375px
-- [ ] Sprawdzone w jasnym i ciemnym motywie
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Ekrany dostosowane, zweryfikowane przy szerokości ~375px
+- [x] Sprawdzone w jasnym i ciemnym motywie
+- [x] lint/test + commit
 
 ## Sesja 18 — Aktualizacja Next.js (CVE w postcss/sharp)
 

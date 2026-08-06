@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
 import {
   CardInputCandidate,
   getCardInputErrors,
   parseCardPatch,
 } from "@/server/card-rules";
-import { getVerifiedDeviceId } from "@/server/request-device";
+import { findOwnedCard, ownerFilter } from "@/server/card-owner";
 
 const categorySelect = {
   id: true,
@@ -18,21 +19,18 @@ const companySelect = { id: true, name: true, category: { select: categorySelect
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// Wszystkie trzy handlery skopowane po `deviceId` (ADR-007) — karnet innego
-// urządzenia nigdy nie jest widoczny ani edytowalny, niezależnie od podanego `id`.
-async function findOwnedCard(id: string, deviceId: string) {
-  return prisma.card.findFirst({ where: { id, deviceId, deletedAt: null } });
-}
-
+// Wszystkie trzy handlery skopowane po tożsamości wywołującego (ADR-007 + Sesja 14,
+// patrz caller-identity.ts/card-owner.ts) — karnet innego urządzenia/konta nigdy nie jest
+// widoczny ani edytowalny, niezależnie od podanego `id`.
 export async function GET(request: Request, { params }: RouteParams) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
   const card = await prisma.card.findFirst({
-    where: { id, deviceId, deletedAt: null },
+    where: { id, deletedAt: null, ...ownerFilter(identity) },
     include: {
       company: { select: companySelect },
       visits: { orderBy: { visitDate: "desc" } },
@@ -49,13 +47,13 @@ export async function GET(request: Request, { params }: RouteParams) {
 // PATCH /api/cards/:id — edycja (m.in. expiryDate, w tym ustawienie na null).
 // Reguła unlimited/limit wymuszona na scalonym stanie (istniejące pola + patch).
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
-  const existing = await findOwnedCard(id, deviceId);
+  const existing = await findOwnedCard(id, identity);
   if (!existing) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
@@ -115,13 +113,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 // DELETE /api/cards/:id — miękkie usunięcie (deletedAt), wywoływane dopiero po
 // potwierdzeniu w UI (dialog, nigdy jednym kliknięciem — patrz CLAUDE.md).
 export async function DELETE(request: Request, { params }: RouteParams) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
-  const existing = await findOwnedCard(id, deviceId);
+  const existing = await findOwnedCard(id, identity);
   if (!existing) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

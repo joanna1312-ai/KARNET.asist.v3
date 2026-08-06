@@ -13,7 +13,10 @@ const prismaMock = {
   $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
 };
 
+const getServerSessionMock = vi.fn().mockResolvedValue(null);
+
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
+vi.mock("next-auth/next", () => ({ getServerSession: getServerSessionMock }));
 
 const { POST } = await import("./route");
 
@@ -26,6 +29,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  getServerSessionMock.mockResolvedValue(null);
   prismaMock.$transaction.mockImplementation((ops: Promise<unknown>[]) => Promise.all(ops));
 });
 

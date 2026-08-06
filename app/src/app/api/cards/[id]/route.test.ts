@@ -12,7 +12,10 @@ const prismaMock = {
   },
 };
 
+const getServerSessionMock = vi.fn().mockResolvedValue(null);
+
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
+vi.mock("next-auth/next", () => ({ getServerSession: getServerSessionMock }));
 
 const { GET, PATCH, DELETE } = await import("./route");
 
@@ -25,6 +28,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  getServerSessionMock.mockResolvedValue(null);
 });
 
 async function authHeaders(deviceId = "device-1") {
@@ -74,6 +78,27 @@ describe("GET /api/cards/:id", () => {
     );
     const body = await response.json();
 
+    expect(response.status).toBe(200);
+    expect(body.card.id).toBe("card-1");
+  });
+
+  it("returns a card already linked to the caller's account (deviceId null, Sesja 14)", async () => {
+    getServerSessionMock.mockResolvedValue({ user: { id: "user-1" } });
+    prismaMock.card.findFirst.mockResolvedValue({
+      ...existingLimitCard,
+      deviceId: null,
+      company: { id: "co1", name: "FitZone", category: "gym" },
+      visits: [],
+    });
+
+    const response = await GET(new Request(cardUrl("card-1")), routeParams("card-1"));
+    const body = await response.json();
+
+    expect(prismaMock.card.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: "user-1" }),
+      })
+    );
     expect(response.status).toBe(200);
     expect(body.card.id).toBe("card-1");
   });
