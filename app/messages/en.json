@@ -5,6 +5,14 @@
     "localeToggleAria": "Language selection",
     "companiesNav": "Companies"
   },
+  "account": {
+    "signInButton": "Sign in with Google",
+    "signOutButton": "Sign out",
+    "signedInAs": "Signed in as {name}",
+    "linkingDevice": "Syncing this device's cards…",
+    "linkDeviceSuccess": "This device's cards are now linked to your account.",
+    "linkDeviceError": "Couldn't link this device's cards to your account. Try signing out and back in."
+  },
   "companiesPage": {
     "title": "Companies",
     "loadError": "Couldn't load the list of companies. Try refreshing the page.",

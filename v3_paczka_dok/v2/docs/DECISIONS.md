@@ -26,12 +26,21 @@ gorzej pasuje do zapytań typu „karnety danej firmy”, „historia wejść ka
 
 ## ADR-003 — Konto opcjonalne, auth token-based
 
-**Status:** potwierdzone (wynika wprost z briefu produktowego).
+**Status:** potwierdzone (wynika wprost z briefu produktowego); zaimplementowane w Sesji
+14 (Google OAuth przez Auth.js/NextAuth).
 **Decyzja:** żadna funkcja rdzeniowa nie wymaga logowania; karnety mogą istnieć przypięte
 do `device_id` zamiast `user_id`. Auth (gdy używane) — tokeny JWT, nie cookie sesyjne, pod
 kątem przyszłej aplikacji mobilnej.
 **Konsekwencja:** model danych (`cards.user_id` nullable) i cała logika API muszą wspierać
 tryb „bez konta” jako pełnoprawny, nie jako wyjątek.
+**Nota implementacyjna (Sesja 14):** NextAuth skonfigurowany z `session: { strategy: "jwt" }`
+— sesja to podpisany token, nie wiersz w tabeli `sessions` (ta tabela istnieje w schemacie
+tylko dlatego, że wymaga jej interfejs adaptera Prisma, w praktyce pusta). To najbliższe
+realnie dostępne w NextAuth podejście do „token-based, nie cookie sesyjne” — sam handshake
+OAuth w przeglądarce z natury i tak przechodzi przez cookie w trakcie logowania, czego nie
+da się całkowicie wyeliminować w web-owym flow logowania. Synchronizacja między
+urządzeniami po zalogowaniu: `POST /api/auth/link-device` (patrz `API.md`), łączy tylko
+karnety urządzenia, z którego przyszło żądanie (weryfikacja przez `ADR-007`).
 
 ## ADR-004 — Google Maps: integracja realna odroczona do etapu produkcyjnego
 

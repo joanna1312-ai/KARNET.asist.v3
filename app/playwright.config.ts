@@ -40,6 +40,8 @@ export default defineConfig({
     env: {
       DATABASE_URL: process.env.DATABASE_URL ?? "",
       DEVICE_TOKEN_SECRET: process.env.DEVICE_TOKEN_SECRET ?? "",
+      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? "",
+      NEXTAUTH_URL: baseURL,
     },
   },
 });

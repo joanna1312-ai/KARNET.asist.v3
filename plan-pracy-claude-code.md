@@ -229,11 +229,12 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > zagrożona tym API.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Decyzje z listy wyżej podjęte i potwierdzone
-- [ ] Plan zaakceptowany
-- [ ] Logowanie + `/api/auth/link-device`
-- [ ] Zweryfikowane: żadna funkcja rdzeniowa nadal nie wymaga logowania
-- [ ] lint/test + commit
+- [x] Decyzje z listy wyżej podjęte i potwierdzone (Google OAuth, brak domeny produkcyjnej
+      na razie, klucze Google dostarczy właściciel projektu później)
+- [x] Plan zaakceptowany
+- [x] Logowanie + `/api/auth/link-device`
+- [x] Zweryfikowane: żadna funkcja rdzeniowa nadal nie wymaga logowania
+- [x] lint/test + commit
 
 ## Sesja 15 — Logo w headerze prowadzi do strony głównej
 

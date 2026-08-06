@@ -40,15 +40,71 @@ enum VoucherMode {
 
 /// Konto opcjonalne — brak konta = brak wiersza (ADR-003).
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  email     String?  @unique
-  createdAt DateTime @default(now()) @map("created_at")
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String?   @unique
+  name          String?
+  image         String?
+  emailVerified DateTime? @map("email_verified")
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   cards            Card[]
   favorites        Favorite[]
   createdCompanies Company[] @relation("CompanyCreatedBy")
+  accounts         Account[]
+  sessions         Session[]
 
   @@map("users")
+}
+
+/// Konto OAuth powiązane z użytkownikiem (Sesja 14 — logowanie Google przez
+/// Auth.js/NextAuth). Nazwy pól `access_token`/`refresh_token`/`expires_at`/
+/// `token_type`/`id_token`/`session_state` są literalnym wymogiem kontraktu
+/// adaptera Prisma z `@auth/prisma-adapter` (spread obiektu 1:1 do `prisma.account.create`)
+/// — świadome odstępstwo od konwencji camelCase-w-polu/@map-na-snake_case z reszty schematu.
+model Account {
+  id                String  @id @default(uuid()) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+/// Sesja logowania NextAuth. W praktyce nieużywana przy `session: { strategy: "jwt" }`
+/// (ADR-003 — sesja jako podpisany token, nie rekord w bazie), ale model musi istnieć,
+/// bo interfejs adaptera Prisma z niego korzysta (nawet jeśli metody sesji nie są
+/// wywoływane w trybie jwt).
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.Uuid
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+/// Token weryfikacyjny (magic link / e-mail) — nieużywany przy logowaniu wyłącznie
+/// przez Google OAuth, ale wymagany przez interfejs adaptera Prisma.
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 /// Partner (firma), np. siłownia, basen, salon masażu.

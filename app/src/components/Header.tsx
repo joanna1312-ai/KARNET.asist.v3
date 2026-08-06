@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { AccountMenu } from "@/components/AccountMenu";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -20,7 +21,8 @@ export async function Header() {
           {t("companiesNav")}
         </Link>
       </nav>
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex min-w-0 shrink-0 items-center gap-1.5">
+        <AccountMenu />
         <LocaleToggle />
         <ThemeToggle />
       </div>

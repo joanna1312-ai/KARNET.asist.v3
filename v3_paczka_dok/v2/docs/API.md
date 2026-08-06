@@ -98,10 +98,24 @@ odnawiany automatycznie w tle przed wygaśnięciem.
 
 ## Auth (opcjonalne)
 
+**Zaimplementowane (Sesja 14):** logowanie wyłącznie przez Google OAuth, Auth.js/NextAuth
+v4, `session: { strategy: "jwt" }` (sesja jako podpisany token, nie rekord w bazie —
+najbliższe realnie dostępne w NextAuth podejście do ADR-003 "token-based, nie cookie
+sesyjne"; sam handshake OAuth w przeglądarce z natury korzysta z cookie, tego nie da się
+całkowicie ominąć w web-owym flow). Magic link e-mail **nie** jest zaimplementowany —
+świadomie odłożone (brak zdecydowanego dostawcy wysyłki maili).
+
 | Metoda | Ścieżka | Opis |
 |---|---|---|
-| `POST` | `/api/auth/sign-in` | np. magic link / OAuth |
-| `POST` | `/api/auth/link-device` | weryfikuje podpisany token urządzenia, wyciąga zaufany `deviceId` i przypina powiązane karnety do konta po zalogowaniu (`userId = ...`, `deviceId = null`) |
+| `GET`/`POST` | `/api/auth/[...nextauth]` | wbudowane endpointy Auth.js/NextAuth (sign-in, callback, sign-out, session) — Google jako jedyny provider |
+| `POST` | `/api/auth/link-device` | wymaga jednocześnie: zalogowanej sesji NextAuth i podpisanego tokena urządzenia w nagłówku `Authorization: Device <token>` (ADR-007). Przypina **tylko karnety tego urządzenia** do konta (`userId = <zalogowany>`, `deviceId = null`); inne urządzenia nietknięte. Odpowiedź: `{ "linkedCount": number }`. `401` jeśli brak sesji lub tokena. |
+
+Zmienne środowiskowe: `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (domena, na `localhost:3000` w
+dev), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — patrz `.env.example` i instrukcja
+założenia projektu w Google Cloud Console (przekazana osobno przy Sesji 14).
+
+Konto pozostaje w pełni opcjonalne (CLAUDE.md) — żaden inny endpoint w tym dokumencie nie
+wymaga sesji, tylko `/api/auth/link-device`.
 
 ## Uwagi
 
