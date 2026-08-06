@@ -1,9 +1,10 @@
 # Strategia testów — Karnet.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08 · Sekcja e2e
+> zaktualizowana: 2026-08-06 (Sesja 13)
 
-> DRAFT — dostosować narzędzia do wybranego stosu (zakładając Next.js + Vitest +
-> Playwright, zgodnie z pozostałymi projektami z tego kursu).
+Next.js + Vitest (jednostkowe/integracyjne) + Playwright (e2e), zgodnie z pozostałymi
+projektami z tego kursu.
 
 ## Testy jednostkowe (logika biznesowa)
 
@@ -29,19 +30,45 @@ refaktorze:
 
 ## Testy e2e (Playwright) — kluczowe ścieżki z prototypu
 
-1. Dodanie nowego karnetu przez kreator (firma istniejąca → typ → voucher → zapis)
+1. Dodanie nowego karnetu przez kreator (firma istniejąca → typ → voucher → zapis) —
+   zaimplementowane: `app/e2e/card-crud.spec.ts`
 2. Dodanie karnetu przez wybór firmy z Google Maps (mock w środowisku testowym, żeby nie
-   zależeć od realnego API w CI)
-3. Zalogowanie wejścia i weryfikacja aktualizacji paska postępu/pierścienia
-4. Edycja i usunięcie wejścia z historii
-5. Edycja daty ważności, w tym wyczyszczenie jej dla karnetu typu `limit`
+   zależeć od realnego API w CI) — **pominięte na razie**: integracja Google Maps/Places
+   nie jest zaimplementowana (ADR-004, patrz też Sesja 16 w
+   `plan-pracy-claude-code.md`); dodać ten test, gdy integracja wejdzie do zakresu
+3. Zalogowanie wejścia i weryfikacja aktualizacji licznika wykorzystanych wejść —
+   zaimplementowane: `app/e2e/visits.spec.ts`
+4. Edycja i usunięcie wejścia z historii — zaimplementowane: `app/e2e/visits.spec.ts`
+5. Edycja daty ważności, w tym wyczyszczenie jej dla karnetu typu `limit` —
+   zaimplementowane: `app/e2e/card-expiry.spec.ts`
 6. Usunięcie karnetu — sprawdzenie, że dialog potwierdzający się pojawia i anulowanie
-   nie usuwa danych
+   nie usuwa danych — zaimplementowane: `app/e2e/card-delete.spec.ts`
 7. Karnet automatycznie znika z listy głównej i pojawia się w archiwum po osiągnięciu
-   limitu wejść / dacie ważności
-8. Przełączenie języka PL/EN i trybu ciemnego — brak błędów, teksty się zmieniają
+   limitu wejść / dacie ważności — zaimplementowane: `app/e2e/archive.spec.ts`
+8. Przełączenie języka PL/EN i trybu ciemnego — brak błędów, teksty się zmieniają —
+   zaimplementowane: `app/e2e/locale-theme.spec.ts`
+
+Uruchomienie: `npm run test:e2e` (katalog `app/`). Chromium jako jedyna przeglądarka na
+start (`npx playwright install --with-deps chromium`) — wystarcza do pokrycia ścieżek
+biznesowych powyżej; rozszerzenie o Firefox/WebKit do rozważenia, gdyby pojawiły się
+regresje specyficzne dla silnika.
 
 ## Środowisko testowe
 
-- Baza testowa odizolowana od dev/staging/prod, resetowana przed każdym przebiegiem CI
-- Google Maps/Places API mockowane w testach (nie zużywać limitu/budżetu w CI)
+- **Baza testowa odizolowana od dev/staging/prod**: osobny kontener Postgres
+  `db_test` w `docker-compose.yml` (port 5433, osobny wolumin) — nigdy ten sam, co baza
+  dev (`db`, port 5432). Uruchomienie: `docker compose up -d db_test`.
+- Konfiguracja: skopiuj `app/.env.test.example` do `app/.env.test` (niecommitowane, jak
+  `.env`) i uzupełnij `DEVICE_TOKEN_SECRET` (`openssl rand -base64 32`) — osobny sekret
+  niż w `.env`, żeby środowiska się nie mieszały.
+- Playwright (`app/playwright.config.ts`) sam odpala `next dev` na porcie 3100 z env z
+  `.env.test` i przed całym przebiegiem nakłada migracje Prisma na `db_test`
+  (`app/e2e/global-setup.ts`) — nie trzeba tego robić ręcznie.
+- **Reset danych**: każdy test (nie tylko każdy plik) czyści (`TRUNCATE ... CASCADE`)
+  wszystkie tabele domenowe przed startem (`app/e2e/support/db.ts`, fixture `resetDb` w
+  `app/e2e/support/fixtures.ts`) — istotne zwłaszcza dla `companies`, bo w odróżnieniu od
+  `cards`/`visits` nie są scope'owane per urządzenie, tylko globalnie współdzielone.
+  Konsekwencja: testy działają na jednym workerze (`workers: 1`) — równoległe czyściłyby
+  sobie nawzajem dane.
+- Google Maps/Places API mockowane w testach (nie zużywać limitu/budżetu w CI) — do
+  wdrożenia razem z punktem 2 wyżej, gdy integracja realnie powstanie.

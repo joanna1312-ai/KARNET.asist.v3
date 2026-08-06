@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
 
 # next.js
 /.next/
@@ -30,9 +33,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files — .env.example jest wyjątkiem i ma trafiać do repo (patrz CLAUDE.md/SETUP.md)
+# env files — pliki *.example są wyjątkiem i mają trafiać do repo jako wzorce
+# (patrz CLAUDE.md/SETUP.md oraz docs/TESTING.md dla .env.test.example)
 .env*
 !.env.example
+!.env.test.example
 
 # vercel
 .vercel

@@ -14,5 +14,22 @@ services:
     volumes:
       - karnet_asist_pgdata:/var/lib/postgresql/data
 
+  # Baza pod testy e2e (Playwright, Sesja 13) — osobny kontener/port/wolumin, żeby testy
+  # (reset/truncate tabel przed każdym przebiegiem) nigdy nie mogły dotknąć bazy dev z
+  # usługi `db` wyżej. Patrz v3_paczka_dok/v2/docs/TESTING.md (sekcja "Środowisko
+  # testowe") i app/.env.test.example.
+  db_test:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: karnet_asist_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - karnet_asist_test_pgdata:/var/lib/postgresql/data
+
 volumes:
   karnet_asist_pgdata:
+  karnet_asist_test_pgdata:

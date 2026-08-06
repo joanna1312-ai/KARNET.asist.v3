@@ -200,10 +200,10 @@ Prompt (skróć/dostosuj):
 > zanim zaczniesz pisać testy.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany (w tym: nowa zależność sprawdzona pod kątem utrzymania/CVE)
-- [ ] Playwright skonfigurowany, baza testowa izolowana
-- [ ] Testy z listy wyżej napisane i przechodzą
-- [ ] commit
+- [x] Plan zaakceptowany (w tym: nowa zależność sprawdzona pod kątem utrzymania/CVE)
+- [x] Playwright skonfigurowany, baza testowa izolowana
+- [x] Testy z listy wyżej napisane i przechodzą
+- [x] commit
 
 ## Sesja 14 — Logowanie/synchronizacja konta (NextAuth) — wymaga decyzji przed startem
 
