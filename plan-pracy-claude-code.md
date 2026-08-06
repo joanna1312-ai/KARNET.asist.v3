@@ -246,8 +246,8 @@ Prompt (skróć/dostosuj):
 > i tak przekierowuje do `/cards` — `src/app/page.tsx`). Zachowaj dotychczasowy wygląd,
 > dodaj tylko sensowny `aria-label`/`title` jeśli potrzebne dla dostępności.
 
-- [ ] Logo klikalne, wraca na `/`
-- [ ] lint/test + commit
+- [x] Logo klikalne, wraca na `/`
+- [x] lint/test + commit
 
 ## Sesja 16 — Własne kategorie firm dodawane przez użytkowników
 
