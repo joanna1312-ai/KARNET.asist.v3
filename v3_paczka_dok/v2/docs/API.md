@@ -11,13 +11,15 @@ na `deviceId` odczytanym z **podpisanego** tokena urządzenia (nagłówek
 [DECISIONS.md](DECISIONS.md), mechanizm współdzielony z auth token-based pod kątem
 mobile).
 
-**Własność karnetów/wejść przy zalogowanym koncie (Sesja 14):** endpointy `/api/cards*`
-dopasowują rekord po **`deviceId` LUB `userId`**, cokolwiek jest dostępne u wywołującego
-(`src/server/caller-identity.ts`, `src/server/card-owner.ts`) — nie tylko po `deviceId`.
-To celowe: `POST /api/auth/link-device` po zalogowaniu ustawia na przypiętych karnetach
-`deviceId = null`, więc samo dopasowanie po `deviceId` przestałoby je pokazywać zaraz po
-zalogowaniu. Wywołujący z obiema tożsamościami (token urządzenia + sesja) widzi zarówno
-karnety już połączone z kontem, jak i te jeszcze nie zsynchronizowane z tego urządzenia.
+**Własność karnetów/wejść przy zalogowanym koncie (Sesja 14):** konto i urządzenie to
+**dwie rozłączne przestrzenie danych**, bez mieszania (`src/server/caller-identity.ts`,
+`src/server/card-owner.ts`). Zalogowany widzi i zapisuje wyłącznie karnety konta
+(`userId`) — token urządzenia jest wtedy ignorowany, nawet jeśli jest wysłany. Niezalogowany
+widzi i zapisuje wyłącznie karnety bieżącego urządzenia (`deviceId`), tak jak przed Sesją
+14. Dzięki temu karnet dodany w trakcie bycia zalogowanym nie staje się widoczny po
+wylogowaniu, i odwrotnie. Jedyny most między przestrzeniami to jednorazowa migracja w
+`POST /api/auth/link-device` (patrz sekcja "Auth" niżej) — karnety dodane na urządzeniu
+zanim ktokolwiek się zalogował trafiają do konta przy pierwszym logowaniu.
 
 ## Karnety
 

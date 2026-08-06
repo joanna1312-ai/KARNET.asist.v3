@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ownerFilter } from "./card-owner";
 
-describe("ownerFilter (Sesja 14 — dostęp przez urządzenie i/lub konto)", () => {
+describe("ownerFilter (Sesja 14 — konto i urządzenie to rozłączne przestrzenie danych)", () => {
   it("matches only the device when there is no session", () => {
     expect(ownerFilter({ deviceId: "device-1", userId: null })).toEqual({
       deviceId: "device-1",
@@ -14,9 +14,9 @@ describe("ownerFilter (Sesja 14 — dostęp przez urządzenie i/lub konto)", () 
     });
   });
 
-  it("matches device OR account when both are present, so linked and not-yet-linked cards both show", () => {
+  it("scopes strictly to the account when logged in, ignoring the device token entirely — no mixing the two spaces", () => {
     expect(ownerFilter({ deviceId: "device-1", userId: "user-1" })).toEqual({
-      OR: [{ deviceId: "device-1" }, { userId: "user-1" }],
+      userId: "user-1",
     });
   });
 });

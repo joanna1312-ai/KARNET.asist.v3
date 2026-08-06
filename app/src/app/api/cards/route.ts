@@ -5,7 +5,6 @@ import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
 import { getCardInputErrors, parseCardInput } from "@/server/card-rules";
 import { isCardArchived } from "@/server/card-status";
 import { ownerFilter } from "@/server/card-owner";
-import { getVerifiedDeviceId } from "@/server/request-device";
 
 const categorySelect = {
   id: true,
@@ -22,9 +21,10 @@ type CardWithCompany = Prisma.CardGetPayload<{
   include: { company: { select: typeof companySelect } };
 }>;
 
-// GET /api/cards[?archived=true] — lista karnetów bieżącego urządzenia i/lub
-// zalogowanego konta (ADR-007, Sesja 14 — patrz caller-identity.ts). `archived` liczone w
-// locie wg formuły z docs/DATABASE.md, nie jest kolumną.
+// GET /api/cards[?archived=true] — lista karnetów. Zalogowany widzi wyłącznie karnety
+// konta, niezalogowany wyłącznie karnety bieżącego urządzenia — dwie rozłączne
+// przestrzenie, bez mieszania (ADR-007, Sesja 14 — patrz caller-identity.ts/card-owner.ts).
+// `archived` liczone w locie wg formuły z docs/DATABASE.md, nie jest kolumną.
 export async function GET(request: Request) {
   const identity = await getCallerIdentity(request);
   if (!hasIdentity(identity)) {
@@ -45,10 +45,13 @@ export async function GET(request: Request) {
 }
 
 // POST /api/cards — kreator karnetu (krok 1-3 z prototypu). Reguła
-// `unlimited ⇒ expiryDate wymagane` wymuszona tu, nie tylko w UI (docs/API.md).
+// `unlimited ⇒ expiryDate wymagane` wymuszona tu, nie tylko w UI (docs/API.md). Nowy
+// karnet trafia do tej samej przestrzeni, z której wywołujący czyta (ownerFilter) —
+// zalogowany zapisuje pod userId, nie deviceId, żeby dane dodane w trakcie bycia
+// zalogowanym nie zostały "na urządzeniu" i nie były widoczne po wylogowaniu.
 export async function POST(request: Request) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -74,7 +77,8 @@ export async function POST(request: Request) {
 
   const card = await prisma.card.create({
     data: {
-      deviceId,
+      deviceId: identity.userId ? null : identity.deviceId,
+      userId: identity.userId,
       companyId: input.companyId!,
       type: input.type!,
       totalVisits: input.totalVisits ?? null,

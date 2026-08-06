@@ -55,7 +55,7 @@ describe("GET /api/cards (ADR-007)", () => {
     );
   });
 
-  it("matches cards by device OR account when both a session and a device token are present (Sesja 14 — post link-device)", async () => {
+  it("ignores the device token and scopes strictly to the account when logged in, even if a device token is also sent — no mixing between the two spaces", async () => {
     getServerSessionMock.mockResolvedValue({ user: { id: "user-1" } });
     prismaMock.card.findMany.mockResolvedValue([]);
 
@@ -66,10 +66,7 @@ describe("GET /api/cards (ADR-007)", () => {
     expect(response.status).toBe(200);
     expect(prismaMock.card.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: {
-          deletedAt: null,
-          OR: [{ deviceId: "device-1" }, { userId: "user-1" }],
-        },
+        where: { deletedAt: null, userId: "user-1" },
       })
     );
   });
@@ -133,10 +130,64 @@ describe("GET /api/cards (ADR-007)", () => {
 });
 
 describe("POST /api/cards — kreator karnetu", () => {
-  it("rejects requests without a verified device token", async () => {
+  it("rejects requests without a verified device token and without a session", async () => {
     const response = await POST(new Request(endpoint, { method: "POST" }));
     expect(response.status).toBe(401);
     expect(prismaMock.card.create).not.toHaveBeenCalled();
+  });
+
+  it("accepts requests with a logged-in session but no device token (Sesja 14)", async () => {
+    getServerSessionMock.mockResolvedValue({ user: { id: "user-1" } });
+    prismaMock.company.findUnique.mockResolvedValue({ id: "co1" });
+    prismaMock.card.create.mockResolvedValue({ id: "new-card" });
+
+    const response = await POST(
+      new Request(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId: "co1",
+          type: CardType.limit,
+          totalVisits: 5,
+          voucherMode: VoucherMode.single,
+        }),
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(prismaMock.card.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: "user-1", deviceId: null }),
+      })
+    );
+  });
+
+  it("saves a new card to the account (userId), not the device, when logged in — so it does not leak into the anonymous/device view after signing out", async () => {
+    getServerSessionMock.mockResolvedValue({ user: { id: "user-1" } });
+    prismaMock.company.findUnique.mockResolvedValue({ id: "co1" });
+    prismaMock.card.create.mockResolvedValue({ id: "new-card" });
+
+    await POST(
+      new Request(endpoint, {
+        method: "POST",
+        headers: {
+          ...(await authHeaders("device-1")),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          companyId: "co1",
+          type: CardType.limit,
+          totalVisits: 5,
+          voucherMode: VoucherMode.single,
+        }),
+      })
+    );
+
+    expect(prismaMock.card.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: "user-1", deviceId: null }),
+      })
+    );
   });
 
   it("rejects an unlimited card without expiryDate, even though the client sent one", async () => {
