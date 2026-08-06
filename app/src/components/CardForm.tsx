@@ -2,21 +2,37 @@
 
 import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
-import { CardType, CompanyCategory, VoucherMode } from "@/generated/prisma/enums";
+import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
+import { CATEGORY_COLOR_PALETTE, type CategoryColor } from "@/server/system-categories";
 
 export interface CompanyOption {
   id: string;
   name: string;
 }
 
+export interface CategoryOption {
+  id: string;
+  slug: string | null;
+  name: string;
+  color: CategoryColor;
+  isSystem: boolean;
+}
+
 export type CompanyMode = "existing" | "new";
+
+// Sentinel w selekcie kategorii: "dodaj własną kategorię" zamiast wybrania istniejącej
+// (Sesja 16). Nie może kolidować z prawdziwym uuid kategorii.
+export const NEW_CATEGORY_SENTINEL = "__new__";
 
 export interface CardFormValues {
   companyMode: CompanyMode;
   companyId: string;
   newCompanyName: string;
-  newCompanyCategory: CompanyCategory | "";
+  newCompanyCategorySelection: string;
+  newCategoryName: string;
+  newCategoryColor: CategoryColor | "";
   type: CardType;
   totalVisits: string;
   expiryDate: string;
@@ -28,7 +44,9 @@ export const emptyCardFormValues: CardFormValues = {
   companyMode: "existing",
   companyId: "",
   newCompanyName: "",
-  newCompanyCategory: "",
+  newCompanyCategorySelection: "",
+  newCategoryName: "",
+  newCategoryColor: "",
   type: CardType.limit,
   totalVisits: "",
   expiryDate: "",
@@ -36,15 +54,21 @@ export const emptyCardFormValues: CardFormValues = {
   voucherFileUrl: "",
 };
 
-// Kody błędów walidowane tylko po stronie klienta (dot. nowej firmy) — nie istnieją w
-// CardInputErrorCode, bo API karnetów o nich nie wie: firma jest tworzona osobnym
-// wywołaniem (POST /api/companies), zanim powstanie/zaktualizuje się karnet.
-type NewCompanyErrorCode = "newCompanyNameRequired" | "newCompanyCategoryRequired";
+// Kody błędów walidowane tylko po stronie klienta (dot. nowej firmy/kategorii) — nie
+// istnieją w CardInputErrorCode, bo API karnetów o nich nie wie: firma/kategoria są
+// tworzone osobnymi wywołaniami (POST /api/categories, POST /api/companies), zanim
+// powstanie/zaktualizuje się karnet.
+type NewCompanyErrorCode =
+  | "newCompanyNameRequired"
+  | "newCompanyCategoryRequired"
+  | "newCategoryNameRequired"
+  | "newCategoryColorRequired";
 type FormErrorCode = CardInputErrorCode | NewCompanyErrorCode;
 
 interface CardFormProps {
   mode: "add" | "edit" | "renew";
   companies: CompanyOption[];
+  categories: CategoryOption[];
   initialValues?: CardFormValues;
   submitting: boolean;
   serverErrors: CardInputErrorCode[];
@@ -60,7 +84,9 @@ const FIELD_FOR_ERROR: Record<FormErrorCode, keyof CardFormValues> = {
   totalVisitsPositive: "totalVisits",
   voucherModeRequired: "voucherMode",
   newCompanyNameRequired: "newCompanyName",
-  newCompanyCategoryRequired: "newCompanyCategory",
+  newCompanyCategoryRequired: "newCompanyCategorySelection",
+  newCategoryNameRequired: "newCategoryName",
+  newCategoryColorRequired: "newCategoryColor",
 };
 
 function toCandidate(values: CardFormValues) {
@@ -84,6 +110,7 @@ function toCandidate(values: CardFormValues) {
 export function CardForm({
   mode,
   companies,
+  categories,
   initialValues,
   submitting,
   serverErrors,
@@ -108,8 +135,15 @@ export function CardForm({
       if (values.newCompanyName.trim().length === 0) {
         newCompanyErrors.push("newCompanyNameRequired");
       }
-      if (!values.newCompanyCategory) {
+      if (!values.newCompanyCategorySelection) {
         newCompanyErrors.push("newCompanyCategoryRequired");
+      } else if (values.newCompanyCategorySelection === NEW_CATEGORY_SENTINEL) {
+        if (values.newCategoryName.trim().length === 0) {
+          newCompanyErrors.push("newCategoryNameRequired");
+        }
+        if (!values.newCategoryColor) {
+          newCompanyErrors.push("newCategoryColorRequired");
+        }
       }
     }
 
@@ -223,12 +257,12 @@ export function CardForm({
               </label>
               <select
                 id={`${formId}-new-company-category`}
-                value={values.newCompanyCategory}
+                value={values.newCompanyCategorySelection}
                 disabled={submitting}
                 onChange={(event) =>
                   setValues((prev) => ({
                     ...prev,
-                    newCompanyCategory: event.target.value as CompanyCategory,
+                    newCompanyCategorySelection: event.target.value,
                   }))
                 }
                 className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
@@ -236,18 +270,77 @@ export function CardForm({
                 <option value="" disabled>
                   {t("categoryPlaceholder")}
                 </option>
-                {(Object.values(CompanyCategory) as CompanyCategory[]).map((category) => (
-                  <option key={category} value={category}>
-                    {tCategory(category)}
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {categoryDisplayName(category, tCategory)}
                   </option>
                 ))}
+                <option value={NEW_CATEGORY_SENTINEL}>{t("newCategoryOption")}</option>
               </select>
-              {errorFor("newCompanyCategory") && (
+              {errorFor("newCompanyCategorySelection") && (
                 <p className="text-sm text-status-urgent">
-                  {t(`errors.${errorFor("newCompanyCategory")}`)}
+                  {t(`errors.${errorFor("newCompanyCategorySelection")}`)}
                 </p>
               )}
             </div>
+
+            {values.newCompanyCategorySelection === NEW_CATEGORY_SENTINEL && (
+              <div className="flex flex-col gap-3 rounded-lg border border-black/10 p-3 dark:border-white/10">
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor={`${formId}-new-category-name`}
+                    className="text-sm font-medium"
+                  >
+                    {t("newCategoryNameLabel")}
+                  </label>
+                  <input
+                    id={`${formId}-new-category-name`}
+                    type="text"
+                    value={values.newCategoryName}
+                    disabled={submitting}
+                    placeholder={t("newCategoryNamePlaceholder")}
+                    onChange={(event) =>
+                      setValues((prev) => ({ ...prev, newCategoryName: event.target.value }))
+                    }
+                    className="rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+                  />
+                  {errorFor("newCategoryName") && (
+                    <p className="text-sm text-status-urgent">
+                      {t(`errors.${errorFor("newCategoryName")}`)}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium">{t("newCategoryColorLabel")}</span>
+                  <div className="flex gap-2">
+                    {CATEGORY_COLOR_PALETTE.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        disabled={submitting}
+                        aria-pressed={values.newCategoryColor === color}
+                        aria-label={t(`categoryColors.${color}`)}
+                        title={t(`categoryColors.${color}`)}
+                        onClick={() =>
+                          setValues((prev) => ({ ...prev, newCategoryColor: color }))
+                        }
+                        className={`h-8 w-8 rounded-full ${CATEGORY_COLOR_CLASS[color]} ${
+                          values.newCategoryColor === color
+                            ? "ring-2 ring-offset-2 ring-black/60 dark:ring-white/60 dark:ring-offset-black"
+                            : ""
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  {errorFor("newCategoryColor") && (
+                    <p className="text-sm text-status-urgent">
+                      {t(`errors.${errorFor("newCategoryColor")}`)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

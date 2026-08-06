@@ -7,7 +7,14 @@ import {
 } from "@/server/card-rules";
 import { getVerifiedDeviceId } from "@/server/request-device";
 
-const companySelect = { id: true, name: true, category: true } as const;
+const categorySelect = {
+  id: true,
+  slug: true,
+  name: true,
+  color: true,
+  isSystem: true,
+} as const;
+const companySelect = { id: true, name: true, category: { select: categorySelect } } as const;
 
 type RouteParams = { params: Promise<{ id: string }> };
 

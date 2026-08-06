@@ -277,13 +277,14 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > zmianach architektonicznych aktualizować odpowiedni plik w `docs/`).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Decyzje z listy wyżej podjęte
-- [ ] Plan zaakceptowany
-- [ ] Migracja `categories` + seed danych systemowych
-- [ ] `POST`/`GET /api/categories`
-- [ ] UI i i18n zaktualizowane
-- [ ] `docs/DATABASE.md` i `docs/ARCHITECTURE.md` zaktualizowane
-- [ ] lint/test + commit
+- [x] Decyzje z listy wyżej podjęte (kategoria prywatna per urządzenie; kolor z gotowej
+      palety; 5 obecnych kategorii jako systemowe obok kategorii użytkownika)
+- [x] Plan zaakceptowany
+- [x] Migracja `categories` + seed danych systemowych
+- [x] `POST`/`GET /api/categories`
+- [x] UI i i18n zaktualizowane
+- [x] `docs/DATABASE.md` i `docs/ARCHITECTURE.md` zaktualizowane (też `docs/API.md`)
+- [x] lint/test + commit
 
 ## Sesja 17 — Widok dostosowany do przeglądarek mobilnych (Android/iOS)
 

@@ -27,7 +27,11 @@ Przykład odpowiedzi `GET /api/cards/:id`:
 ```json
 {
   "id": "c1",
-  "company": { "id": "co1", "name": "FitZone Siłownia", "category": "gym" },
+  "company": {
+    "id": "co1",
+    "name": "FitZone Siłownia",
+    "category": { "id": "...", "slug": "gym", "name": "Siłownia", "color": "mint", "isSystem": true }
+  },
   "type": "limit",
   "totalVisits": 12,
   "usedVisits": 8,
@@ -70,6 +74,21 @@ usunięcie błędnie dodanego wejścia można wykonać także po archiwizacji ka
 `GET /api/companies` przyjmuje opcjonalny nagłówek `Authorization: Device <token>` — bez
 niego lista działa jak dotąd (publiczny odczyt), z nim każda firma ma dodatkowo pole
 `isFavorite` (ulubione są prywatne per urządzenie/konto, nigdy globalne).
+
+## Kategorie firm (Sesja 16)
+
+| Metoda | Ścieżka | Opis |
+|---|---|---|
+| `GET` | `/api/categories` | 5 kategorii systemowych + własne kategorie zweryfikowanego urządzenia |
+| `POST` | `/api/categories` | dodanie własnej kategorii (nazwa + kolor z zamkniętej palety), zawsze prywatnej dla urządzenia wywołującego |
+
+`POST /api/categories` wymaga `Authorization: Device <token>` (ADR-007), analogicznie do
+`POST /api/companies`. `GET /api/companies` i `GET /api/companies/:id` zwracają `category`
+jako obiekt (`{ id, slug, name, color, isSystem }`), nie string — `slug` jest ustawiony
+tylko dla kategorii systemowych i służy do tłumaczenia i18n; kategorie użytkownika
+wyświetla się wprost po `name`. `POST /api/companies` przyjmuje `categoryId` (uuid), nie
+nazwę kategorii — musi wskazywać kategorię systemową albo własną kategorię wywołującego
+urządzenia, inaczej `400 { "errors": ["categoryRequired"] }`.
 
 ## Wyszukiwanie miejsc (Google Maps)
 

@@ -42,7 +42,7 @@ danych.
 | `Company` (partner) | `partners[]` | Firma/klub powiązana z jednym lub wieloma karnetami |
 | `Card` (karnet) | `cards[]` | Karnet użytkownika w danej firmie: typ `limit`/`unlimited`, licznik wejść, opcjonalna data ważności |
 | `Visit` (wejście) | `card.history[]` | Pojedyncze wejście: data, opcjonalna godzina, opcjonalna notatka |
-| `Category` | `cat` (`silownia`/`basen`/`zajecia`/`masaz`/`kosmetyka`) | Kategoria firmy/karnetu, determinuje styl (sport/relax) i ikonę |
+| `Category` | `cat` (`silownia`/`basen`/`zajecia`/`masaz`/`kosmetyka`) | Kategoria firmy (Sesja 16: tabela, nie enum) — 5 kategorii systemowych (odpowiednik dawnego `cat` z prototypu) + kategorie własne użytkowników, prywatne dla urządzenia, które je dodało. Determinuje kolor (z zamkniętej palety) używany w UI jako wizualny odpowiednik dawnego stylu/ikony. |
 
 Pełny schemat pól i relacji: [DATABASE.md](DATABASE.md).
 

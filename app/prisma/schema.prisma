@@ -14,14 +14,20 @@ datasource db {
   provider = "postgresql"
 }
 
-enum CompanyCategory {
-  gym
-  pool
-  group_classes
-  massage
-  beauty
+// Paleta kolorów kategorii (Sesja 16) — zamknięty zbiór, egzekwowany na poziomie bazy
+// jak pozostałe enumy w tym schemacie. Wartości odpowiadają tokenom design systemu
+// (`--mint`, `--coral`, `--accent`) z globals.css + 3 nowe (`sky`, `violet`, `slate`)
+// dodane specjalnie pod kategorie, żeby było z czego wybierać dla 5 systemowych +
+// własnych kategorii użytkownika.
+enum CategoryColor {
+  mint
+  coral
+  accent
+  sky
+  violet
+  slate
 
-  @@map("company_category")
+  @@map("category_color")
 }
 
 enum CardType {
@@ -107,21 +113,45 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+/// Kategoria firmy (Sesja 16) — od enuma stałego do tabeli, żeby użytkownicy mogli
+/// dodawać własne kategorie obok 5 systemowych. `slug` ustawiony tylko dla kategorii
+/// systemowych: stały klucz i18n (`companyCategory.<slug>`) niezależny od `id`.
+/// `isSystem` odróżnia 5 kategorii startowych (niemodyfikowalnych przez użytkowników)
+/// od kategorii dodanych ręcznie. `createdByDeviceId` nullable — kategoria użytkownika
+/// jest prywatna dla urządzenia, które ją dodało (ustalone przed Sesją 16); dla kategorii
+/// systemowych zawsze `null`. Weryfikacja `deviceId` jak wszędzie indziej — przez
+/// podpisany token (ADR-007), nigdy przez surowe body/query.
+model Category {
+  id                String        @id @default(uuid()) @db.Uuid
+  slug              String?       @unique
+  name              String
+  color             CategoryColor
+  isSystem          Boolean       @default(false) @map("is_system")
+  createdByDeviceId String?       @map("created_by_device_id")
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  companies Company[]
+
+  @@index([createdByDeviceId])
+  @@map("categories")
+}
+
 /// Partner (firma), np. siłownia, basen, salon masażu.
 model Company {
-  id              String          @id @default(uuid()) @db.Uuid
+  id              String   @id @default(uuid()) @db.Uuid
   name            String
-  category        CompanyCategory
+  categoryId      String   @map("category_id") @db.Uuid
   lat             Float?
   lng             Float?
-  googlePlaceId   String?         @map("google_place_id")
-  createdByUserId String?         @map("created_by_user_id") @db.Uuid
+  googlePlaceId   String?  @map("google_place_id")
+  createdByUserId String?  @map("created_by_user_id") @db.Uuid
 
+  category  Category   @relation(fields: [categoryId], references: [id])
   createdBy User?      @relation("CompanyCreatedBy", fields: [createdByUserId], references: [id])
   cards     Card[]
   favorites Favorite[]
 
-  @@index([category])
+  @@index([categoryId])
   @@map("companies")
 }
 

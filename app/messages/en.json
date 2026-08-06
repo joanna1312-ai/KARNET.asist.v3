@@ -64,6 +64,18 @@
     "newCompanyNamePlaceholder": "e.g. Pilates Studio Center",
     "categoryLabel": "Category",
     "categoryPlaceholder": "Choose a category",
+    "newCategoryOption": "+ Add your own category",
+    "newCategoryNameLabel": "Category name",
+    "newCategoryNamePlaceholder": "e.g. Squash",
+    "newCategoryColorLabel": "Category color",
+    "categoryColors": {
+      "mint": "Mint",
+      "coral": "Coral",
+      "accent": "Orange",
+      "sky": "Sky blue",
+      "violet": "Violet",
+      "slate": "Slate"
+    },
     "typeLabel": "Card type",
     "typeOptions": {
       "limit": "Visit limit",
@@ -93,6 +105,8 @@
       "voucherModeRequired": "Choose how the voucher is shown.",
       "newCompanyNameRequired": "Enter the company name.",
       "newCompanyCategoryRequired": "Choose the company category.",
+      "newCategoryNameRequired": "Enter the category name.",
+      "newCategoryColorRequired": "Choose the category color.",
       "saveFailed": "Couldn't save the card. Try again."
     }
   },

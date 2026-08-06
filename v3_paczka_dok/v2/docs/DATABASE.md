@@ -20,7 +20,7 @@
 |---|---|---|
 | `id` | uuid PK | |
 | `name` | text | |
-| `category` | enum: `gym, pool, group_classes, massage, beauty` | odpowiednik `cat` w prototypie |
+| `category_id` | uuid FK → categories | Sesja 16: dawniej enum `gym, pool, group_classes, massage, beauty`, teraz FK do tabeli `categories` (patrz niżej) |
 | `lat`, `lng` | double, nullable | z Google Places, `null` dopóki nie ustawione |
 | `google_place_id` | text, nullable | do integracji z realnym Google Maps |
 | `created_by_user_id` | uuid FK → users, nullable | kto dodał „nową firmę” ręcznie |
@@ -28,6 +28,25 @@
 W prototypie `partners[]` ma sztuczne `x`/`y` (procent na schematycznej mapie) i `dist`
 (mockowany dystans) — oba znikają na rzecz prawdziwych `lat`/`lng` i liczonego
 dystansu względem lokalizacji użytkownika.
+
+### `categories` (kategorie firm — Sesja 16)
+
+Zastępuje dawny enum `company_category`. Umożliwia użytkownikom dodawanie własnych
+kategorii obok 5 systemowych, bez zmiany typu w bazie przy każdej nowej kategorii.
+
+| Kolumna | Typ | Uwagi |
+|---|---|---|
+| `id` | uuid PK | dla 5 kategorii systemowych — stałe, deterministyczne id (patrz seed w migracji i `src/server/system-categories.ts`), nie generowane |
+| `slug` | text, unique, nullable | ustawiony **tylko** dla kategorii systemowych (`gym`, `pool`, `group_classes`, `massage`, `beauty`) — stały klucz do tłumaczenia i18n (`companyCategory.<slug>`), niezależny od `id` |
+| `name` | text | dla kategorii systemowych: nazwa referencyjna (UI i tak tłumaczy po `slug`); dla kategorii użytkownika: nazwa wpisana przez niego, wyświetlana wprost, bez tłumaczenia |
+| `color` | enum: `mint, coral, accent, sky, violet, slate` | zamknięta paleta (decyzja Sesji 16) — wybierana z gotowego zestawu, nie dowolny kolor; determinuje wygląd (kolorowa kropka przy nazwie) analogicznie do dawnego „stylu/ikony” z `ARCHITECTURE.md` |
+| `is_system` | boolean, default `false` | `true` dla 5 kategorii startowych — nieedytowalne/nieusuwalne przez użytkowników, zawsze widoczne wszystkim |
+| `created_by_device_id` | text, nullable | **decyzja Sesji 16: kategoria użytkownika jest prywatna dla urządzenia, które ją dodało** (w odróżnieniu od `companies`, które są współdzielone globalnie) — `null` dla kategorii systemowych |
+| `created_at` | timestamptz | |
+
+Widoczność przy odczycie (`GET /api/categories`): kategorie systemowe (`is_system = true`)
+zawsze + kategorie, gdzie `created_by_device_id` = zweryfikowany `deviceId` wywołującego
+(ADR-007). Bez tokena widać tylko systemowe.
 
 ### `cards` (karnety)
 
@@ -77,9 +96,10 @@ Klucz główny złożony `(user_id, company_id)` lub `(device_id, company_id)`.
 ## Relacje
 
 ```
-users 1───N cards N───1 companies
+users 1───N cards N───1 companies N───1 categories
 cards 1───N visits
 users/device N───N companies  (favorites)
+device 1───N categories  (własne kategorie, prywatne per urządzenie)
 ```
 
 ## Status karnetu — progi (etykieta ostrzegawcza)
@@ -118,8 +138,10 @@ powinny mieć różną skalę pilności.
 
 - `cards(user_id)`, `cards(device_id)`, `cards(company_id)`
 - `visits(card_id, visit_date DESC)` — lista historii sortowana malejąco jak w prototypie
-- `companies(category)`, opcjonalnie indeks przestrzenny (PostGIS) na `(lat,lng)` gdy
+- `companies(category_id)`, opcjonalnie indeks przestrzenny (PostGIS) na `(lat,lng)` gdy
   wyszukiwanie „w pobliżu” zacznie być realne, nie mockowe
+- `categories(created_by_device_id)` — filtrowanie własnych kategorii urządzenia w
+  `GET /api/categories`
 
 ## Dostęp do danych i RLS (jeśli Supabase)
 
@@ -148,6 +170,10 @@ Jeśli baza danych lub storage voucherów zostaną uruchomione na Supabase (jedn
   logice, nie jedyną. Szczegóły implementacji: `ADR-007` w `DECISIONS.md`.
 - `companies` (dane partnerów, nie dane osobowe użytkownika) — może mieć RLS z dostępem
   do odczytu dla wszystkich, zapis ograniczony do API.
+- `categories` — kategorie systemowe (`is_system = true`) czytelne dla wszystkich;
+  kategorie użytkownika widoczne tylko dla `device_id`, które je utworzyło (Sesja 16:
+  prywatność per urządzenie, w odróżnieniu od `companies`) — analogicznie do reguły
+  `device_id` dla `cards`/`visits`/`favorites` wyżej.
 - Storage voucherów (Supabase Storage) — analogicznie: polityki bucketa ograniczające
   odczyt/zapis pliku do właściciela karnetu, nie publiczny odczyt po samym URL.
 

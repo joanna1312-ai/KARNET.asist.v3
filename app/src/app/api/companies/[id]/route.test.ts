@@ -1,6 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { CardType, CompanyCategory, VoucherMode } from "@/generated/prisma/enums";
+import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { signDeviceToken } from "@/server/device-token";
+
+const GYM_CATEGORY = { id: "cat-gym", slug: "gym", name: "Siłownia", color: "mint", isSystem: true };
 
 const prismaMock = {
   company: {
@@ -54,7 +56,7 @@ describe("GET /api/companies/:id", () => {
     prismaMock.company.findUnique.mockResolvedValue({
       id: "co1",
       name: "FitZone",
-      category: CompanyCategory.gym,
+      category: GYM_CATEGORY,
     });
     prismaMock.card.findMany.mockResolvedValue([
       {
@@ -79,7 +81,7 @@ describe("GET /api/companies/:id", () => {
       orderBy: { createdAt: "desc" },
     });
     expect(response.status).toBe(200);
-    expect(body.company).toEqual({ id: "co1", name: "FitZone", category: CompanyCategory.gym });
+    expect(body.company).toEqual({ id: "co1", name: "FitZone", category: GYM_CATEGORY });
     expect(body.cards).toHaveLength(1);
     expect(body.cards[0].id).toBe("card-1");
   });

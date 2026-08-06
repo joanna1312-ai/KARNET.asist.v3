@@ -1,15 +1,16 @@
-import { CompanyCategory } from "@/generated/prisma/enums";
-
 export type CompanyInputErrorCode = "nameRequired" | "categoryRequired";
 
 export interface CompanyInputCandidate {
   name: string | null | undefined;
-  category: CompanyCategory | null | undefined;
+  categoryId: string | null | undefined;
 }
 
 // Walidacja ręcznego dodania firmy (Sesja 8, docs/API.md: POST /api/companies).
 // Współrzędne/google_place_id celowo pomijane tu — to pole pod przyszłą integrację
 // Google Places (ADR-004), nieużywane przy ręcznym dodawaniu.
+// Istnienie/widoczność `categoryId` (Sesja 16: kategoria może być systemowa albo
+// prywatna dla wywołującego urządzenia) sprawdza route handler przez zapytanie do
+// bazy — tu tylko walidacja kształtu wejścia, bez dostępu do bazy.
 export function getCompanyInputErrors(
   candidate: CompanyInputCandidate
 ): CompanyInputErrorCode[] {
@@ -18,17 +19,11 @@ export function getCompanyInputErrors(
   if (!candidate.name || candidate.name.trim().length === 0) {
     errors.push("nameRequired");
   }
-  if (!candidate.category) {
+  if (!candidate.categoryId) {
     errors.push("categoryRequired");
   }
 
   return errors;
-}
-
-function readCompanyCategory(value: unknown): CompanyCategory | null {
-  return (Object.values(CompanyCategory) as string[]).includes(value as string)
-    ? (value as CompanyCategory)
-    : null;
 }
 
 export function parseCompanyInput(body: unknown): CompanyInputCandidate {
@@ -39,6 +34,9 @@ export function parseCompanyInput(body: unknown): CompanyInputCandidate {
 
   return {
     name: typeof record.name === "string" ? record.name.trim() : null,
-    category: readCompanyCategory(record.category),
+    categoryId:
+      typeof record.categoryId === "string" && record.categoryId.trim().length > 0
+        ? record.categoryId
+        : null,
   };
 }

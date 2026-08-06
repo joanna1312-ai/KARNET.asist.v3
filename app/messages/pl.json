@@ -64,6 +64,18 @@
     "newCompanyNamePlaceholder": "Np. Studio Pilates Centrum",
     "categoryLabel": "Kategoria",
     "categoryPlaceholder": "Wybierz kategorię",
+    "newCategoryOption": "+ Dodaj własną kategorię",
+    "newCategoryNameLabel": "Nazwa kategorii",
+    "newCategoryNamePlaceholder": "Np. Squash",
+    "newCategoryColorLabel": "Kolor kategorii",
+    "categoryColors": {
+      "mint": "Mięta",
+      "coral": "Koral",
+      "accent": "Pomarańcz",
+      "sky": "Błękit",
+      "violet": "Fiolet",
+      "slate": "Szarość"
+    },
     "typeLabel": "Typ karnetu",
     "typeOptions": {
       "limit": "Limit wejść",
@@ -93,6 +105,8 @@
       "voucherModeRequired": "Wybierz sposób pokazywania vouchera.",
       "newCompanyNameRequired": "Podaj nazwę firmy.",
       "newCompanyCategoryRequired": "Wybierz kategorię firmy.",
+      "newCategoryNameRequired": "Podaj nazwę kategorii.",
+      "newCategoryColorRequired": "Wybierz kolor kategorii.",
       "saveFailed": "Nie udało się zapisać karnetu. Spróbuj ponownie."
     }
   },

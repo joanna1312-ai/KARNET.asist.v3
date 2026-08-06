@@ -5,7 +5,14 @@ import { getCardInputErrors, parseCardInput } from "@/server/card-rules";
 import { isCardArchived } from "@/server/card-status";
 import { getVerifiedDeviceId } from "@/server/request-device";
 
-const companySelect = { id: true, name: true, category: true } as const;
+const categorySelect = {
+  id: true,
+  slug: true,
+  name: true,
+  color: true,
+  isSystem: true,
+} as const;
+const companySelect = { id: true, name: true, category: { select: categorySelect } } as const;
 
 // Adnotacja jawna, bo TS gubi się przy inferencji typu elementu tablicy w
 // `.filter(...)` na wyniku `findMany` z zagnieżdżonym `include`/`select` (Prisma).

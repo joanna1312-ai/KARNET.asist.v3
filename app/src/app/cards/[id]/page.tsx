@@ -26,7 +26,7 @@ interface ApiCard {
   usedVisits: number;
   expiryDate: string | null;
   voucherFileUrl: string | null;
-  company: { id: string; name: string; category: string };
+  company: { id: string; name: string };
   visits: ApiVisit[];
 }
 

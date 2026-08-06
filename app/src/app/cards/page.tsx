@@ -6,8 +6,10 @@ import { useCallback, useEffect, useState } from "react";
 import {
   CardForm,
   CardFormValues,
+  CategoryOption,
   CompanyOption,
   emptyCardFormValues,
+  NEW_CATEGORY_SENTINEL,
 } from "@/components/CardForm";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -17,6 +19,14 @@ import { formatDate } from "@/lib/format";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus } from "@/server/card-status";
 
+interface ApiCategory {
+  id: string;
+  slug: string | null;
+  name: string;
+  color: string;
+  isSystem: boolean;
+}
+
 interface ApiCard {
   id: string;
   type: CardType;
@@ -25,7 +35,7 @@ interface ApiCard {
   expiryDate: string | null;
   voucherMode: VoucherMode;
   voucherFileUrl: string | null;
-  company: { id: string; name: string; category: string };
+  company: { id: string; name: string; category: ApiCategory };
 }
 
 function cardToFormValues(card: ApiCard): CardFormValues {
@@ -33,7 +43,9 @@ function cardToFormValues(card: ApiCard): CardFormValues {
     companyMode: "existing",
     companyId: card.company.id,
     newCompanyName: "",
-    newCompanyCategory: "",
+    newCompanyCategorySelection: "",
+    newCategoryName: "",
+    newCategoryColor: "",
     type: card.type,
     totalVisits: card.totalVisits != null ? String(card.totalVisits) : "",
     expiryDate: card.expiryDate ? card.expiryDate.slice(0, 10) : "",
@@ -53,21 +65,29 @@ type CardsTab = "active" | "archived";
 
 async function fetchCardsAndCompanies(tab: CardsTab): Promise<{
   companies: CompanyOption[];
+  categories: CategoryOption[];
   cards: ApiCard[];
 }> {
-  const [companiesRes, cardsRes] = await Promise.all([
+  const [companiesRes, categoriesRes, cardsRes] = await Promise.all([
     deviceFetch("/api/companies"),
+    deviceFetch("/api/categories"),
     deviceFetch(tab === "archived" ? "/api/cards?archived=true" : "/api/cards"),
   ]);
-  if (!companiesRes.ok || !cardsRes.ok) throw new Error("load_failed");
+  if (!companiesRes.ok || !categoriesRes.ok || !cardsRes.ok) throw new Error("load_failed");
   const companiesBody: { companies: CompanyOption[] } = await companiesRes.json();
+  const categoriesBody: { categories: CategoryOption[] } = await categoriesRes.json();
   const cardsBody: { cards: ApiCard[] } = await cardsRes.json();
-  return { companies: companiesBody.companies, cards: cardsBody.cards };
+  return {
+    companies: companiesBody.companies,
+    categories: categoriesBody.categories,
+    cards: cardsBody.cards,
+  };
 }
 
 export default function CardsPage() {
   const [tab, setTab] = useState<CardsTab>("active");
   const [companies, setCompanies] = useState<CompanyOption[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [cards, setCards] = useState<ApiCard[] | null>(null);
   const [loadError, setLoadError] = useState(false);
 
@@ -85,6 +105,7 @@ export default function CardsPage() {
     try {
       const data = await fetchCardsAndCompanies(forTab);
       setCompanies(data.companies);
+      setCategories(data.categories);
       setCards(data.cards);
       setLoadError(false);
     } catch {
@@ -99,6 +120,7 @@ export default function CardsPage() {
       .then((data) => {
         if (ignore) return;
         setCompanies(data.companies);
+        setCategories(data.categories);
         setCards(data.cards);
         setLoadError(false);
       })
@@ -146,12 +168,38 @@ export default function CardsPage() {
     let companyId = values.companyId;
 
     if (values.companyMode === "new") {
+      let categoryId = values.newCompanyCategorySelection;
+
+      if (categoryId === NEW_CATEGORY_SENTINEL) {
+        const categoryResponse = await deviceFetch("/api/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: values.newCategoryName.trim(),
+            color: values.newCategoryColor,
+          }),
+        });
+
+        if (!categoryResponse.ok) {
+          setSubmitting(false);
+          // Sentinel: CardForm nie renderuje selecta firmy w trybie "new", więc to
+          // tylko odpala generyczny komunikat "Nie udało się zapisać" (errors.saveFailed),
+          // nie podświetla żadnego konkretnego pola.
+          setServerErrors(["companyRequired"]);
+          return;
+        }
+
+        const categoryBody: { category: CategoryOption } = await categoryResponse.json();
+        categoryId = categoryBody.category.id;
+        setCategories((prev) => [...prev, categoryBody.category]);
+      }
+
       const companyResponse = await deviceFetch("/api/companies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: values.newCompanyName.trim(),
-          category: values.newCompanyCategory,
+          categoryId,
         }),
       });
 
@@ -274,6 +322,7 @@ export default function CardsPage() {
           <CardForm
             mode={editingCard ? "edit" : renewSource ? "renew" : "add"}
             companies={companies}
+            categories={categories}
             initialValues={
               editingCard
                 ? cardToFormValues(editingCard)

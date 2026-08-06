@@ -1,14 +1,15 @@
-import { CompanyCategory } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/db";
+import { SYSTEM_CATEGORY_IDS } from "@/server/system-categories";
 
 // Dane demo do szybkiego testowania kreatora karnetu (docs/SETUP.md, krok 5).
 // Pełne "dodawanie firmy ręcznie" przez API/UI to Sesja 8 — tu tylko seed startowy.
-const companies: { name: string; category: CompanyCategory }[] = [
-  { name: "FitZone Siłownia", category: CompanyCategory.gym },
-  { name: "Aquapark Fala", category: CompanyCategory.pool },
-  { name: "Studio Ruchu Vinyasa", category: CompanyCategory.group_classes },
-  { name: "Masaż i Regeneracja Tonus", category: CompanyCategory.massage },
-  { name: "Beauty Room Nova", category: CompanyCategory.beauty },
+// categoryId wskazuje kategorię systemową (Sesja 16) po stałym id z system-categories.ts.
+const companies: { name: string; categoryId: string }[] = [
+  { name: "FitZone Siłownia", categoryId: SYSTEM_CATEGORY_IDS.gym },
+  { name: "Aquapark Fala", categoryId: SYSTEM_CATEGORY_IDS.pool },
+  { name: "Studio Ruchu Vinyasa", categoryId: SYSTEM_CATEGORY_IDS.group_classes },
+  { name: "Masaż i Regeneracja Tonus", categoryId: SYSTEM_CATEGORY_IDS.massage },
+  { name: "Beauty Room Nova", categoryId: SYSTEM_CATEGORY_IDS.beauty },
 ];
 
 async function main() {

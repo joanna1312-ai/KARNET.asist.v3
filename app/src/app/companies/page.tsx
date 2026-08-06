@@ -3,13 +3,22 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { CompanyCategory } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
+import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import type { CategoryColor } from "@/server/system-categories";
+
+interface ApiCategory {
+  id: string;
+  slug: string | null;
+  name: string;
+  color: CategoryColor;
+  isSystem: boolean;
+}
 
 interface ApiCompany {
   id: string;
   name: string;
-  category: CompanyCategory;
+  category: ApiCategory;
   isFavorite: boolean;
 }
 
@@ -105,8 +114,12 @@ export default function CompaniesPage() {
                 className="flex flex-1 items-center justify-between gap-3"
               >
                 <p className="font-medium">{company.name}</p>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {tCategory(company.category)}
+                <p className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                  <span
+                    aria-hidden="true"
+                    className={`h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[company.category.color]}`}
+                  />
+                  {categoryDisplayName(company.category, tCategory)}
                 </p>
               </Link>
               <button

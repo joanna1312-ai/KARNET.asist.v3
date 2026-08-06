@@ -4,9 +4,15 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { CardForm, CardFormValues, emptyCardFormValues } from "@/components/CardForm";
+import {
+  CardForm,
+  CardFormValues,
+  CategoryOption,
+  emptyCardFormValues,
+} from "@/components/CardForm";
 import { StatusBadge } from "@/components/StatusBadge";
-import { CardType, CompanyCategory, VoucherMode } from "@/generated/prisma/enums";
+import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
 import { CardInputErrorCode } from "@/server/card-rules";
@@ -15,7 +21,7 @@ import { getCardWarningStatus } from "@/server/card-status";
 interface ApiCompany {
   id: string;
   name: string;
-  category: CompanyCategory;
+  category: CategoryOption;
 }
 
 interface ApiCard {
@@ -44,12 +50,20 @@ async function fetchCompany(id: string): Promise<FetchResult> {
   }
 }
 
+async function fetchCategories(): Promise<CategoryOption[]> {
+  const response = await deviceFetch("/api/categories");
+  if (!response.ok) return [];
+  const body: { categories: CategoryOption[] } = await response.json();
+  return body.categories;
+}
+
 export default function CompanyDetailsPage() {
   const params = useParams<{ id: string }>();
   const companyId = params.id;
 
   const [company, setCompany] = useState<ApiCompany | null>(null);
   const [cards, setCards] = useState<ApiCard[] | null>(null);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
@@ -86,6 +100,10 @@ export default function CompanyDetailsPage() {
       } else {
         setLoadError(true);
       }
+    });
+
+    fetchCategories().then((result) => {
+      if (!ignore) setCategories(result);
     });
 
     return () => {
@@ -165,7 +183,11 @@ export default function CompanyDetailsPage() {
             <div>
               <h1 className="text-2xl font-semibold">{company.name}</h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {tCategory(company.category)}
+                <span
+                  aria-hidden="true"
+                  className={`mr-2 inline-block h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[company.category.color]}`}
+                />
+                {categoryDisplayName(company.category, tCategory)}
               </p>
             </div>
             {!formOpen && (
@@ -184,6 +206,7 @@ export default function CompanyDetailsPage() {
               <CardForm
                 mode="add"
                 companies={[{ id: company.id, name: company.name }]}
+                categories={categories}
                 initialValues={{
                   ...emptyCardFormValues,
                   companyMode: "existing",

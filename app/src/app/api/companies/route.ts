@@ -3,6 +3,15 @@ import { prisma } from "@/lib/db";
 import { getCompanyInputErrors, parseCompanyInput } from "@/server/company-rules";
 import { getVerifiedDeviceId } from "@/server/request-device";
 
+const categorySelect = {
+  id: true,
+  slug: true,
+  name: true,
+  color: true,
+  isSystem: true,
+} as const;
+const companySelect = { id: true, name: true, category: { select: categorySelect } } as const;
+
 // Firmy nie są danymi osobowymi użytkownika — lista jest publiczna do odczytu
 // (docs/DATABASE.md, sekcja RLS). Potrzebna, żeby kreator karnetu miał z czego wybierać.
 // Device token opcjonalny (jak dotąd): jeśli obecny, dokłada `isFavorite` per firma
@@ -31,7 +40,7 @@ export async function GET(request: Request) {
   const companies = await prisma.company.findMany({
     where: favoritesOnly ? { id: { in: [...favoriteCompanyIds] } } : undefined,
     orderBy: { name: "asc" },
-    select: { id: true, name: true, category: true },
+    select: companySelect,
   });
 
   const result = companies.map((company) => ({
@@ -66,9 +75,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ errors }, { status: 400 });
   }
 
+  // categoryId musi wskazywać kategorię, którą to urządzenie faktycznie widzi:
+  // systemową (widoczna dla wszystkich) albo własną prywatną kategorię tego urządzenia
+  // (Sesja 16) — nie cudzą prywatną kategorię innego urządzenia.
+  const category = await prisma.category.findUnique({
+    where: { id: input.categoryId! },
+    select: { id: true, isSystem: true, createdByDeviceId: true },
+  });
+  if (!category || (!category.isSystem && category.createdByDeviceId !== deviceId)) {
+    return NextResponse.json({ errors: ["categoryRequired"] }, { status: 400 });
+  }
+
   const company = await prisma.company.create({
-    data: { name: input.name!, category: input.category! },
-    select: { id: true, name: true, category: true },
+    data: { name: input.name!, categoryId: input.categoryId! },
+    select: companySelect,
   });
 
   return NextResponse.json({ company }, { status: 201 });
