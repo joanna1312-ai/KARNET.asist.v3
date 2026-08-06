@@ -10,9 +10,7 @@
     "signInButton": "Zaloguj przez Google",
     "signOutButton": "Wyloguj",
     "signedInAs": "Zalogowano jako {name}",
-    "linkingDevice": "Synchronizuję karnety z tego urządzenia…",
-    "linkDeviceSuccess": "Karnety z tego urządzenia są już połączone z Twoim kontem.",
-    "linkDeviceError": "Nie udało się połączyć karnetów z tego urządzenia z kontem. Spróbuj się wylogować i zalogować ponownie."
+    "guestNotice": "Nie masz zalogowanego konta — Twoje karnety są zapisane tylko na tym urządzeniu."
   },
   "companiesPage": {
     "title": "Firmy",

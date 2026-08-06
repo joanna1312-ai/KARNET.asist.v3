@@ -2,30 +2,15 @@
 
 import { useTranslations } from "next-intl";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
-import { deviceFetch } from "@/lib/device-client";
 
-type LinkState = "idle" | "linking" | "linked" | "error";
-
-// Sesja 14: po zalogowaniu przypina karnety BIEŻĄCEGO urządzenia (ADR-007 — token
-// urządzenia, nigdy surowy deviceId) do zalogowanego konta przez
-// POST /api/auth/link-device. Konto zawsze opcjonalne (CLAUDE.md) — to jedyne
-// miejsce w UI, które w ogóle wspomina o logowaniu.
+// Konto i urządzenie to dwie rozłączne przestrzenie danych, które nigdy się nie mieszają
+// (patrz src/server/card-owner.ts) — zalogowanie NIE przenosi danych zapisanych wcześniej
+// bez konta, więc to jedyne miejsce w UI, które w ogóle wspomina o logowaniu, musi też
+// jasno mówić, w którym trybie jesteś (patrz GuestNotice.tsx dla stanu niezalogowanego).
+// Konto zawsze opcjonalne (CLAUDE.md).
 export function AccountMenu() {
   const t = useTranslations("account");
   const { data: session, status } = useSession();
-  const [linkState, setLinkState] = useState<LinkState>("idle");
-  const linkedForStatus = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (status !== "authenticated" || linkedForStatus.current === "authenticated") return;
-    linkedForStatus.current = "authenticated";
-
-    setLinkState("linking");
-    deviceFetch("/api/auth/link-device", { method: "POST" })
-      .then((response) => setLinkState(response.ok ? "linked" : "error"))
-      .catch(() => setLinkState("error"));
-  }, [status]);
 
   if (status === "loading") return null;
 
@@ -47,13 +32,7 @@ export function AccountMenu() {
     <div className="flex min-w-0 items-center gap-1.5">
       <span
         className="hidden max-w-[10rem] truncate text-sm text-foreground/70 sm:inline"
-        title={
-          linkState === "linking"
-            ? t("linkingDevice")
-            : linkState === "error"
-              ? t("linkDeviceError")
-              : t("signedInAs", { name })
-        }
+        title={t("signedInAs", { name })}
       >
         {t("signedInAs", { name })}
       </span>

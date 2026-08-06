@@ -38,9 +38,15 @@ tryb „bez konta” jako pełnoprawny, nie jako wyjątek.
 tylko dlatego, że wymaga jej interfejs adaptera Prisma, w praktyce pusta). To najbliższe
 realnie dostępne w NextAuth podejście do „token-based, nie cookie sesyjne” — sam handshake
 OAuth w przeglądarce z natury i tak przechodzi przez cookie w trakcie logowania, czego nie
-da się całkowicie wyeliminować w web-owym flow logowania. Synchronizacja między
-urządzeniami po zalogowaniu: `POST /api/auth/link-device` (patrz `API.md`), łączy tylko
-karnety urządzenia, z którego przyszło żądanie (weryfikacja przez `ADR-007`).
+da się całkowicie wyeliminować w web-owym flow logowania.
+**Konto i tryb bez konta to trwale rozłączne przestrzenie danych (poprawka po Sesji 14):**
+pierwsza wersja tej sesji miała `POST /api/auth/link-device`, jednorazowo przenoszący przy
+logowaniu karnety bieżącego urządzenia na konto. Usunięte — okazało się to sprzeczne z
+oczekiwaniem, że dane wprowadzone bez konta pozostają dostępne bez konta na zawsze, a dane
+wprowadzone na koncie nigdy nie przeciekają do trybu bez konta (patrz `API.md`, sekcja
+"Karnety"). Synchronizacji między urządzeniami dla danych wprowadzonych **przed**
+założeniem konta świadomie nie ma — to by wymagało jakiejś formy migracji, a każda migracja
+łamie rozłączność przestrzeni.
 
 ## ADR-004 — Google Maps: integracja realna odroczona do etapu produkcyjnego
 

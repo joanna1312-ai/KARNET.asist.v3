@@ -12,14 +12,17 @@ na `deviceId` odczytanym z **podpisanego** tokena urządzenia (nagłówek
 mobile).
 
 **Własność karnetów/wejść przy zalogowanym koncie (Sesja 14):** konto i urządzenie to
-**dwie rozłączne przestrzenie danych**, bez mieszania (`src/server/caller-identity.ts`,
-`src/server/card-owner.ts`). Zalogowany widzi i zapisuje wyłącznie karnety konta
-(`userId`) — token urządzenia jest wtedy ignorowany, nawet jeśli jest wysłany. Niezalogowany
-widzi i zapisuje wyłącznie karnety bieżącego urządzenia (`deviceId`), tak jak przed Sesją
-14. Dzięki temu karnet dodany w trakcie bycia zalogowanym nie staje się widoczny po
-wylogowaniu, i odwrotnie. Jedyny most między przestrzeniami to jednorazowa migracja w
-`POST /api/auth/link-device` (patrz sekcja "Auth" niżej) — karnety dodane na urządzeniu
-zanim ktokolwiek się zalogował trafiają do konta przy pierwszym logowaniu.
+**dwie trwale rozłączne przestrzenie danych, bez żadnego mostu między nimi**
+(`src/server/caller-identity.ts`, `src/server/card-owner.ts`). Zalogowany widzi i zapisuje
+wyłącznie karnety konta (`userId`) — token urządzenia jest wtedy ignorowany, nawet jeśli
+jest wysłany. Niezalogowany widzi i zapisuje wyłącznie karnety bieżącego urządzenia
+(`deviceId`). Karnet dodany w trakcie bycia zalogowanym nigdy nie staje się widoczny po
+wylogowaniu, i odwrotnie — **nie ma automatycznej ani ręcznej migracji** danych między tymi
+dwiema przestrzeniami (świadoma decyzja — wcześniejsza wersja tej sesji miała
+`POST /api/auth/link-device` do jednorazowego przenoszenia karnetów urządzenia na konto
+przy logowaniu; usunięte, bo kolidowało z zasadą braku mieszania). Ponieważ dane
+niezalogowanego użytkownika istnieją tylko na jednym urządzeniu i nigdy nie trafią na
+konto, UI pokazuje w tym trybie stały komunikat o tym wprost (`GuestNotice.tsx`).
 
 ## Karnety
 
@@ -137,14 +140,13 @@ całkowicie ominąć w web-owym flow). Magic link e-mail **nie** jest zaimplemen
 | Metoda | Ścieżka | Opis |
 |---|---|---|
 | `GET`/`POST` | `/api/auth/[...nextauth]` | wbudowane endpointy Auth.js/NextAuth (sign-in, callback, sign-out, session) — Google jako jedyny provider |
-| `POST` | `/api/auth/link-device` | wymaga jednocześnie: zalogowanej sesji NextAuth i podpisanego tokena urządzenia w nagłówku `Authorization: Device <token>` (ADR-007). Przypina **tylko karnety tego urządzenia** do konta (`userId = <zalogowany>`, `deviceId = null`); inne urządzenia nietknięte. Odpowiedź: `{ "linkedCount": number }`. `401` jeśli brak sesji lub tokena. |
 
 Zmienne środowiskowe: `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (domena, na `localhost:3000` w
 dev), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — patrz `.env.example` i instrukcja
 założenia projektu w Google Cloud Console (przekazana osobno przy Sesji 14).
 
-Konto pozostaje w pełni opcjonalne (CLAUDE.md) — żaden inny endpoint w tym dokumencie nie
-wymaga sesji, tylko `/api/auth/link-device`.
+Konto pozostaje w pełni opcjonalne (CLAUDE.md) — żaden endpoint w tym dokumencie nie
+wymaga sesji, wszystkie działają też z samym tokenem urządzenia.
 
 ## Uwagi
 

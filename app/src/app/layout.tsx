@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
+import { GuestNotice } from "@/components/GuestNotice";
 import { Header } from "@/components/Header";
 import "./globals.css";
 
@@ -55,6 +56,7 @@ export default async function RootLayout({
         <NextIntlClientProvider>
           <AuthSessionProvider>
             <Header />
+            <GuestNotice />
             {children}
           </AuthSessionProvider>
         </NextIntlClientProvider>

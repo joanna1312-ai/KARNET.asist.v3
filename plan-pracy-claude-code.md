@@ -232,16 +232,26 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 - [x] Decyzje z listy wyżej podjęte i potwierdzone (Google OAuth, brak domeny produkcyjnej
       na razie, klucze Google dostarczy właściciel projektu później)
 - [x] Plan zaakceptowany
-- [x] Logowanie + `/api/auth/link-device`
+- [x] Logowanie Google (Auth.js/NextAuth)
 - [x] Zweryfikowane: żadna funkcja rdzeniowa nadal nie wymaga logowania
 - [x] lint/test + commit
 
-Dodatkowo (znalezione i naprawione podczas ręcznego testu logowania end-to-end, poza
-pierwotnym opisem sesji): `GET/PATCH/DELETE /api/cards*` filtrowały karnety wyłącznie po
-`deviceId` — po zalogowaniu (`link-device` ustawia `deviceId = null`) karnety znikały z
-widoku zamiast zostać widoczne dalej. Naprawione przez wspólny filtr własności
-`deviceId LUB userId` (`src/server/caller-identity.ts`, `src/server/card-owner.ts`),
-zweryfikowane end-to-end (testy jednostkowe + ręczny test przez API z realną sesją).
+Dodatkowo, w dwóch kolejnych poprawkach po ręcznym teście logowania end-to-end (poza
+pierwotnym opisem sesji):
+
+1. `GET/PATCH/DELETE /api/cards*` filtrowały karnety wyłącznie po `deviceId`, więc po
+   zalogowaniu karnety całkiem znikały z widoku. Pierwsza poprawka wprowadziła
+   `POST /api/auth/link-device` + filtr `deviceId LUB userId`.
+2. Po dalszym teście okazało się, że to złe rozwiązanie: pokazywało zalogowanemu też
+   surowe dane urządzenia, a nowe karnety i tak zawsze zapisywało pod `deviceId` — czyli
+   dane dodane w trakcie bycia zalogowanym i tak zostawały widoczne po wylogowaniu.
+   **Finalna wersja:** konto i urządzenie to trwale rozłączne przestrzenie danych, bez
+   żadnego mostu — `link-device` usunięty całkowicie, `ownerFilter` używa `userId`, jeśli
+   sesja jest obecna (ignorując token urządzenia), w przeciwnym razie `deviceId`; nowy
+   karnet zapisywany pod tożsamością, z której się czyta (`src/server/caller-identity.ts`,
+   `src/server/card-owner.ts`). Dodany stały pasek `GuestNotice.tsx` informujący
+   niezalogowanego, że jego dane są zapisane tylko na tym urządzeniu. Zweryfikowane
+   bezpośrednio przez API z realną sesją (nie tylko testami jednostkowymi).
 
 ## Sesja 15 — Logo w headerze prowadzi do strony głównej
 
