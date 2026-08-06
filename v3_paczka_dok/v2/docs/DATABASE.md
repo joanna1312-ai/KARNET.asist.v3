@@ -12,7 +12,20 @@
 |---|---|---|
 | `id` | uuid PK | |
 | `email` | text, unique, nullable | konto opcjonalne — brak konta = brak wiersza |
+| `name` | text, nullable | z profilu Google (Sesja 14) |
+| `image` | text, nullable | URL zdjęcia profilowego z Google (Sesja 14) |
+| `email_verified` | timestamptz, nullable | wymagane przez interfejs adaptera Auth.js/NextAuth (Sesja 14); przy OAuth Google zawsze `null` — providerzy OAuth nie przekazują tej informacji do next-auth v4 |
 | `created_at` | timestamptz | |
+
+### `accounts`, `sessions`, `verification_tokens` (Auth.js/NextAuth — Sesja 14)
+
+Standardowy schemat wymagany przez adapter Prisma (`@auth/prisma-adapter`), niemodyfikowalny
+bez utraty kompatybilności z biblioteką — stąd pola `access_token`/`refresh_token`/itd. w
+`accounts` odstają od reszty konwencji nazewnictwa w tym dokumencie (patrz komentarz w
+`prisma/schema.prisma`). `sessions` istnieje tylko dlatego, że wymaga jej interfejs
+adaptera — w praktyce pusta, bo logowanie używa `session: { strategy: "jwt" }` (sesja to
+podpisany token, nie wiersz w tabeli — patrz `ADR-003` w `DECISIONS.md`).
+`verification_tokens` jest nieużywana (logowanie tylko przez Google OAuth, bez magic linku).
 
 ### `companies` (partnerzy)
 
@@ -54,7 +67,7 @@ zawsze + kategorie, gdzie `created_by_device_id` = zweryfikowany `deviceId` wywo
 |---|---|---|
 | `id` | uuid PK | |
 | `user_id` | uuid FK → users, **nullable** | brak konta = karnet lokalny/urządzeniowy |
-| `device_id` | text, nullable | identyfikator lokalny, gdy brak konta (do sync po zalogowaniu) |
+| `device_id` | text, nullable | identyfikator lokalny, gdy brak konta |
 | `company_id` | uuid FK → companies | |
 | `type` | enum: `limit`, `unlimited` | |
 | `total_visits` | int, nullable | wymagane, gdy `type = limit` |
@@ -64,6 +77,14 @@ zawsze + kategorie, gdzie `created_by_device_id` = zweryfikowany `deviceId` wywo
 | `voucher_file_url` | text, nullable | docelowo plik w object storage; **na start (MVP) zwykłe pole tekstowe** (treść/link vouchera), bez uploadu — patrz `CLAUDE.md` |
 | `deleted_at` | timestamptz, nullable | miękkie usuwanie (rekomendacja) |
 | `created_at`, `updated_at` | timestamptz | |
+
+**`user_id` i `device_id` to trwale rozłączne przestrzenie danych, nigdy oba naraz
+(Sesja 14, decyzja po korekcie ADR-003):** karnet ma ustawione dokładnie jedno z nich, nigdy
+oba. Logowanie/wylogowanie **nie przenosi** karnetów między `user_id` a `device_id` w
+żadną stronę — dane wprowadzone bez konta zostają widoczne wyłącznie bez konta (na tym
+samym urządzeniu) na zawsze, dane wprowadzone na koncie zostają widoczne wyłącznie na
+koncie na zawsze. Logika wyboru właściwej kolumny do zapytania: `src/server/card-owner.ts`
+(`ownerFilter`), używana identycznie przy odczycie i przy tworzeniu nowego karnetu.
 
 Reguła biznesowa (constraint aplikacyjny, najlepiej też CHECK w DB):
 `type = 'unlimited' ⇒ expiry_date IS NOT NULL`.

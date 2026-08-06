@@ -38,7 +38,7 @@ danych.
 
 | Encja | Odpowiednik w prototypie | Opis |
 |---|---|---|
-| `User` | — (niejawny „JD”) | Konto opcjonalne, tylko do synchronizacji między urządzeniami |
+| `User` | — (niejawny „JD”) | Konto opcjonalne (logowanie Google, Sesja 14). Nie synchronizuje danych między urządzeniami — konto i tryb bez konta to trwale rozłączne przestrzenie danych, żadnej migracji w żadną stronę (patrz `DATABASE.md`, `DECISIONS.md` ADR-003) |
 | `Company` (partner) | `partners[]` | Firma/klub powiązana z jednym lub wieloma karnetami |
 | `Card` (karnet) | `cards[]` | Karnet użytkownika w danej firmie: typ `limit`/`unlimited`, licznik wejść, opcjonalna data ważności |
 | `Visit` (wejście) | `card.history[]` | Pojedyncze wejście: data, opcjonalna godzina, opcjonalna notatka |
@@ -86,12 +86,24 @@ możliwości odzyskania.
 użytkownika powiązane z tą firmą (`card.name === partner.name` w prototypie — w produkcji
 klucz obcy `Card.companyId`).
 
+**Logowanie/wylogowanie (Sesja 14)** — logowanie przez Google (Auth.js/NextAuth) przełącza,
+z której przestrzeni danych korzysta aplikacja: zalogowany widzi i zapisuje wyłącznie
+karnety/wejścia przypisane do konta, niezalogowany wyłącznie te przypisane do bieżącego
+urządzenia. Przełączenie stanu logowania **nie przenosi** żadnych danych między tymi
+przestrzeniami w żadną stronę — to świadoma decyzja, nie ograniczenie techniczne (patrz
+`DECISIONS.md`, ADR-003). Gdy niezalogowany, stały pasek pod nagłówkiem (`GuestNotice`)
+informuje wprost, że dane są zapisane tylko na tym urządzeniu.
+
 ## Dlaczego proponowany stos
 
 - **Next.js + TypeScript** — jeden framework dla frontendu i API, dobre wsparcie SSR/PWA,
   łatwe do rozszerzenia o React Native (współdzielenie logiki i typów) w przyszłości.
 - **PostgreSQL + Prisma** — relacyjny model dobrze pasuje do encji Karnet/Firma/Wejście z
   jasnymi relacjami 1:N; Prisma daje typowany dostęp do danych spójny z TS.
-- **Konto opcjonalne** — zgodnie z założeniem produktowym; wymaga jednak od początku
-  projektowania danych tak, by karnety mogły istnieć **bez** `userId` (urządzenie lokalne)
-  i dać się później „przypiąć” do konta przy rejestracji/synchronizacji.
+- **Konto opcjonalne** — zgodnie z założeniem produktowym; karnety mogą istnieć **bez**
+  `userId` (urządzenie lokalne). Konto i urządzenie to trwale rozłączne przestrzenie danych
+  (Sesja 14) — świadomie **bez** możliwości „przypięcia” danych urządzenia do konta;
+  pierwsza wersja logowania miała taki mechanizm (`link-device`), usunięty po testach jako
+  sprzeczny z oczekiwaniem, że dane wprowadzone bez konta nigdy nie znikają z widoku bez
+  konta. Zalogowany użytkownik operuje wyłącznie na danych konta, niezalogowany wyłącznie
+  na danych bieżącego urządzenia — patrz `DATABASE.md` i `DECISIONS.md` (ADR-003).
