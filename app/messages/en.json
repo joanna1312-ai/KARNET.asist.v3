@@ -9,6 +9,57 @@
     "settingsLocaleSection": "Language",
     "settingsThemeSection": "Light/Dark mode"
   },
+  "help": {
+    "buttonAria": "Help",
+    "title": "How to use Karnet.asist",
+    "closeAria": "Close",
+    "guideHeading": "Quick guide",
+    "sections": {
+      "addingCard": {
+        "title": "Adding a card",
+        "body": "On the \"Cards\" screen, tap \"Add card\", choose a company and category, then a type: \"Visit limit\" (expiry date optional) or \"Unlimited\" (expiry date required). You can add a voucher or code right away or later."
+      },
+      "visits": {
+        "title": "Logging visits",
+        "body": "Tap \"+\" on a card to log a visit with today's date. In the visit history you can later change the date, add a time, and a short note."
+      },
+      "expiryArchive": {
+        "title": "Expiry and archive",
+        "body": "A card's details show the number of visits used, the expiry date, and the full history. Cards that have expired or been fully used move automatically to \"Archive\" — from there, one tap adds a new card at the same company."
+      },
+      "account": {
+        "title": "Account",
+        "body": "The app works fully without an account. Sign in only if you want the same cards on more than one device."
+      },
+      "companies": {
+        "title": "Companies",
+        "body": "The \"Companies\" tab lists the companies linked to your cards — mark favorites and check which cards you have at each one."
+      }
+    },
+    "faqHeading": "Frequently asked questions",
+    "faq": {
+      "paymentsAndBookings": {
+        "question": "Can I pay for a card or book classes in the app?",
+        "answer": "No — Karnet.asist only tracks cards you've already paid for. It doesn't handle payments, sales, or class bookings."
+      },
+      "deleteConfirm": {
+        "question": "Can a card or visit be deleted by accident?",
+        "answer": "No — deleting always requires confirmation in a separate dialog."
+      },
+      "expiryOptional": {
+        "question": "Does a visit-limit card need an expiry date?",
+        "answer": "No, it's optional. \"Unlimited\" cards always require one."
+      },
+      "ocr": {
+        "question": "Does the app read card details from a photo?",
+        "answer": "Not in this version — you enter the details manually, and can attach a photo or QR code as a file."
+      },
+      "mobileApp": {
+        "question": "Is there a phone app?",
+        "answer": "The app runs as a web app for now. Native Android/iOS versions are planned for a later stage."
+      }
+    }
+  },
   "account": {
     "signInButton": "Sign in with Google",
     "signOutButton": "Sign out",

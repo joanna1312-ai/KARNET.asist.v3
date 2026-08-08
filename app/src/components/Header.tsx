@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AccountMenu } from "@/components/AccountMenu";
+import { HelpMenu } from "@/components/HelpMenu";
 import { SettingsMenu } from "@/components/SettingsMenu";
 
 export async function Header() {
@@ -27,6 +28,7 @@ export async function Header() {
       </nav>
       <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-1.5">
         <AccountMenu />
+        <HelpMenu />
         <SettingsMenu />
       </div>
     </header>

@@ -9,6 +9,57 @@
     "settingsLocaleSection": "Język",
     "settingsThemeSection": "Tryb jasny/ciemny"
   },
+  "help": {
+    "buttonAria": "Pomoc",
+    "title": "Jak korzystać z Karnet.asist",
+    "closeAria": "Zamknij",
+    "guideHeading": "Krótki przewodnik",
+    "sections": {
+      "addingCard": {
+        "title": "Dodawanie karnetu",
+        "body": "Na ekranie „Karnety” dotknij przycisku „Dodaj karnet”, wybierz firmę i kategorię, a potem typ: „Limit wejść” (data ważności opcjonalna) albo „Bez limitu” (data ważności wymagana). Voucher lub kod możesz dodać od razu albo później."
+      },
+      "visits": {
+        "title": "Zapisywanie wejść",
+        "body": "Dotknij „+” na karnecie, żeby zapisać wejście z dzisiejszą datą. W historii wejść możesz później zmienić datę, dodać godzinę i krótką notatkę."
+      },
+      "expiryArchive": {
+        "title": "Ważność i archiwum",
+        "body": "W szczegółach karnetu widzisz liczbę wykorzystanych wejść, datę ważności i całą historię. Karnety, które wygasły lub zostały w pełni wykorzystane, trafiają automatycznie do „Archiwum” — stamtąd jednym dotknięciem dodasz nowy karnet w tej samej firmie."
+      },
+      "account": {
+        "title": "Konto",
+        "body": "Aplikacja działa w pełni bez zakładania konta. Zaloguj się tylko wtedy, gdy chcesz mieć te same karnety na kilku urządzeniach."
+      },
+      "companies": {
+        "title": "Firmy",
+        "body": "W zakładce „Firmy” przeglądasz firmy powiązane z Twoimi karnetami, oznaczasz ulubione i sprawdzasz, jakie karnety masz w danej firmie."
+      }
+    },
+    "faqHeading": "Najczęstsze pytania",
+    "faq": {
+      "paymentsAndBookings": {
+        "question": "Czy mogę zapłacić za karnet albo zarezerwować zajęcia w aplikacji?",
+        "answer": "Nie — Karnet.asist tylko śledzi Twoje już opłacone karnety. Nie obsługuje płatności, sprzedaży ani rezerwacji zajęć."
+      },
+      "deleteConfirm": {
+        "question": "Czy da się usunąć karnet albo wejście przez pomyłkę?",
+        "answer": "Nie — usunięcie zawsze wymaga potwierdzenia w osobnym oknie."
+      },
+      "expiryOptional": {
+        "question": "Czy karnet na limit wejść musi mieć datę ważności?",
+        "answer": "Nie, jest opcjonalna. Karnety typu „bez limitu” zawsze jej wymagają."
+      },
+      "ocr": {
+        "question": "Czy aplikacja rozpoznaje dane z karnetu ze zdjęcia?",
+        "answer": "Nie w tej wersji — dane wpisujesz ręcznie, a zdjęcie lub kod QR możesz dołączyć jako załącznik."
+      },
+      "mobileApp": {
+        "question": "Czy jest wersja na telefon?",
+        "answer": "Aplikacja działa jako aplikacja webowa. Wersje natywne na Android/iOS są planowane w kolejnym etapie."
+      }
+    }
+  },
   "account": {
     "signInButton": "Zaloguj przez Google",
     "signOutButton": "Wyloguj",

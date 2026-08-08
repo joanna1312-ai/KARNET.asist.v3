@@ -446,10 +446,10 @@ Prompt (skróć/dostosuj):
 > Escape, klik poza obszarem).
 > Najpierw krótki plan (struktura treści pomocy — sekcje), poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Ikona pomocy w nagłówku
-- [ ] Modal z instrukcją, treść w i18n PL/EN
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Ikona pomocy w nagłówku
+- [x] Modal z instrukcją, treść w i18n PL/EN
+- [x] lint/test + commit
 
 ## Sesja 23 — Stopka: autorzy aplikacji i dane kontaktowe — wymaga danych przed startem
 
