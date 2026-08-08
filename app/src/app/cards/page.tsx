@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CardForm,
   CardFormValues,
@@ -16,14 +16,16 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
+import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus } from "@/server/card-status";
+import type { CategoryColor } from "@/server/system-categories";
 
 interface ApiCategory {
   id: string;
   slug: string | null;
   name: string;
-  color: string;
+  color: CategoryColor;
   isSystem: boolean;
 }
 
@@ -286,6 +288,26 @@ export default function CardsPage() {
   const t = useTranslations("cardsPage");
   const tDetails = useTranslations("cardDetailsPage");
   const tDeleteDialog = useTranslations("deleteCardDialog");
+  const tCategory = useTranslations("companyCategory");
+
+  const groupedCards = useMemo(() => {
+    if (!cards) return [];
+    const byCategory = new Map<string, { category: ApiCategory; cards: ApiCard[] }>();
+    for (const card of cards) {
+      const category = card.company.category;
+      const group = byCategory.get(category.id);
+      if (group) {
+        group.cards.push(card);
+      } else {
+        byCategory.set(category.id, { category, cards: [card] });
+      }
+    }
+    return [...byCategory.values()].sort((a, b) =>
+      categoryDisplayName(a.category, tCategory).localeCompare(
+        categoryDisplayName(b.category, tCategory)
+      )
+    );
+  }, [cards, tCategory]);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
@@ -351,69 +373,84 @@ export default function CardsPage() {
       )}
 
       {cards !== null && cards.length > 0 && (
-        <ul className="flex flex-col gap-3">
-          {cards.map((card) => (
-            <li
-              key={card.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 p-4 dark:border-white/10"
-            >
-              <Link href={`/cards/${card.id}`} className="min-w-0 flex-1 hover:underline">
-                <div className="flex min-w-0 items-center gap-2">
-                  <p className="min-w-0 truncate font-medium">{card.company.name}</p>
-                  <StatusBadge
-                    status={getCardWarningStatus({
-                      type: card.type,
-                      totalVisits: card.totalVisits,
-                      usedVisits: card.usedVisits,
-                      expiryDate: card.expiryDate ? new Date(card.expiryDate) : null,
-                    })}
-                  />
-                </div>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {card.type === CardType.limit && card.totalVisits != null
-                    ? tDetails("limitCounter", {
-                        used: card.usedVisits,
-                        total: card.totalVisits,
-                      })
-                    : tDetails("unlimitedLabel")}
-                  {" · "}
-                  {card.expiryDate
-                    ? tDetails("expiryLabel", { date: formatDate(card.expiryDate) })
-                    : tDetails("noExpiryLabel")}
-                </p>
-              </Link>
-              <div className="flex shrink-0 gap-2">
-                {tab === "archived" ? (
-                  <button
-                    type="button"
-                    onClick={() => openRenewForm(card)}
-                    className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                  >
-                    {t("renewButton")}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => openEditForm(card)}
-                    className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                  >
-                    {t("editButton")}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeleteError(false);
-                    setDeleteTarget(card);
-                  }}
-                  className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
-                >
-                  {t("deleteButton")}
-                </button>
+        <div className="flex flex-col gap-6">
+          {groupedCards.map(({ category, cards: categoryCards }) => (
+            <div key={category.id} className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 px-1">
+                <span
+                  aria-hidden="true"
+                  className={`h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[category.color]}`}
+                />
+                <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                  {categoryDisplayName(category, tCategory)}
+                </h2>
               </div>
-            </li>
+              <ul className="flex flex-col gap-3">
+                {categoryCards.map((card) => (
+                  <li
+                    key={card.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 p-4 dark:border-white/10"
+                  >
+                    <Link href={`/cards/${card.id}`} className="min-w-0 flex-1 hover:underline">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <p className="min-w-0 truncate font-medium">{card.company.name}</p>
+                        <StatusBadge
+                          status={getCardWarningStatus({
+                            type: card.type,
+                            totalVisits: card.totalVisits,
+                            usedVisits: card.usedVisits,
+                            expiryDate: card.expiryDate ? new Date(card.expiryDate) : null,
+                          })}
+                        />
+                      </div>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {card.type === CardType.limit && card.totalVisits != null
+                          ? tDetails("limitCounter", {
+                              used: card.usedVisits,
+                              total: card.totalVisits,
+                            })
+                          : tDetails("unlimitedLabel")}
+                        {" · "}
+                        {card.expiryDate
+                          ? tDetails("expiryLabel", { date: formatDate(card.expiryDate) })
+                          : tDetails("noExpiryLabel")}
+                      </p>
+                    </Link>
+                    <div className="flex shrink-0 gap-2">
+                      {tab === "archived" ? (
+                        <button
+                          type="button"
+                          onClick={() => openRenewForm(card)}
+                          className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+                        >
+                          {t("renewButton")}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => openEditForm(card)}
+                          className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+                        >
+                          {t("editButton")}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteError(false);
+                          setDeleteTarget(card);
+                        }}
+                        className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
+                      >
+                        {t("deleteButton")}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
 
       <ConfirmDialog
