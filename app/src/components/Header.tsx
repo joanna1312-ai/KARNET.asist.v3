@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AccountMenu } from "@/components/AccountMenu";
-import { LocaleToggle } from "@/components/LocaleToggle";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { SettingsMenu } from "@/components/SettingsMenu";
 
 export async function Header() {
   const t = await getTranslations("header");
@@ -28,8 +27,7 @@ export async function Header() {
       </nav>
       <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-1.5">
         <AccountMenu />
-        <LocaleToggle />
-        <ThemeToggle />
+        <SettingsMenu />
       </div>
     </header>
   );

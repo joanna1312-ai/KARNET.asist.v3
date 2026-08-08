@@ -4,7 +4,10 @@
     "homeAria": "Przejdź do strony głównej",
     "themeAria": "Przełącz tryb ciemny",
     "localeToggleAria": "Wybór języka",
-    "companiesNav": "Firmy"
+    "companiesNav": "Firmy",
+    "settingsAria": "Ustawienia",
+    "settingsLocaleSection": "Język",
+    "settingsThemeSection": "Tryb ciemny"
   },
   "account": {
     "signInButton": "Zaloguj przez Google",

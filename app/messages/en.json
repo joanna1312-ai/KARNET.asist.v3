@@ -4,7 +4,10 @@
     "homeAria": "Go to homepage",
     "themeAria": "Toggle dark mode",
     "localeToggleAria": "Language selection",
-    "companiesNav": "Companies"
+    "companiesNav": "Companies",
+    "settingsAria": "Settings",
+    "settingsLocaleSection": "Language",
+    "settingsThemeSection": "Dark mode"
   },
   "account": {
     "signInButton": "Sign in with Google",
