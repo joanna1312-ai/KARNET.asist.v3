@@ -405,11 +405,11 @@ Prompt (skróć/dostosuj):
 > firm w ogóle).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Filtr po nazwie i kategorii
-- [ ] Sortowanie po nazwie i kategorii
-- [ ] i18n uzupełnione (w tym osobny pusty stan dla filtra)
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Filtr po nazwie i kategorii
+- [x] Sortowanie po nazwie i kategorii
+- [x] i18n uzupełnione (w tym osobny pusty stan dla filtra)
+- [x] lint/test + commit
 
 ## Sesja 21 — Ekran główny: grupowanie karnetów po kategorii
 
