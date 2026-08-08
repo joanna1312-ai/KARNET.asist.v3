@@ -469,11 +469,11 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > mode, mobile z Sesji 17).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Treść i dane kontaktowe ustalone
-- [ ] Plan zaakceptowany
-- [ ] `Footer.tsx` w layout, widoczny na każdej stronie
-- [ ] i18n uzupełnione, dark mode / mobile sprawdzone
-- [ ] lint/test + commit
+- [x] Treść i dane kontaktowe ustalone
+- [x] Plan zaakceptowany
+- [x] `Footer.tsx` w layout, widoczny na każdej stronie
+- [x] i18n uzupełnione, dark mode / mobile sprawdzone
+- [x] lint/test + commit
 
 ## Przed pierwszym wdrożeniem produkcyjnym
 
