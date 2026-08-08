@@ -224,5 +224,11 @@
     "group_classes": "Group classes",
     "massage": "Massage",
     "beauty": "Beauty"
+  },
+  "footer": {
+    "authorLine": "Built by Joanna Dropia, with help from AI (Claude Sonnet 5).",
+    "contactLabel": "Contact",
+    "contactEmailAria": "Email {email}",
+    "versionLabel": "Version {version}"
   }
 }

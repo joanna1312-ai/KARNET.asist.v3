@@ -224,5 +224,11 @@
     "group_classes": "Zajęcia grupowe",
     "massage": "Masaż",
     "beauty": "Uroda"
+  },
+  "footer": {
+    "authorLine": "Aplikację stworzyła Joanna Dropia, z pomocą AI (Claude Sonnet 5).",
+    "contactLabel": "Kontakt",
+    "contactEmailAria": "Napisz e-mail na {email}",
+    "versionLabel": "Wersja {version}"
   }
 }
