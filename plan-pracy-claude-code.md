@@ -426,10 +426,10 @@ Prompt (skróć/dostosuj):
 > listy. Kategoria bez karnetów w bieżącej zakładce nie powinna się w ogóle pokazywać.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Lista karnetów grupowana po kategorii, z nagłówkami sekcji
-- [ ] Zakładki Aktywne/Archiwum i akcje na karnetach działają bez zmian
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Lista karnetów grupowana po kategorii, z nagłówkami sekcji
+- [x] Zakładki Aktywne/Archiwum i akcje na karnetach działają bez zmian
+- [x] lint/test + commit
 
 ## Sesja 22 — Ekran główny: pomoc (ikona + instrukcja obsługi)
 
