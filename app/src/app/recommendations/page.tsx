@@ -1,8 +1,10 @@
 "use client";
 
+import { SearchX } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
 import { categoryDisplayName } from "@/lib/category-display";
 import type { CategoryColor } from "@/server/system-categories";
@@ -149,7 +151,7 @@ export default function RecommendationsPage() {
       )}
 
       {requestStatus === "done" && result === null && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("noResults")}</p>
+        <EmptyState icon={SearchX}>{t("noResults")}</EmptyState>
       )}
 
       {requestStatus === "done" && result !== null && (

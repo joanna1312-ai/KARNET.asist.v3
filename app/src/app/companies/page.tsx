@@ -1,10 +1,11 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Building2, Star } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
 import { categoryDisplayName } from "@/lib/category-display";
 import { haversineDistanceKm, type LatLng } from "@/lib/distance";
@@ -183,7 +184,7 @@ export default function CompaniesPage() {
       )}
 
       {companies !== null && companies.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("emptyState")}</p>
+        <EmptyState icon={Building2}>{t("emptyState")}</EmptyState>
       )}
 
       {companies !== null && companies.length > 0 && (

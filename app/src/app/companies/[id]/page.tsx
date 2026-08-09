@@ -1,5 +1,6 @@
 "use client";
 
+import { Ticket } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -15,6 +16,7 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { CompanyMap } from "@/components/CompanyMap";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
@@ -244,9 +246,9 @@ export default function CompanyDetailsPage() {
           <div>
             <h2 className="text-lg font-semibold">{t("cardsTitle")}</h2>
             {cards !== null && cards.length === 0 && (
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <EmptyState icon={Ticket} className="mt-2">
                 {t("emptyState")}
-              </p>
+              </EmptyState>
             )}
 
             {cards !== null && cards.length > 0 && (

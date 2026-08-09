@@ -1,9 +1,10 @@
 "use client";
 
-import { CircleHelp, MapPin, Settings, Star, Sun } from "lucide-react";
+import { CircleHelp, MapPin, Settings, Star, Sun, Ticket } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Logo } from "@/components/Logo";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CategoryIcon } from "@/components/CategoryIcon";
@@ -111,6 +112,12 @@ export default function BrandbookPage() {
             Wyłączony
           </Button>
         </Card>
+      </Section>
+
+      <Section title="Pusty stan">
+        <EmptyState icon={Ticket}>
+          Nie masz jeszcze żadnego karnetu. Dodaj pierwszy, żeby mieć go zawsze pod ręką.
+        </EmptyState>
       </Section>
 
       <Section title="Statusy">

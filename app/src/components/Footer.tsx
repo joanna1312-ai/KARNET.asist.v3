@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Logo } from "@/components/Logo";
 
-const APP_VERSION = "v4_260809";
+const APP_VERSION = "v5_260809";
 const CONTACT_EMAIL = "ai.joanna.dropia@gmail.com";
 
 export async function Footer() {

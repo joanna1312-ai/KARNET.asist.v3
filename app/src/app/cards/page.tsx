@@ -1,5 +1,6 @@
 "use client";
 
+import { Archive, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -16,6 +17,7 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
@@ -392,9 +394,9 @@ export default function CardsPage() {
       )}
 
       {cards !== null && cards.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <EmptyState icon={tab === "archived" ? Archive : Ticket}>
           {t(tab === "archived" ? "archiveEmptyState" : "emptyState")}
-        </p>
+        </EmptyState>
       )}
 
       {cards !== null && cards.length > 0 && (
