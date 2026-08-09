@@ -6,6 +6,12 @@ import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
 import { CATEGORY_COLOR_PALETTE, type CategoryColor } from "@/server/system-categories";
+import {
+  isAllowedVoucherContentType,
+  isStorageVoucherFileUrl,
+  VOUCHER_FILE_ACCEPT,
+  VOUCHER_FILE_MAX_BYTES,
+} from "@/server/voucher-file";
 import { PlacesAutocomplete } from "./PlacesAutocomplete";
 
 export interface CompanyOption {
@@ -22,6 +28,11 @@ export interface CategoryOption {
 }
 
 export type CompanyMode = "existing" | "new";
+
+// Sposób podania vouchera (Sesja V4.3, ADR-009): "text" to zachowane pole tekstowe z
+// Sesji 11 (kod rabatowy/link bez pliku), "file" to upload zdjęcia/PDF do Supabase
+// Storage — nie oba naraz.
+export type VoucherInputMode = "text" | "file";
 
 // Sentinel w selekcie kategorii: "dodaj własną kategorię" zamiast wybrania istniejącej
 // (Sesja 16). Nie może kolidować z prawdziwym uuid kategorii.
@@ -41,7 +52,15 @@ export interface CardFormValues {
   totalVisits: string;
   expiryDate: string;
   voucherMode: VoucherMode;
+  // W trybie "text" — treść/link wpisany ręcznie. W trybie "file" — bieżący znacznik
+  // `storage:...` istniejącego pliku (do wyświetlenia), pusty jeśli jeszcze go nie ma;
+  // sam nowy plik do wgrania jest w `voucherFile`, nie tutaj.
   voucherFileUrl: string;
+  voucherInputMode: VoucherInputMode;
+  voucherFile: File | null;
+  // Użytkownik kliknął "Usuń" przy istniejącym pliku — plik/link zostanie skasowany po
+  // zapisaniu, o ile nie wybierze też nowego pliku (voucherFile ma wtedy pierwszeństwo).
+  voucherRemoveFile: boolean;
 }
 
 export const emptyCardFormValues: CardFormValues = {
@@ -59,6 +78,9 @@ export const emptyCardFormValues: CardFormValues = {
   expiryDate: "",
   voucherMode: VoucherMode.single,
   voucherFileUrl: "",
+  voucherInputMode: "text",
+  voucherFile: null,
+  voucherRemoveFile: false,
 };
 
 // Kody błędów walidowane tylko po stronie klienta (dot. nowej firmy/kategorii) — nie
@@ -70,7 +92,11 @@ type NewCompanyErrorCode =
   | "newCompanyCategoryRequired"
   | "newCategoryNameRequired"
   | "newCategoryColorRequired";
-type FormErrorCode = CardInputErrorCode | NewCompanyErrorCode;
+// Walidacja pliku wybranego w trybie "file" — API o niej nie wie (rozmiar/typ
+// egzekwuje docelowo konfiguracja bucketa w Supabase), więc kod błędu istnieje tylko
+// po stronie klienta, jak przy NewCompanyErrorCode wyżej.
+type VoucherFileErrorCode = "voucherFileTooLarge" | "voucherFileTypeUnsupported";
+type FormErrorCode = CardInputErrorCode | NewCompanyErrorCode | VoucherFileErrorCode;
 
 interface CardFormProps {
   mode: "add" | "edit" | "renew";
@@ -94,7 +120,22 @@ const FIELD_FOR_ERROR: Record<FormErrorCode, keyof CardFormValues> = {
   newCompanyCategoryRequired: "newCompanyCategorySelection",
   newCategoryNameRequired: "newCategoryName",
   newCategoryColorRequired: "newCategoryColor",
+  voucherFileTooLarge: "voucherFile",
+  voucherFileTypeUnsupported: "voucherFile",
 };
+
+// Wylicza wartość `voucherFileUrl` do wysłania w payloadzie POST/PATCH /api/cards (Sesja
+// V4.3). Nowo wybrany plik (`voucherFile`) NIE jest tu uwzględniany — upload idzie osobnym
+// wywołaniem po zapisaniu karnetu (patrz uploadVoucherFile w lib/voucher-upload.ts), bo
+// endpoint uploadu potrzebuje już istniejącego id karnetu.
+export function voucherFileUrlForSave(values: CardFormValues): string | null {
+  if (values.voucherInputMode === "text") {
+    const trimmed = values.voucherFileUrl.trim();
+    return trimmed === "" ? null : trimmed;
+  }
+  if (values.voucherRemoveFile) return null;
+  return values.voucherFileUrl.trim() === "" ? null : values.voucherFileUrl;
+}
 
 function toCandidate(values: CardFormValues) {
   return {
@@ -154,8 +195,18 @@ export function CardForm({
       }
     }
 
+    const voucherFileErrors: VoucherFileErrorCode[] = [];
+    if (values.voucherInputMode === "file" && values.voucherFile) {
+      if (!isAllowedVoucherContentType(values.voucherFile.type)) {
+        voucherFileErrors.push("voucherFileTypeUnsupported");
+      } else if (values.voucherFile.size > VOUCHER_FILE_MAX_BYTES) {
+        voucherFileErrors.push("voucherFileTooLarge");
+      }
+    }
+
     const foundErrors: FormErrorCode[] = [
       ...newCompanyErrors,
+      ...voucherFileErrors,
       ...getCardInputErrors(toCandidate(values)),
     ];
     setClientErrors(foundErrors);
@@ -466,21 +517,103 @@ export function CardForm({
         )}
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor={`${formId}-voucher-file-url`} className="text-sm font-medium">
-          {t("voucherFileUrlLabel")}
-        </label>
-        <input
-          id={`${formId}-voucher-file-url`}
-          type="text"
-          value={values.voucherFileUrl}
-          disabled={submitting}
-          placeholder={t("voucherFileUrlPlaceholder")}
-          onChange={(event) =>
-            setValues((prev) => ({ ...prev, voucherFileUrl: event.target.value }))
-          }
-          className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
-        />
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium">{t("voucherSectionLabel")}</span>
+        <div className="flex flex-wrap gap-4">
+          {(["text", "file"] as const).map((inputModeOption) => (
+            <label key={inputModeOption} className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name={`${formId}-voucher-input-mode`}
+                value={inputModeOption}
+                checked={values.voucherInputMode === inputModeOption}
+                disabled={submitting}
+                onChange={() =>
+                  setValues((prev) => ({ ...prev, voucherInputMode: inputModeOption }))
+                }
+              />
+              {t(`voucherInputModeOptions.${inputModeOption}`)}
+            </label>
+          ))}
+        </div>
+
+        {values.voucherInputMode === "text" ? (
+          <>
+            <label htmlFor={`${formId}-voucher-file-url`} className="text-sm font-medium">
+              {t("voucherFileUrlLabel")}
+            </label>
+            <input
+              id={`${formId}-voucher-file-url`}
+              type="text"
+              value={values.voucherFileUrl}
+              disabled={submitting}
+              placeholder={t("voucherFileUrlPlaceholder")}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, voucherFileUrl: event.target.value }))
+              }
+              className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+            />
+          </>
+        ) : (
+          <>
+            {isStorageVoucherFileUrl(values.voucherFileUrl) &&
+              !values.voucherFile &&
+              !values.voucherRemoveFile && (
+                <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  {t("voucherCurrentFileLabel")}{" "}
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={() =>
+                      setValues((prev) => ({ ...prev, voucherRemoveFile: true }))
+                    }
+                    className="font-medium text-status-urgent hover:underline"
+                  >
+                    {t("voucherRemoveButton")}
+                  </button>
+                </p>
+              )}
+            {values.voucherRemoveFile && (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {t("voucherWillBeRemovedNotice")}{" "}
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() =>
+                    setValues((prev) => ({ ...prev, voucherRemoveFile: false }))
+                  }
+                  className="font-medium hover:underline"
+                >
+                  {t("voucherUndoRemoveButton")}
+                </button>
+              </p>
+            )}
+            <label htmlFor={`${formId}-voucher-file`} className="text-sm font-medium">
+              {t("voucherFileLabel")}
+            </label>
+            <input
+              id={`${formId}-voucher-file`}
+              type="file"
+              accept={VOUCHER_FILE_ACCEPT}
+              disabled={submitting}
+              onChange={(event) => {
+                const file = event.target.files?.[0] ?? null;
+                setValues((prev) => ({ ...prev, voucherFile: file, voucherRemoveFile: false }));
+              }}
+              className="text-sm"
+            />
+            {values.voucherFile && (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {values.voucherFile.name}
+              </p>
+            )}
+            {errorFor("voucherFile") && (
+              <p className="text-sm text-status-urgent">
+                {t(`errors.${errorFor("voucherFile")}`)}
+              </p>
+            )}
+          </>
+        )}
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {t("voucherFileUrlHint")}
         </p>

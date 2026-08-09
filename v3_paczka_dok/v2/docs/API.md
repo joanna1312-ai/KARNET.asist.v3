@@ -57,8 +57,40 @@ Przykład odpowiedzi `GET /api/cards/:id`:
 }
 ```
 
-`voucherFileUrl` przyjmowane w `POST`/`PATCH /api/cards` jako zwykły string (treść lub link
-do vouchera) — na start bez uploadu pliku/object storage, patrz `CLAUDE.md`.
+`voucherFileUrl` przyjmowane w `POST`/`PATCH /api/cards` jako zwykły string: treść/link
+(Sesja 11) **albo** ścieżka pliku w Supabase Storage z prefiksem `storage:` (Sesja V4.3,
+`ADR-009`) — ten drugi format nie jest ustawiany bezpośrednio przez `POST`/`PATCH`, tylko
+przez `.../voucher-file/confirm` niżej, po udanym uploadzie.
+
+### Upload pliku/zdjęcia vouchera (Sesja V4.3, `ADR-009`)
+
+| Metoda | Ścieżka | Opis |
+|---|---|---|
+| `POST` | `/api/cards/:id/voucher-file/sign-upload` | krok 1: zwraca podpisany URL do zapisu w Supabase Storage + docelową ścieżkę |
+| `POST` | `/api/cards/:id/voucher-file/confirm` | krok 3: potwierdza udany upload, zapisuje ścieżkę w `voucherFileUrl` |
+| `GET` | `/api/cards/:id/voucher-file` | świeży podpisany URL do odczytu (bucket prywatny — nigdy trwały link) |
+
+Krok 2 (sam upload pliku) idzie **bezpośrednio do Supabase Storage**, z pominięciem naszego
+backendu — patrz `ADR-009` (limit ciała requestu na Vercel).
+
+`POST .../sign-upload` — body `{ "contentType": "image/jpeg" }` (dozwolone:
+`image/jpeg`, `image/png`, `image/webp`, `application/pdf`). Odpowiedź:
+```json
+{ "uploadUrl": "https://...supabase.co/storage/v1/object/upload/sign/...", "path": "cards/c1/6f1b...-uuid.jpg" }
+```
+`400 { "error": "unsupported_content_type" }` dla niedozwolonego typu.
+
+`POST .../confirm` — body `{ "path": "cards/c1/6f1b...-uuid.jpg" }` (ścieżka zwrócona przez
+`sign-upload`). Zapisuje `voucherFileUrl = "storage:" + path`; sprząta poprzedni plik
+karnetu, jeśli jakiś miał. `400 { "error": "invalid_path" }`, gdy ścieżka nie leży pod
+`cards/:id/` tego karnetu.
+
+`GET .../voucher-file` — `200 { "url": "https://...signed..." }` (ważny 5 minut).
+`404 { "error": "not_a_file" }`, gdy `voucherFileUrl` karnetu nie jest plikiem (pusty albo
+zwykły tekst/link).
+
+Wszystkie trzy endpointy autoryzowane identycznie jak reszta `/api/cards/*`
+(`findOwnedCard`/`ownerFilter`) — `401`/`404` na tych samych zasadach.
 
 ## Wejścia (visits)
 

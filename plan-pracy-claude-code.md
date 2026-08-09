@@ -721,16 +721,26 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > Najpierw krótki plan, poczekaj na akceptację.
 
 - [x] Dostawca: Supabase Storage
-- [ ] Tryb bucketa, dozwolone typy/rozmiar i los pola tekstowego ustalone
-- [ ] Konto Supabase Storage: bucket założony, `STORAGE_BUCKET_URL`/`STORAGE_ACCESS_KEY`
-      uzupełnione realnymi wartościami
-- [ ] Plan zaakceptowany
-- [ ] Upload pliku działa, zapisany w Supabase Storage, autoryzacja jak reszta `/api/cards`
-- [ ] Podgląd pliku w `cards/[id]/page.tsx`
-- [ ] `docs/` i i18n zaktualizowane (w tym `voucherFileUrlHint`)
+- [x] Tryb bucketa, dozwolone typy/rozmiar i los pola tekstowego ustalone: prywatny +
+      signed URLs, JPG/PNG/WebP/PDF do 10 MB, pole tekstowe zostaje jako alternatywa
+      (przełącznik tekst/plik, nie oba naraz)
+- [x] Konto Supabase Storage: bucket `voucher-files-dev` założony (dev), `STORAGE_BUCKET_URL`/
+      `STORAGE_ACCESS_KEY`/`STORAGE_BUCKET_NAME` uzupełnione realnymi wartościami w `app/.env`
+- [x] Plan zaakceptowany
+- [x] Upload pliku działa, zapisany w Supabase Storage, autoryzacja jak reszta `/api/cards`
+      — zweryfikowane end-to-end w przeglądarce na realnym buckecie `voucher-files-dev`
+      (upload → signed URL → pobranie bajt-w-bajt zgodne z wysłanym plikiem)
+- [x] Podgląd pliku w `cards/[id]/page.tsx` (miniaturka obrazu / link do PDF wg rozszerzenia)
+- [x] `docs/` i i18n zaktualizowane (w tym `voucherFileUrlHint`) — `DATABASE.md`, `API.md`,
+      `SETUP.md`, `DECISIONS.md` (`ADR-009`, nowe odkrycie: limit ciała requestu na Vercel
+      ~4.5 MB wymusił upload bezpośrednio do Supabase Storage przez signed URL, nie przez
+      nasz endpoint)
 - [ ] DPA z Supabase (storage) — dopisane/zweryfikowane w checkliście "Przed pierwszym
-      wdrożeniem produkcyjnym"
-- [ ] lint/test + commit
+      wdrożeniem produkcyjnym" (bucket `voucher-files` produkcyjny jeszcze nie założony —
+      do zrobienia przy wdrożeniu, analogicznie do `voucher-files-dev`)
+- [x] lint (0 błędów) / test (180/180, w tym nowe testy sign-upload/confirm/GET
+      voucher-file, cleanup w PATCH i czystych helperów `voucher-file.ts`) / `next build`
+      przechodzą
 
 ---
 

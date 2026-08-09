@@ -178,6 +178,68 @@ serwera w Google Cloud Console (dziś "None" — dev na zmiennym IP domowym, pat
 analogicznie do `ADR-004`, ocena czy cache w pamięci procesu wystarcza przy realnym ruchu
 na Vercel czy potrzebny współdzielony cache.
 
+## ADR-009 — Upload vouchera: Supabase Storage, bucket prywatny, upload bezpośrednio z przeglądarki przez podpisany URL
+
+**Status:** potwierdzone (Sesja V4.3, 2026-08-09).
+**Decyzja:** Sesja 11 wprowadziła `cards.voucher_file_url` jako zwykłe pole tekstowe
+(treść/link), świadomie bez uploadu pliku (patrz `DATABASE.md`). Ta sesja dodaje
+rzeczywisty upload zdjęcia/PDF, bez zmiany typu kolumny — wartość zapisana przez upload
+dostaje prefiks `storage:` przed ścieżką w buckecie (np.
+`storage:cards/{cardId}/{uuid}.jpg`), co odróżnia ją od zwykłego tekstu/linku z Sesji 11;
+oba tryby współistnieją w formularzu (przełącznik tekst/plik, nie oba naraz).
+
+Dostawca: **Supabase Storage** — ten sam projekt co produkcyjna baza (jeden dostawca,
+jedna umowa DPA zamiast dwóch), osobne buckety dla dev (`voucher-files-dev`) i produkcji
+(`voucher-files`), żeby dane testowe nie mieszały się z prawdziwymi plikami użytkowników.
+Bucket **prywatny** (nie publiczny) — plik vouchera może pośrednio zawierać dane osobowe
+(patrz sekcja RODO niżej), więc dostęp tylko przez podpisane, wygasające URL-e (5 minut),
+generowane serwerowo po zweryfikowaniu właściciela karnetu (ta sama autoryzacja co reszta
+`/api/cards/*` — `findOwnedCard`/`ownerFilter`, `ADR-007`). Dozwolone typy: JPG, PNG, WebP,
+PDF; maksymalny rozmiar: 10 MB — egzekwowane docelowo przez konfigurację bucketa w
+Supabase (allowed MIME types + file size limit), nie tylko przez walidację w kodzie.
+
+**Upload z pominięciem naszego backendu (ważne odkrycie tej sesji):** Vercel Serverless
+Functions mają twardy limit ciała requestu ~4.5 MB, niezależny od planu — plik do 10 MB
+przesyłany przez zwykły endpoint `POST` z plikiem w body **nie zadziałałby na
+produkcji**, mimo że lokalnie by przeszedł. Rozwiązanie: trójkrokowy flow z podpisanym
+URL-em do zapisu (Supabase Storage `createSignedUploadUrl`, dokładnie ten sam mechanizm co
+podpisane URL-e do odczytu, tylko w drugą stronę):
+1. `POST /api/cards/:id/voucher-file/sign-upload` — serwer weryfikuje właściciela karnetu i
+   deklarowany typ pliku, zwraca podpisany URL do zapisu + docelową ścieżkę w buckecie.
+2. Przeglądarka wysyła plik **bezpośrednio do Supabase Storage** tym URL-em (zwykły `PUT`,
+   token uwierzytelniający jest już częścią URL-a) — z pominięciem funkcji serverless, więc
+   limit Vercela nie ma zastosowania.
+3. `POST /api/cards/:id/voucher-file/confirm` — serwer zapisuje ścieżkę w `voucherFileUrl`
+   (z prefiksem `storage:`) dopiero po potwierdzeniu udanego uploadu; sprząta poprzedni
+   plik, jeśli karnet już jakiś miał i ścieżka faktycznie należała do tego karnetu (patrz
+   niżej).
+`GET /api/cards/:id/voucher-file` generuje świeży podpisany URL do odczytu przy każdym
+wejściu na stronę szczegółów karnetu — nigdy nie osadzamy trwałego linku w odpowiedzi
+`GET /api/cards/:id`.
+
+**Klucz service-role (`STORAGE_ACCESS_KEY`) tylko po stronie serwera** (`@/server/storage.ts`,
+biblioteka `@supabase/supabase-js`) — nigdy w kodzie klienckim ani z prefiksem
+`NEXT_PUBLIC_`. Klient przeglądarki dostaje wyłącznie jednorazowy, ograniczony czasowo
+podpisany URL wygenerowany dla konkretnego żądania.
+
+**"Odnów" (archiwum → nowy karnet) i sprzątanie plików:** nowy karnet po "Odnów" dziedziczy
+`voucherFileUrl` karnetu źródłowego (świadomie ten sam voucher, patrz `cards/page.tsx`) —
+ścieżka w buckecie może więc wskazywać na folder innego (starszego) karnetu. Sprzątanie
+osieroconych plików przy zamianie/usunięciu vouchera (w `PATCH /api/cards/:id` i w
+`.../confirm`) usuwa poprzedni obiekt **tylko** gdy jego ścieżka leży pod `cards/{tenSamKarnet}/`
+— w przeciwnym razie zostawia go w spokoju, żeby nie skasować pliku wciąż widocznego na
+zarchiwizowanym karnecie źródłowym.
+**Odrzucone alternatywy:**
+- **Publiczny bucket z trwałymi linkami** — prostsze, ale bez kontroli dostępu; dane w
+  pliku mogą być pośrednio danymi osobowymi (RODO), więc private + signed URLs wygrywa mimo
+  dodatkowej złożoności.
+- **Upload przez zwykły endpoint `POST` z plikiem w body** — odrzucone po odkryciu limitu
+  ciała requestu na Vercel (~4.5 MB < wymagane 10 MB), patrz wyżej.
+- **@supabase/supabase-js tylko po stronie klienta / anon key** — odrzucone: bucket
+  prywatny wymaga service-role do generowania podpisanych URL-i, a autoryzacja musi iść
+  przez naszą warstwę (`findOwnedCard`), nie przez reguły RLS Supabase (ten projekt nie
+  używa Supabase Auth, tylko Prisma + NextAuth/token urządzenia, `ADR-003`/`ADR-007`).
+
 ## RODO — dane osobowe przetwarzane przez aplikację
 
 **Status:** proponowane, do potwierdzenia przed pierwszym wdrożeniem produkcyjnym.
@@ -217,7 +279,8 @@ szczególnie zakres klauzuli informacyjnej i ewentualną potrzebę DPIA.
 **Podmioty przetwarzające (art. 28 RODO) — wymagają umowy powierzenia danych (DPA):**
 - Hosting bazy danych (Neon/Supabase) i hosting aplikacji (Vercel) — przechowują dane
   osobowe użytkowników.
-- Storage plików (Supabase Storage / Cloudflare R2) — przechowuje zdjęcia voucherów.
+- Storage plików (Supabase Storage, `ADR-009`) — przechowuje zdjęcia/PDF-y voucherów, w
+  tym samym projekcie Supabase co baza danych. Bucket prywatny z podpisanymi URL-ami.
 - Google (Maps/Places API) — otrzymuje zapytania o lokalizację/nazwę firmy; **nie**
   powinien otrzymywać danych osobowych użytkownika (e-mail, notatki) w treści zapytań.
 - Groq (`ADR-008`, Sesja V4.2a) — otrzymuje przybliżoną pozycję użytkownika (za jego
