@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Baloo_2, Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
@@ -19,8 +19,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Krój logotypu i nagłówków — miękkie, zaokrąglone litery utrzymują ciepły
+// charakter marki nawet w wersji KARNET.asist pisanej wersalikami.
+const baloo = Baloo_2({
+  variable: "--font-baloo",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+});
+
 export const metadata: Metadata = {
-  title: "Karnet.asist",
+  title: "KARNET.asist",
   description: "Twoje karnety zawsze pod ręką.",
 };
 
@@ -49,7 +57,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${baloo.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />

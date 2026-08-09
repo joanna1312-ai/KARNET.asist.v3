@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AccountMenu } from "@/components/AccountMenu";
 import { HelpMenu } from "@/components/HelpMenu";
+import { Logo } from "@/components/Logo";
 import { SettingsMenu } from "@/components/SettingsMenu";
 
 export async function Header() {
@@ -13,10 +14,9 @@ export async function Header() {
         href="/"
         aria-label={t("homeAria")}
         title={t("homeAria")}
-        className="flex min-w-0 items-center gap-2"
+        className="flex min-w-0 items-center"
       >
-        <span className="size-2.5 shrink-0 rounded-full bg-accent" />
-        <span className="truncate text-base font-bold tracking-tight">{t("brand")}</span>
+        <Logo />
       </Link>
       <nav className="flex min-w-0 items-center gap-1">
         <Link

@@ -11,10 +11,11 @@ import {
   emptyCardFormValues,
   voucherFileUrlForSave,
 } from "@/components/CardForm";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { CompanyMap } from "@/components/CompanyMap";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
-import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
 import { uploadVoucherFile } from "@/lib/voucher-upload";
@@ -201,11 +202,8 @@ export default function CompanyDetailsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-semibold">{company.name}</h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                <span
-                  aria-hidden="true"
-                  className={`mr-2 inline-block h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[company.category.color]}`}
-                />
+              <p className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+                <CategoryIcon slug={company.category.slug} color={company.category.color} />
                 {categoryDisplayName(company.category, tCategory)}
               </p>
             </div>

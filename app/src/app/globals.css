@@ -21,6 +21,10 @@
   --status-soon: #d69a3e;
   --status-urgent: #dd5f58;
 
+  /* Gwiazdka ulubionych (Sesja V5.2) — celowo żółto-złota, nie pomarańczowa jak
+     --accent/--accent-deep, żeby nie mylić się wizualnie z kolorem marki. */
+  --favorite: #d9a412;
+
   /* Paleta kolorów kategorii firm (Sesja 16) — mint/coral/accent to tokeny wyżej,
      poniższe 3 istnieją tylko jako kolory kategorii (nie mają odpowiednika w
      prototypie), żeby 5 kategorii systemowych + własne kategorie użytkowników miały
@@ -35,6 +39,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-brand: var(--font-baloo);
 
   --color-mint: var(--mint);
   --color-mint-ink: var(--mint-ink);
@@ -45,6 +50,7 @@
   --color-status-ok: var(--status-ok);
   --color-status-soon: var(--status-soon);
   --color-status-urgent: var(--status-urgent);
+  --color-favorite: var(--favorite);
 
   --color-sky: var(--sky);
   --color-violet: var(--violet);
@@ -65,6 +71,7 @@
     --status-ok: #3adda6;
     --status-soon: #f0be5e;
     --status-urgent: #f2726e;
+    --favorite: #f0c14e;
 
     --sky: #4d84ad;
     --violet: #8b6bb8;
@@ -86,6 +93,7 @@
   --status-ok: #3adda6;
   --status-soon: #f0be5e;
   --status-urgent: #f2726e;
+  --favorite: #f0c14e;
   --sky: #4d84ad;
   --violet: #8b6bb8;
   --slate: #6b7684;
@@ -103,6 +111,7 @@
   --status-ok: #22a876;
   --status-soon: #d69a3e;
   --status-urgent: #dd5f58;
+  --favorite: #d9a412;
   --sky: #6fa8cf;
   --violet: #a992d1;
   --slate: #8d97a3;
@@ -111,6 +120,6 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   overflow-x: hidden;
 }

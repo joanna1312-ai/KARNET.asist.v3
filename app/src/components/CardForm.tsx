@@ -2,8 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { DEFAULT_CATEGORY_ICON } from "@/lib/category-icons";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
 import { CATEGORY_COLOR_PALETTE, type CategoryColor } from "@/server/system-categories";
 import {
@@ -174,6 +176,9 @@ export function CardForm({
   const errors: FormErrorCode[] = clientErrors.length > 0 ? clientErrors : serverErrors;
   const errorFor = (field: keyof CardFormValues) =>
     errors.find((code) => FIELD_FOR_ERROR[code] === field);
+  const selectedCategory = categories.find(
+    (category) => category.id === values.newCompanyCategorySelection
+  );
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -320,28 +325,37 @@ export function CardForm({
               >
                 {t("categoryLabel")}
               </label>
-              <select
-                id={`${formId}-new-company-category`}
-                value={values.newCompanyCategorySelection}
-                disabled={submitting}
-                onChange={(event) =>
-                  setValues((prev) => ({
-                    ...prev,
-                    newCompanyCategorySelection: event.target.value,
-                  }))
-                }
-                className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
-              >
-                <option value="" disabled>
-                  {t("categoryPlaceholder")}
-                </option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {categoryDisplayName(category, tCategory)}
+              <div className="relative">
+                {selectedCategory && (
+                  <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2">
+                    <CategoryIcon slug={selectedCategory.slug} color={selectedCategory.color} />
+                  </span>
+                )}
+                <select
+                  id={`${formId}-new-company-category`}
+                  value={values.newCompanyCategorySelection}
+                  disabled={submitting}
+                  onChange={(event) =>
+                    setValues((prev) => ({
+                      ...prev,
+                      newCompanyCategorySelection: event.target.value,
+                    }))
+                  }
+                  className={`min-h-11 w-full rounded-lg border border-black/15 bg-transparent py-2 pr-3 text-sm dark:border-white/15 ${
+                    selectedCategory ? "pl-10" : "pl-3"
+                  }`}
+                >
+                  <option value="" disabled>
+                    {t("categoryPlaceholder")}
                   </option>
-                ))}
-                <option value={NEW_CATEGORY_SENTINEL}>{t("newCategoryOption")}</option>
-              </select>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {categoryDisplayName(category, tCategory)}
+                    </option>
+                  ))}
+                  <option value={NEW_CATEGORY_SENTINEL}>{t("newCategoryOption")}</option>
+                </select>
+              </div>
               {errorFor("newCompanyCategorySelection") && (
                 <p className="text-sm text-status-urgent">
                   {t(`errors.${errorFor("newCompanyCategorySelection")}`)}
@@ -390,12 +404,14 @@ export function CardForm({
                         onClick={() =>
                           setValues((prev) => ({ ...prev, newCategoryColor: color }))
                         }
-                        className={`size-11 rounded-full ${CATEGORY_COLOR_CLASS[color]} ${
+                        className={`flex size-11 items-center justify-center rounded-full text-white ${CATEGORY_COLOR_CLASS[color]} ${
                           values.newCategoryColor === color
                             ? "ring-2 ring-offset-2 ring-black/60 dark:ring-white/60 dark:ring-offset-black"
                             : ""
                         }`}
-                      />
+                      >
+                        <DEFAULT_CATEGORY_ICON className="size-5" strokeWidth={2} />
+                      </button>
                     ))}
                   </div>
                   {errorFor("newCategoryColor") && (

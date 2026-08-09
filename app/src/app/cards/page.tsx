@@ -12,12 +12,13 @@ import {
   NEW_CATEGORY_SENTINEL,
   voucherFileUrlForSave,
 } from "@/components/CardForm";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
-import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { categoryDisplayName } from "@/lib/category-display";
 import { uploadVoucherFile } from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus } from "@/server/card-status";
@@ -407,11 +408,8 @@ export default function CardsPage() {
         <div className="flex flex-col gap-6">
           {groupedCards.map(({ category, cards: categoryCards }) => (
             <div key={category.id} className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 px-1">
-                <span
-                  aria-hidden="true"
-                  className={`h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[category.color]}`}
-                />
+              <div className="flex items-center gap-1.5 px-1">
+                <CategoryIcon slug={category.slug} color={category.color} />
                 <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                   {categoryDisplayName(category, tCategory)}
                 </h2>
