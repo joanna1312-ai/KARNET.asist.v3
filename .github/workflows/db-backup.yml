@@ -10,13 +10,15 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client gnupg
-
       - name: Dump database
         env:
           DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
-        run: pg_dump "$DATABASE_URL" --no-owner --no-privileges -F c -f backup.dump
+        run: |
+          # Uzywamy obrazu postgres:17, zeby pg_dump zawsze pasowal wersja
+          # do serwera Supabase (pg_dump odmawia dzialania na nowszym
+          # serwerze niz wlasna wersja - stad Docker zamiast pakietu apt).
+          docker run --rm postgres:17 \
+            pg_dump "$DATABASE_URL" --no-owner --no-privileges -F c > backup.dump
 
       - name: Encrypt dump
         env:
