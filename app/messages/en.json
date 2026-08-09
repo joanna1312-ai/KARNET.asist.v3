@@ -17,7 +17,7 @@
     "sections": {
       "addingCard": {
         "title": "Adding a card",
-        "body": "On the \"Cards\" screen, tap \"Add card\", choose a company and category, then a type: \"Visit limit\" (expiry date optional) or \"Unlimited\" (expiry date required). You can add a voucher or code right away or later."
+        "body": "On the \"Cards\" screen, tap \"Add card\". Choose a company from the list, or add a new one — start typing its name to see suggestions from Google Maps, or just type the name manually. Choose a category too, then a type: \"Visit limit\" (expiry date optional) or \"Unlimited\" (expiry date required). You can add a voucher or code right away or later."
       },
       "visits": {
         "title": "Logging visits",
@@ -33,7 +33,7 @@
       },
       "companies": {
         "title": "Companies",
-        "body": "The \"Companies\" tab lists the companies linked to your cards — mark favorites and check which cards you have at each one."
+        "body": "The \"Companies\" tab lists the companies linked to your cards — mark favorites, sort the list (including \"nearest to me\", if you share your location), and check which cards you have at each one. If a company has a saved location, you'll also see a map on its details page."
       }
     },
     "faqHeading": "Frequently asked questions",

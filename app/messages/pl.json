@@ -17,7 +17,7 @@
     "sections": {
       "addingCard": {
         "title": "Dodawanie karnetu",
-        "body": "Na ekranie „Karnety” dotknij przycisku „Dodaj karnet”, wybierz firmę i kategorię, a potem typ: „Limit wejść” (data ważności opcjonalna) albo „Bez limitu” (data ważności wymagana). Voucher lub kod możesz dodać od razu albo później."
+        "body": "Na ekranie „Karnety” dotknij przycisku „Dodaj karnet”. Firmę wybierz z listy albo dodaj nową — zacznij pisać jej nazwę, żeby zobaczyć podpowiedzi z Google Maps, albo wpisz nazwę ręcznie. Wybierz też kategorię, a potem typ karnetu: „Limit wejść” (data ważności opcjonalna) albo „Bez limitu” (data ważności wymagana). Voucher lub kod możesz dodać od razu albo później."
       },
       "visits": {
         "title": "Zapisywanie wejść",
@@ -33,7 +33,7 @@
       },
       "companies": {
         "title": "Firmy",
-        "body": "W zakładce „Firmy” przeglądasz firmy powiązane z Twoimi karnetami, oznaczasz ulubione i sprawdzasz, jakie karnety masz w danej firmie."
+        "body": "W zakładce „Firmy” przeglądasz firmy powiązane z Twoimi karnetami, oznaczasz ulubione, sortujesz listę (w tym „najbliżej mnie”, jeśli zgodzisz się na udostępnienie lokalizacji) i sprawdzasz, jakie karnety masz w danej firmie. Jeśli firma ma zapisaną lokalizację, w jej szczegółach zobaczysz też mapę."
       }
     },
     "faqHeading": "Najczęstsze pytania",
