@@ -2,7 +2,8 @@
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
-> DRAFT — nazwy/typy do potwierdzenia przy implementacji Prisma schema.
+> Zaktualizowano: 2026-08-09 — opisuje faktyczny schemat Prisma wersji produkcyjnej (po
+> Fazie V4), nie propozycję.
 
 ## Tabele
 

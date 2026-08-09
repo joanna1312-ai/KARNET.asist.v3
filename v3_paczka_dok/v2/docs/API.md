@@ -2,8 +2,9 @@
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
-> DRAFT. Gdy implementacja ruszy, wygenerować i utrzymywać specyfikację OpenAPI obok kodu
-> (Claude Code potrafi ją wygenerować z route handlerów i pilnować spójności).
+> Zaktualizowano: 2026-08-09 — opisuje faktycznie zaimplementowane endpointy wersji
+> produkcyjnej (po Fazie V4), nie propozycję. Specyfikacja OpenAPI obok kodu — do rozważenia
+> w kolejnej wersji, nie zrobione.
 
 Konwencja: JSON, autoryzacja opcjonalna — jeśli brak sesji/tokenu, żądania działają
 na `deviceId` odczytanym z **podpisanego** tokena urządzenia (nagłówek

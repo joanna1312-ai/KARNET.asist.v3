@@ -2,8 +2,8 @@
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
-> DRAFT — do uzupełnienia komendami rzeczywistymi po scaffoldingu Next.js. Poniżej zakres
-> i kolejność, nie gotowe polecenia.
+> Zaktualizowano: 2026-08-09 — opisuje faktyczny setup wersji produkcyjnej (po Fazie V4),
+> nie propozycję. Komendy poniżej są gotowe do uruchomienia.
 
 ## Wymagania
 

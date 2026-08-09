@@ -22,7 +22,7 @@ Nigdy nie wskazywać produkcyjnej bazy danych ze środowiska preview/staging.
 |---|---|
 | Frontend + API (Next.js) | Vercel, projekt `karnet-asist-v3` |
 | Baza danych | Supabase (managed Postgres), region Irlandia |
-| Pliki (vouchery, `ADR-009`) | Supabase Storage, ten sam projekt co baza; bucket dev `voucher-files-dev` już istnieje, bucket produkcyjny `voucher-files` **do założenia przy wdrożeniu tej funkcji** |
+| Pliki (vouchery, `ADR-009`) | Supabase Storage, ten sam projekt co baza; oba buckety założone i działają — dev `voucher-files-dev`, produkcyjny `voucher-files` |
 | Mapy / Places (`ADR-004`) | Google Maps Platform, klucz `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` |
 | Doradca AI (`ADR-008`) | Groq (LLM) + Google Places API (New) server-side, klucze `GROQ_API_KEY` i `GOOGLE_PLACES_SERVER_KEY` |
 
