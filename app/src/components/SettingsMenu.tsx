@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CARD_SURFACE_CLASS } from "@/components/ui/Card";
 
 export function SettingsMenu() {
   const t = useTranslations("header");
@@ -46,7 +47,7 @@ export function SettingsMenu() {
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-20 w-56 rounded-2xl border border-black/10 bg-white p-3 text-foreground shadow-xl dark:border-white/10 dark:bg-zinc-900"
+          className={`absolute right-0 top-[calc(100%+0.5rem)] z-20 w-56 p-3 text-foreground shadow-xl ${CARD_SURFACE_CLASS}`}
         >
           <div>
             <p className="px-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
