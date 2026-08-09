@@ -45,6 +45,9 @@ function cardToFormValues(card: ApiCard): CardFormValues {
     companyMode: "existing",
     companyId: card.company.id,
     newCompanyName: "",
+    newCompanyLat: null,
+    newCompanyLng: null,
+    newCompanyGooglePlaceId: null,
     newCompanyCategorySelection: "",
     newCategoryName: "",
     newCategoryColor: "",
@@ -202,6 +205,9 @@ export default function CardsPage() {
         body: JSON.stringify({
           name: values.newCompanyName.trim(),
           categoryId,
+          lat: values.newCompanyLat,
+          lng: values.newCompanyLng,
+          googlePlaceId: values.newCompanyGooglePlaceId,
         }),
       });
 

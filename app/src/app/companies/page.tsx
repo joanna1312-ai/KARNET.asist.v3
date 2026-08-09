@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { deviceFetch } from "@/lib/device-client";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { haversineDistanceKm, type LatLng } from "@/lib/distance";
 import type { CategoryColor } from "@/server/system-categories";
 
-type SortBy = "name" | "category";
+type SortBy = "name" | "category" | "nearest";
+type GeoStatus = "idle" | "requesting" | "granted" | "denied" | "unsupported";
 
 interface ApiCategory {
   id: string;
@@ -20,6 +22,8 @@ interface ApiCategory {
 interface ApiCompany {
   id: string;
   name: string;
+  lat: number | null;
+  lng: number | null;
   category: ApiCategory;
   isFavorite: boolean;
 }
@@ -45,6 +49,8 @@ export default function CompaniesPage() {
   const [filterText, setFilterText] = useState("");
   const [filterCategoryId, setFilterCategoryId] = useState("all");
   const [sortBy, setSortBy] = useState<SortBy>("name");
+  const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+  const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle");
 
   useEffect(() => {
     let ignore = false;
@@ -66,6 +72,29 @@ export default function CompaniesPage() {
       ignore = true;
     };
   }, []);
+
+  // Sortowanie "najbliżej mnie" (Sesja V4.1) — świadomy wybór użytkownika, nie
+  // automatyczne pytanie o lokalizację przy wejściu na stronę. Zawsze ulepszenie: brak
+  // zgody/wsparcia przeglądarki nie psuje reszty strony (filtr, pozostałe sortowania).
+  function requestNearestSort() {
+    setSortBy("nearest");
+    if (geoStatus !== "idle") return;
+
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoStatus("unsupported");
+      return;
+    }
+
+    setGeoStatus("requesting");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setGeoStatus("granted");
+      },
+      () => setGeoStatus("denied"),
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  }
 
   async function toggleFavorite(company: ApiCompany) {
     const nextIsFavorite = !company.isFavorite;
@@ -92,6 +121,16 @@ export default function CompaniesPage() {
 
   const t = useTranslations("companiesPage");
   const tCategory = useTranslations("companyCategory");
+  const locale = useLocale();
+  const distanceFormatter = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }),
+    [locale]
+  );
+
+  function distanceToCompanyKm(company: ApiCompany): number | null {
+    if (!userLocation || company.lat == null || company.lng == null) return null;
+    return haversineDistanceKm(userLocation, { lat: company.lat, lng: company.lng });
+  }
 
   const categoryOptions = useMemo(() => {
     if (!companies) return [];
@@ -119,7 +158,23 @@ export default function CompaniesPage() {
       return matchesText && matchesCategory;
     });
 
+    const distanceKm = (company: ApiCompany): number | null =>
+      userLocation && company.lat != null && company.lng != null
+        ? haversineDistanceKm(userLocation, { lat: company.lat, lng: company.lng })
+        : null;
+
     return [...filtered].sort((a, b) => {
+      if (sortBy === "nearest" && userLocation) {
+        const distanceA = distanceKm(a);
+        const distanceB = distanceKm(b);
+        // Firmy bez lat/lng (dodane ręcznie przed Sesją V4.1) zawsze na końcu, bez
+        // dystansu — nie da się ich uszeregować względem pozycji użytkownika.
+        if (distanceA == null && distanceB == null) return a.name.localeCompare(b.name);
+        if (distanceA == null) return 1;
+        if (distanceB == null) return -1;
+        if (distanceA !== distanceB) return distanceA - distanceB;
+        return a.name.localeCompare(b.name);
+      }
       if (sortBy === "category") {
         const categoryCompare = categoryDisplayName(a.category, tCategory).localeCompare(
           categoryDisplayName(b.category, tCategory)
@@ -128,7 +183,7 @@ export default function CompaniesPage() {
       }
       return a.name.localeCompare(b.name);
     });
-  }, [companies, filterText, filterCategoryId, sortBy, tCategory]);
+  }, [companies, filterText, filterCategoryId, sortBy, tCategory, userLocation]);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
@@ -169,14 +224,28 @@ export default function CompaniesPage() {
           </select>
           <select
             value={sortBy}
-            onChange={(event) => setSortBy(event.target.value as SortBy)}
+            onChange={(event) => {
+              const nextSortBy = event.target.value as SortBy;
+              if (nextSortBy === "nearest") {
+                requestNearestSort();
+              } else {
+                setSortBy(nextSortBy);
+              }
+            }}
             aria-label={t("sortByLabel")}
             className="min-h-11 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
           >
             <option value="name">{t("sortByName")}</option>
             <option value="category">{t("sortByCategory")}</option>
+            <option value="nearest">{t("sortByNearest")}</option>
           </select>
         </div>
+      )}
+
+      {sortBy === "nearest" && (geoStatus === "denied" || geoStatus === "unsupported") && (
+        <p className="rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-foreground/70 dark:border-white/10 dark:bg-white/5">
+          {geoStatus === "denied" ? t("geoDenied") : t("geoUnavailable")}
+        </p>
       )}
 
       {companies !== null && companies.length > 0 && visibleCompanies.length === 0 && (
@@ -201,6 +270,9 @@ export default function CompaniesPage() {
                     className={`h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[company.category.color]}`}
                   />
                   {categoryDisplayName(company.category, tCategory)}
+                  {sortBy === "nearest" &&
+                    distanceToCompanyKm(company) != null &&
+                    ` · ${t("distanceKm", { km: distanceFormatter.format(distanceToCompanyKm(company)!) })}`}
                 </p>
               </Link>
               <button

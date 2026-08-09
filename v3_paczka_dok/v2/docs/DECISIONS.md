@@ -48,16 +48,36 @@ wprowadzone na koncie nigdy nie przeciekają do trybu bez konta (patrz `API.md`,
 założeniem konta świadomie nie ma — to by wymagało jakiejś formy migracji, a każda migracja
 łamie rozłączność przestrzeni.
 
-## ADR-004 — Google Maps: integracja realna odroczona do etapu produkcyjnego
+## ADR-004 — Google Maps: integracja realna, po stronie przeglądarki
 
-**Status:** proponowane.
-**Decyzja:** w prototypie mapa i wybór firmy z Google Maps są zaślepione (statyczna
-siatka + mockowa lista miejsc). W wersji produkcyjnej: Google Maps JavaScript API do
-wyświetlania mapy + Places API do wyszukiwania/wyboru firmy.
-**Uzasadnienie:** integracja wymaga klucza API, billingu i limitów kosztowych — świadomie
-odłożona, żeby nie blokować reszty budowy MVP.
-**Do zrobienia przed produkcją:** ustawić budżet/limit na koncie Google Cloud, ograniczyć
-klucz do domeny produkcyjnej.
+**Status:** potwierdzone (Sesja V4.1, 2026-08-09).
+**Decyzja:** w prototypie mapa i wybór firmy z Google Maps były zaślepione (statyczna
+siatka + mockowa lista miejsc). W wersji produkcyjnej: wyszukiwanie firmy przez Google
+Places API (New) w kreatorze karnetu (`CardForm.tsx`) i mapa lokalizacji (Google Maps
+JavaScript API) na `/companies/:id`, oba po stronie przeglądarki przez oficjalną
+bibliotekę `@vis.gl/react-google-maps` — nie przez serwerowy proxy. Klucz
+(`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`) trafia więc do klienta z natury; bezpieczeństwo
+zapewnia ograniczenie klucza w Google Cloud Console do dokładnie dwóch interfejsów (Maps
+JavaScript API, Places API (New)), a przed produkcją dodatkowo do domeny produkcyjnej
+(HTTP referrer restriction) — nie tajność samego klucza. Sortowanie/filtrowanie po
+dystansie od użytkownika dzieje się w całości po stronie klienta, bez wywołań do API.
+**Uzasadnienie:** integracja wymagała klucza API, billingu i limitów kosztowych —
+świadomie odłożona do etapu produkcyjnego, żeby nie blokować reszty budowy MVP; ten etap
+właśnie się zaczął. Architektura po stronie przeglądarki wybrana zamiast wcześniej
+rozważanego serwerowego proxy — mniej własnego kodu do utrzymania, standardowa,
+powszechna praktyka dla tego typu integracji, wspierana natywnie przez oficjalną
+bibliotekę Google.
+**RODO (Sesja V4.1):** sortowanie „najbliżej mnie" na `/companies` korzysta z
+`navigator.geolocation` (wbudowana w przeglądarkę, nie Google Geolocation API), wyłącznie
+za zgodą użytkownika (natywny prompt przeglądarki). Pozycja użytkownika żyje tylko w
+pamięci przeglądarki (stan React) na czas sesji — nigdy nie jest wysyłana do API ani
+zapisywana w bazie. Odmowa zgody lub brak wsparcia przeglądarki nie blokuje żadnej innej
+funkcji strony.
+**Zrobione przed produkcją:** projekt Google Cloud założony, Maps JavaScript API +
+Places API (New) włączone, klucz ograniczony do tych dwóch interfejsów.
+**Do zrobienia przed produkcją:** ustawić budżet/limit na koncie Google Cloud (świadomie
+odłożone na czas developmentu — projekt działa na darmowym okresie próbnym, patrz
+`plan-pracy-claude-code.md`), ograniczyć klucz do domeny produkcyjnej.
 
 ## ADR-005 — Zakres MVP: bez płatności, rezerwacji i integracji z operatorami
 

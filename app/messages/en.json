@@ -78,6 +78,10 @@
     "sortByLabel": "Sort",
     "sortByName": "Sort: name",
     "sortByCategory": "Sort: category",
+    "sortByNearest": "Sort: nearest to me",
+    "distanceKm": "{km} km",
+    "geoDenied": "Location wasn't shared, so the list keeps its previous order. You can allow location access in your browser settings and try again.",
+    "geoUnavailable": "This browser doesn't support geolocation, so sorting by distance isn't available.",
     "addFavorite": "Add to favorites",
     "removeFavorite": "Remove from favorites"
   },
@@ -118,8 +122,8 @@
       "existing": "Choose from the list",
       "new": "Add a new company"
     },
-    "mapsSearchPlaceholder": "Search on the map (coming soon)",
-    "mapsSearchHint": "Searching for companies on Google Maps is coming in a future version. For now, enter the name and category manually.",
+    "mapsSearchHint": "Start typing a name to see suggestions from Google Maps — you can also just type the name manually without picking a suggestion.",
+    "placesNoResults": "No suggestions for this name.",
     "newCompanyNameLabel": "Company name",
     "newCompanyNamePlaceholder": "e.g. Pilates Studio Center",
     "categoryLabel": "Category",

@@ -78,15 +78,27 @@ usunięcie błędnie dodanego wejścia można wykonać także po archiwizacji ka
 
 | Metoda | Ścieżka | Opis |
 |---|---|---|
-| `GET` | `/api/companies?query=&near=lat,lng` | lista/wyszukiwanie partnerów |
+| `GET` | `/api/companies` | lista partnerów |
 | `GET` | `/api/companies?favorites=true` | tylko ulubione partnery zweryfikowanego urządzenia (wymaga tokena) |
 | `GET` | `/api/companies/:id` | szczegóły + karnety użytkownika w tej firmie |
-| `POST` | `/api/companies` | dodanie nowej firmy ręcznie |
+| `POST` | `/api/companies` | dodanie nowej firmy ręcznie lub przez wyszukiwanie Google Places |
 | `POST` | `/api/companies/favorites/:id` / `DELETE` | oznaczenie/zdjęcie ulubionego partnera (idempotentne, wymaga tokena) |
 
 `GET /api/companies` przyjmuje opcjonalny nagłówek `Authorization: Device <token>` — bez
 niego lista działa jak dotąd (publiczny odczyt), z nim każda firma ma dodatkowo pole
 `isFavorite` (ulubione są prywatne per urządzenie/konto, nigdy globalne).
+
+`GET /api/companies` i `GET /api/companies/:id` zwracają dodatkowo `lat`/`lng`
+(`number | null`) — lokalizacja z Google Places (Sesja V4.1, `ADR-004`), `null` dla firm
+dodanych bez wyboru podpowiedzi. Wyszukiwanie/sortowanie po dystansie od użytkownika
+(„najbliżej mnie" na `/companies`) dzieje się w całości po stronie klienta na już
+pobranej liście — nie ma osobnego parametru `near=lat,lng` ani serwerowego endpointu do
+tego celu.
+
+`POST /api/companies` przyjmuje opcjonalnie `lat`/`lng` (oba razem albo żadne — połówkowa
+para to `400 { "errors": ["locationIncomplete"] }`) i `googlePlaceId`. Wszystkie trzy pola
+puste = firma dodana ręcznie bez wyboru z podpowiedzi Google Places, dokładnie jak przed
+Sesją V4.1.
 
 ## Kategorie firm (Sesja 16)
 
@@ -102,12 +114,6 @@ tylko dla kategorii systemowych i służy do tłumaczenia i18n; kategorie użytk
 wyświetla się wprost po `name`. `POST /api/companies` przyjmuje `categoryId` (uuid), nie
 nazwę kategorii — musi wskazywać kategorię systemową albo własną kategorię wywołującego
 urządzenia, inaczej `400 { "errors": ["categoryRequired"] }`.
-
-## Wyszukiwanie miejsc (Google Maps)
-
-| Metoda | Ścieżka | Opis |
-|---|---|---|
-| `GET` | `/api/places/search?query=` | proxy do Google Places API (klucz API trzymany po stronie serwera, nie w kliencie) |
 
 ## Urządzenie (tryb bez konta)
 

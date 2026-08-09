@@ -78,6 +78,10 @@
     "sortByLabel": "Sortuj",
     "sortByName": "Sortuj: nazwa",
     "sortByCategory": "Sortuj: kategoria",
+    "sortByNearest": "Sortuj: najbliżej mnie",
+    "distanceKm": "{km} km",
+    "geoDenied": "Nie udostępniono lokalizacji, więc lista pokazuje kolejność jak poprzednio. Możesz zezwolić na lokalizację w ustawieniach przeglądarki i spróbować ponownie.",
+    "geoUnavailable": "Ta przeglądarka nie obsługuje geolokalizacji, więc sortowanie po dystansie jest niedostępne.",
     "addFavorite": "Dodaj do ulubionych",
     "removeFavorite": "Usuń z ulubionych"
   },
@@ -118,8 +122,8 @@
       "existing": "Wybierz z listy",
       "new": "Dodaj nową firmę"
     },
-    "mapsSearchPlaceholder": "Szukaj na mapie (wkrótce)",
-    "mapsSearchHint": "Wyszukiwanie firm na mapie Google pojawi się w kolejnej wersji. Na razie podaj nazwę i kategorię ręcznie.",
+    "mapsSearchHint": "Zacznij pisać nazwę, żeby zobaczyć podpowiedzi z Google Maps — możesz też wpisać nazwę ręcznie, bez wybierania podpowiedzi.",
+    "placesNoResults": "Brak podpowiedzi dla tej nazwy.",
     "newCompanyNameLabel": "Nazwa firmy",
     "newCompanyNamePlaceholder": "Np. Studio Pilates Centrum",
     "categoryLabel": "Kategoria",

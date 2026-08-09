@@ -10,6 +10,7 @@ import {
   CategoryOption,
   emptyCardFormValues,
 } from "@/components/CardForm";
+import { CompanyMap } from "@/components/CompanyMap";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
@@ -21,6 +22,8 @@ import { getCardWarningStatus } from "@/server/card-status";
 interface ApiCompany {
   id: string;
   name: string;
+  lat: number | null;
+  lng: number | null;
   category: CategoryOption;
 }
 
@@ -200,6 +203,13 @@ export default function CompanyDetailsPage() {
               </button>
             )}
           </div>
+
+          {/* Mapa lokalizacji (Sesja V4.1, ADR-004) — tylko dla firm dodanych przez
+              wyszukiwanie Google Places; firmy dodane ręcznie wcześniej nie mają
+              lat/lng, więc mapa po prostu się nie renderuje, bez błędu. */}
+          {company.lat != null && company.lng != null && (
+            <CompanyMap lat={company.lat} lng={company.lng} />
+          )}
 
           {formOpen && (
             <div className="rounded-2xl border border-black/10 p-5 dark:border-white/10">

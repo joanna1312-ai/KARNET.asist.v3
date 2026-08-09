@@ -9,7 +9,13 @@ const categorySelect = {
   color: true,
   isSystem: true,
 } as const;
-const companySelect = { id: true, name: true, category: { select: categorySelect } } as const;
+const companySelect = {
+  id: true,
+  name: true,
+  lat: true,
+  lng: true,
+  category: { select: categorySelect },
+} as const;
 
 type RouteParams = { params: Promise<{ id: string }> };
 

@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import { Footer } from "@/components/Footer";
+import { GoogleMapsProvider } from "@/components/GoogleMapsProvider";
 import { GuestNotice } from "@/components/GuestNotice";
 import { Header } from "@/components/Header";
 import "./globals.css";
@@ -56,10 +57,12 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <AuthSessionProvider>
-            <Header />
-            <GuestNotice />
-            {children}
-            <Footer />
+            <GoogleMapsProvider>
+              <Header />
+              <GuestNotice />
+              {children}
+              <Footer />
+            </GoogleMapsProvider>
           </AuthSessionProvider>
         </NextIntlClientProvider>
       </body>

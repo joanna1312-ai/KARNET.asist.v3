@@ -10,7 +10,13 @@ const categorySelect = {
   color: true,
   isSystem: true,
 } as const;
-const companySelect = { id: true, name: true, category: { select: categorySelect } } as const;
+const companySelect = {
+  id: true,
+  name: true,
+  lat: true,
+  lng: true,
+  category: { select: categorySelect },
+} as const;
 
 // Firmy nie są danymi osobowymi użytkownika — lista jest publiczna do odczytu
 // (docs/DATABASE.md, sekcja RLS). Potrzebna, żeby kreator karnetu miał z czego wybierać.
@@ -51,11 +57,11 @@ export async function GET(request: Request) {
   return NextResponse.json({ companies: result });
 }
 
-// POST /api/companies — ręczne dodanie nowej firmy (Sesja 8, docs/API.md). Bez
-// integracji Google Places (ADR-004) — tylko nazwa i kategoria, lat/lng/google_place_id
-// zostają null do czasu realnej integracji. Wymaga zweryfikowanego device tokena
-// (ADR-007), żeby zapis do współdzielonej tabeli firm nie był w pełni anonimowy;
-// samo dodanie firmy nie wymaga konta.
+// POST /api/companies — dodanie nowej firmy (Sesja 8, docs/API.md), opcjonalnie z
+// lokalizacją z Google Places (Sesja V4.1, ADR-004) — lat/lng/googlePlaceId zostają
+// null, gdy firma jest dodawana ręcznie bez wyboru podpowiedzi. Wymaga zweryfikowanego
+// device tokena (ADR-007), żeby zapis do współdzielonej tabeli firm nie był w pełni
+// anonimowy; samo dodanie firmy nie wymaga konta.
 export async function POST(request: Request) {
   const deviceId = await getVerifiedDeviceId(request);
   if (!deviceId) {
@@ -87,7 +93,13 @@ export async function POST(request: Request) {
   }
 
   const company = await prisma.company.create({
-    data: { name: input.name!, categoryId: input.categoryId! },
+    data: {
+      name: input.name!,
+      categoryId: input.categoryId!,
+      lat: input.lat,
+      lng: input.lng,
+      googlePlaceId: input.googlePlaceId,
+    },
     select: companySelect,
   });
 

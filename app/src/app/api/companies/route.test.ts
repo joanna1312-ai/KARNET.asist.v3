@@ -99,6 +99,8 @@ describe("GET /api/companies", () => {
       select: {
         id: true,
         name: true,
+        lat: true,
+        lng: true,
         category: {
           select: { id: true, slug: true, name: true, color: true, isSystem: true },
         },
@@ -207,10 +209,18 @@ describe("POST /api/companies — dodanie firmy ręcznie (Sesja 8, kategorie od 
     const body = await response.json();
 
     expect(prismaMock.company.create).toHaveBeenCalledWith({
-      data: { name: "FitZone", categoryId: GYM_CATEGORY.id },
+      data: {
+        name: "FitZone",
+        categoryId: GYM_CATEGORY.id,
+        lat: null,
+        lng: null,
+        googlePlaceId: null,
+      },
       select: {
         id: true,
         name: true,
+        lat: true,
+        lng: true,
         category: {
           select: { id: true, slug: true, name: true, color: true, isSystem: true },
         },
@@ -222,6 +232,70 @@ describe("POST /api/companies — dodanie firmy ręcznie (Sesja 8, kategorie od 
       name: "FitZone",
       category: GYM_CATEGORY,
     });
+  });
+
+  it("rejects a company with only lat set (no lng)", async () => {
+    const response = await POST(
+      new Request(endpoint, {
+        method: "POST",
+        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "FitZone", categoryId: GYM_CATEGORY.id, lat: 52.2297 }),
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.errors).toContain("locationIncomplete");
+    expect(prismaMock.company.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a company with lat/lng/googlePlaceId from Google Places (Sesja V4.1)", async () => {
+    prismaMock.category.findUnique.mockResolvedValue({
+      id: GYM_CATEGORY.id,
+      isSystem: true,
+      createdByDeviceId: null,
+    });
+    prismaMock.company.create.mockResolvedValue({
+      id: "new-company",
+      name: "FitZone",
+      lat: 52.2297,
+      lng: 21.0122,
+      category: GYM_CATEGORY,
+    });
+
+    const response = await POST(
+      new Request(endpoint, {
+        method: "POST",
+        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "FitZone",
+          categoryId: GYM_CATEGORY.id,
+          lat: 52.2297,
+          lng: 21.0122,
+          googlePlaceId: "ChIJ_test",
+        }),
+      })
+    );
+
+    expect(prismaMock.company.create).toHaveBeenCalledWith({
+      data: {
+        name: "FitZone",
+        categoryId: GYM_CATEGORY.id,
+        lat: 52.2297,
+        lng: 21.0122,
+        googlePlaceId: "ChIJ_test",
+      },
+      select: {
+        id: true,
+        name: true,
+        lat: true,
+        lng: true,
+        category: {
+          select: { id: true, slug: true, name: true, color: true, isSystem: true },
+        },
+      },
+    });
+    expect(response.status).toBe(201);
   });
 
   it("allows a device's own private category", async () => {

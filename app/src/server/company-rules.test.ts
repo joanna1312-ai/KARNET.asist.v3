@@ -29,6 +29,47 @@ describe("getCompanyInputErrors — ręczne dodanie firmy (Sesja 8)", () => {
   });
 });
 
+describe("getCompanyInputErrors — lokalizacja z Google Places (Sesja V4.1)", () => {
+  it("accepts a company without any location", () => {
+    expect(
+      getCompanyInputErrors({ name: "FitZone", categoryId: GYM_CATEGORY_ID })
+    ).toEqual([]);
+  });
+
+  it("accepts a company with a full lat/lng pair", () => {
+    expect(
+      getCompanyInputErrors({
+        name: "FitZone",
+        categoryId: GYM_CATEGORY_ID,
+        lat: 52.2297,
+        lng: 21.0122,
+      })
+    ).toEqual([]);
+  });
+
+  it("rejects a company with only lat set", () => {
+    expect(
+      getCompanyInputErrors({
+        name: "FitZone",
+        categoryId: GYM_CATEGORY_ID,
+        lat: 52.2297,
+        lng: null,
+      })
+    ).toContain("locationIncomplete");
+  });
+
+  it("rejects a company with only lng set", () => {
+    expect(
+      getCompanyInputErrors({
+        name: "FitZone",
+        categoryId: GYM_CATEGORY_ID,
+        lat: null,
+        lng: 21.0122,
+      })
+    ).toContain("locationIncomplete");
+  });
+});
+
 describe("parseCompanyInput", () => {
   it("trims the name and keeps a valid categoryId", () => {
     expect(
@@ -36,6 +77,9 @@ describe("parseCompanyInput", () => {
     ).toEqual({
       name: "FitZone",
       categoryId: GYM_CATEGORY_ID,
+      lat: null,
+      lng: null,
+      googlePlaceId: null,
     });
   });
 
@@ -43,10 +87,55 @@ describe("parseCompanyInput", () => {
     expect(parseCompanyInput({ name: "FitZone", categoryId: "" })).toEqual({
       name: "FitZone",
       categoryId: null,
+      lat: null,
+      lng: null,
+      googlePlaceId: null,
     });
   });
 
   it("returns nulls for a missing body", () => {
-    expect(parseCompanyInput(undefined)).toEqual({ name: null, categoryId: null });
+    expect(parseCompanyInput(undefined)).toEqual({
+      name: null,
+      categoryId: null,
+      lat: null,
+      lng: null,
+      googlePlaceId: null,
+    });
+  });
+
+  it("parses lat/lng/googlePlaceId when present", () => {
+    expect(
+      parseCompanyInput({
+        name: "FitZone",
+        categoryId: GYM_CATEGORY_ID,
+        lat: 52.2297,
+        lng: 21.0122,
+        googlePlaceId: "ChIJ_test",
+      })
+    ).toEqual({
+      name: "FitZone",
+      categoryId: GYM_CATEGORY_ID,
+      lat: 52.2297,
+      lng: 21.0122,
+      googlePlaceId: "ChIJ_test",
+    });
+  });
+
+  it("ignores non-numeric lat/lng and non-string googlePlaceId", () => {
+    expect(
+      parseCompanyInput({
+        name: "FitZone",
+        categoryId: GYM_CATEGORY_ID,
+        lat: "52.2297",
+        lng: Number.NaN,
+        googlePlaceId: 123,
+      })
+    ).toEqual({
+      name: "FitZone",
+      categoryId: GYM_CATEGORY_ID,
+      lat: null,
+      lng: null,
+      googlePlaceId: null,
+    });
   });
 });

@@ -26,13 +26,20 @@ flowchart LR
   Mobile -. przyszłość .-> API
   API --> DB
   API --> Storage
-  API --> GMaps
+  Web --> GMaps
 ```
 
 W prototypie frontend, "backend" i "baza danych" to jeden statyczny plik HTML z danymi
 trzymanymi w pamięci JS (`let cards = [...]`, `let partners = [...]`) — znikają po
 odświeżeniu strony. Produkcyjna wersja rozdziela to na realny frontend, API i trwałą bazę
 danych.
+
+**Google Maps/Places (Sesja V4.1, ADR-004):** przeglądarka woła Google bezpośrednio
+(`Web --> GMaps`), nie przez własne API — wyszukiwanie firmy (Places API (New)) i mapa
+lokalizacji (Maps JavaScript API) działają po stronie klienta przez
+`@vis.gl/react-google-maps`. Serwer (`API`) zapisuje jedynie wynik (`lat`/`lng`/
+`googlePlaceId`) w `companies`, tak jak każde inne pole formularza — nie pośredniczy w
+samym wywołaniu do Google.
 
 ## Kluczowe encje domenowe
 
@@ -52,10 +59,10 @@ Pełny schemat pól i relacji: [DATABASE.md](DATABASE.md).
 inkrementacja `used` (dla typu `limit`) → nowy wpis w historii z dzisiejszą datą →
 przeliczenie statusu archiwizacji.
 
-**Dodanie karnetu** — kreator 3-krokowy: (1) firma istniejąca / nowa / wybrana z Google
-Maps + kategoria, (2) typ karnetu (limit + liczba wejść, lub bez limitu) + data ważności
-(wymagana tylko dla „bez limitu”), (3) voucher/QR (jeden dla karnetu lub osobny na
-wejście) + podsumowanie → zapis.
+**Dodanie karnetu** — kreator 3-krokowy: (1) firma istniejąca / nowa (wpisana ręcznie lub
+wybrana z podpowiedzi Google Places — Sesja V4.1) + kategoria, (2) typ karnetu (limit +
+liczba wejść, lub bez limitu) + data ważności (wymagana tylko dla „bez limitu”), (3)
+voucher/QR (jeden dla karnetu lub osobny na wejście) + podsumowanie → zapis.
 
 **Archiwizacja** — reguła obliczana przy każdym renderze, nie jest osobnym stanem
 zapisanym ręcznie: `archived = usedUp || (expiry && expiry < dziś)`. W produkcji: albo
@@ -84,7 +91,15 @@ możliwości odzyskania.
 
 **Podgląd partnera** — po kliknięciu firmy (lista lub pinezka mapy) pokazywane są karnety
 użytkownika powiązane z tą firmą (`card.name === partner.name` w prototypie — w produkcji
-klucz obcy `Card.companyId`).
+klucz obcy `Card.companyId`). Gdy firma ma zapisane `lat`/`lng` (Sesja V4.1), szczegóły
+pokazują też mapę z jej lokalizacją; firmy dodane ręcznie bez wyboru z Google Places tej
+mapy nie mają.
+
+**Sortowanie „najbliżej mnie" (Sesja V4.1)** — na `/companies` użytkownik może wybrać
+sortowanie po dystansie od swojej bieżącej pozycji (`navigator.geolocation`, za zgodą
+przeglądarki). Dystans liczony w całości po stronie klienta (wzór haversine) na już
+pobranej liście firm — firmy bez `lat`/`lng` trafiają na koniec listy. Odmowa zgody lub
+brak wsparcia przeglądarki nie wpływa na żadną inną funkcję strony.
 
 **Logowanie/wylogowanie (Sesja 14)** — logowanie przez Google (Auth.js/NextAuth) przełącza,
 z której przestrzeni danych korzysta aplikacja: zalogowany widzi i zapisuje wyłącznie

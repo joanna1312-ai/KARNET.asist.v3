@@ -508,84 +508,97 @@ Uwaga: to osobny etap, odpalany po ukończeniu i wdrożeniu MVP (Sesje 19–23 w
 "Przed pierwszym wdrożeniem produkcyjnym"), nie ciąg dalszy tej samej numeracji. Każda z tych
 sesji dotyka albo modelu danych, albo nowej integracji zewnętrznej (koszt, klucz API,
 zewnętrzna zależność) — większe ryzyko niż kosmetyczne zmiany wyżej. Nowe zmienne
-środowiskowe, które się pojawią w tej fazie: ewentualny klucz dostawcy e-mail (V4.1),
-`GOOGLE_MAPS_API_KEY` (już w `.env.example`, dziś nieużywany — V4.2), `GROQ_API_KEY` (V4.3),
-`STORAGE_BUCKET_URL`/`STORAGE_ACCESS_KEY` (już w `.env.example`, dziś nieużywane — V4.4).
+środowiskowe, które się pojawią w tej fazie: `GOOGLE_MAPS_API_KEY` (już w `.env.example`,
+dziś nieużywany — V4.1), `GROQ_API_KEY` (V4.2), `STORAGE_BUCKET_URL`/`STORAGE_ACCESS_KEY`
+(już w `.env.example`, dziś nieużywane — V4.3).
 
-## Sesja V4.1 — Logowanie: dodatkowe metody (hasło i/lub magic link) — wymaga decyzji przed startem
-
-Kontekst: dziś jedyna metoda logowania to Google OAuth (Sesja 14, `ADR-003`), skonfigurowana
-przez Auth.js/NextAuth (`src/server/auth.ts`). Konto pozostaje **zawsze opcjonalne** — to
-architektoniczny fundament apki (patrz poprawki opisane przy Sesji 14: konto i tryb bez
-konta to trwale rozłączne przestrzenie danych), nie tylko sugestia do zachowania.
-
-Do wyboru, w kolejności rosnącej złożoności:
-1. **Login + hasło (Credentials provider w NextAuth)** — nie wymaga żadnej zewnętrznej
-   usługi/API, najszybsze do wdrożenia. Wymaga hashowania haseł (bcrypt/argon2), ekranu
-   rejestracji, resetu hasła (reset z kolei wymaga wysyłki e-maili — patrz punkt 2). Najlepiej
-   pasuje do celu "użytkownik rozwija profil o dodatkowe pola" — masz już tabelę `User`
-   (Prisma) do rozbudowy.
-2. **Magic link (e-mail bez hasła)** — wygodniejsze, ale wymaga dostawcy wysyłki e-mail
-   (Resend/Postmark/SES) i klucza API, czyli nowej zależności zewnętrznej i kosztu.
-3. **Oba naraz** — najwięcej pracy, ale daje użytkownikowi wybór.
-
-Rekomendacja: login + hasło jako pierwszy krok (zero nowych zależności zewnętrznych,
-najmniejsze ryzyko), magic link jako osobna sesja później, jeśli faktycznie potrzebny. To
-jednak decyzja produktowa — potwierdź przed uruchomieniem sesji:
-- Którą metodę(y) wdrażamy teraz?
-- Jeśli magic link: który dostawca e-mail i czy masz już klucz API?
-- Jakie dodatkowe pola profilu użytkownika mają się pojawić od razu (imię, telefon,
-  preferencje), a jakie mogą poczekać na osobną sesję?
-
-Prompt (skróć/dostosuj, po ustaleniu powyższego):
-> Dodaj [ustalona metoda] logowania obok istniejącego Google OAuth, przez NextAuth
-> (`src/server/auth.ts`), zgodnie z `ADR-003` (konto zawsze opcjonalne — zweryfikuj, że
-> żadna funkcja rdzeniowa dalej nie wymaga logowania) i
-> `v3_paczka_dok/v2/docs/API.md`. [Jeśli hasło:] rozszerz model `User` w Prisma o pole na
-> hash hasła, dodaj ekran rejestracji/logowania e-mail+hasło, hashowanie przez
-> bcrypt/argon2 (sprawdź aktywne utrzymanie paczki przed dodaniem do `package.json` —
-> zasada z Sesji 13). [Jeśli magic link:] skonfiguruj Email provider NextAuth z [dostawca],
-> dodaj zmienną w `.env.example` na klucz API. Rozszerz `User` o pola profilu: [ustalona
-> lista]. Zaktualizuj `docs/ARCHITECTURE.md`/`docs/DATABASE.md` o opis zmiany (konwencja z
-> Sesji 16).
-> Najpierw krótki plan, poczekaj na akceptację.
-
-- [ ] Metoda(y) logowania i pola profilu ustalone
-- [ ] Plan zaakceptowany
-- [ ] Nowa metoda logowania działa obok Google OAuth
-- [ ] Zweryfikowane: konto nadal w pełni opcjonalne, przestrzenie danych nadal rozłączne
-- [ ] `docs/` zaktualizowane
-- [ ] lint/test + commit
-
-## Sesja V4.2 — Integracja Google Maps/Places (ADR-004)
+## Sesja V4.1 — Integracja Google Maps/Places (ADR-004)
 
 Kontekst: `ADR-004` świadomie odkłada to do etapu produkcyjnego — ten etap właśnie się
 zaczyna. `GOOGLE_MAPS_API_KEY` już istnieje w `.env.example`, ale nieużywany. Dziś dodawanie
 nowej firmy to czyste pole tekstowe (`CardForm.tsx`, tryb `companyMode: "new"`), bez
 wyszukiwania czy mapy.
 
-Przed startem: załóż projekt w Google Cloud, włącz Maps JavaScript API + Places API, ustaw
-limit budżetu (patrz checklista "Przed pierwszym wdrożeniem produkcyjnym" wyżej w tym
-pliku) i pobierz klucz.
+Przed startem: załóż projekt w Google Cloud, włącz Maps JavaScript API + Places API (New),
+ustaw limit budżetu (patrz checklista "Przed pierwszym wdrożeniem produkcyjnym" wyżej w tym
+pliku) i pobierz klucz. Klucz ograniczony wg interfejsów do dokładnie tych dwóch API (nie
+"wszystkie interfejsy Maps Platform") — zrobione 2026-08-09.
+
+**Rozszerzenie zakresu (ustalone 2026-08-09):** oprócz wyszukiwania firmy i mapy jej
+lokalizacji, sesja obejmuje też funkcję „firmy najbliżej mnie" na `/companies`. Używa
+wbudowanego w przeglądarkę `navigator.geolocation` (darmowe, nie Google Geolocation API), za
+zgodą użytkownika — to zawsze ulepszenie, nigdy wymóg: gdy użytkownik odmówi zgody lub
+przeglądarka nie wspiera geolokalizacji, `/companies` działa dokładnie tak jak dziś (filtr/
+sortowanie z Sesji 20), bez błędu. Ustalone:
+- Sortowanie „Najbliżej mnie" to **nowa, trzecia opcja** w istniejącym przełączniku
+  sortowania z Sesji 20 (obok „alfabetycznie"/„po kategorii"), a nie automatyczne
+  przełączenie po samej zgodzie — użytkownik świadomie ją wybiera.
+- Przy każdej firmie na liście widoczny dystans (np. „2,3 km"), liczony po stronie klienta
+  z `lat`/`lng` firmy i aktualnej pozycji użytkownika (wzór haversine, bez wywołania do API).
+- Lokalizacja użytkownika nigdzie nie jest zapisywana (tylko w pamięci przeglądarki na czas
+  sesji) — mimo to warto dopisać tę nową formę przetwarzania danych osobowych wprost do
+  `docs/DECISIONS.md`, sekcja RODO, skoro ta sekcja i tak dziś istnieje.
 
 Prompt (skróć/dostosuj):
-> Zaimplementuj wyszukiwanie firmy przez Google Places API w `CardForm.tsx` (tryb dodawania
-> nowej firmy) — autouzupełnianie nazwy + zapis lokalizacji (`lat`/`lng`, kolumny już
-> istnieją w `companies`, patrz `docs/DATABASE.md`). Dodaj mapę (Google Maps JavaScript API)
-> na `/companies/:id` pokazującą lokalizację firmy. Klucz API ograniczony do domeny w
-> konsoli Google Cloud (to ustawiasz Ty, nie kod) — żadnych innych sekretów w
-> `NEXT_PUBLIC_*`. Zaktualizuj `docs/ARCHITECTURE.md` (usuń notę, że to zaślepione) i status
-> `ADR-004` w `docs/DECISIONS.md` na "potwierdzone".
+> Zaimplementuj wyszukiwanie firmy przez Google Places API (New) w `CardForm.tsx` (tryb
+> dodawania nowej firmy) — autouzupełnianie nazwy + zapis lokalizacji (`lat`/`lng`, kolumny
+> już istnieją w `companies`, patrz `docs/DATABASE.md`). Dodaj mapę (Google Maps JavaScript
+> API) na `/companies/:id` pokazującą lokalizację firmy — firmy bez ustawionych `lat`/`lng`
+> (dodane ręcznie przed tą sesją) po prostu nie pokazują mapy, bez błędu. Klucz API
+> ograniczony do interfejsów Maps JavaScript API + Places API (New) w konsoli Google Cloud
+> (już zrobione), ograniczenie do domeny dopiero przed produkcją — żadnych innych sekretów w
+> `NEXT_PUBLIC_*`.
+>
+> Dodatkowo: na `/companies` dodaj trzecią opcję sortowania „Najbliżej mnie", korzystającą z
+> `navigator.geolocation` (za zgodą przeglądarki, z sensowną obsługą odmowy/braku wsparcia —
+> pozostałe opcje sortowania/filtrowania z Sesji 20 działają bez zmian). Przy każdej firmie
+> na liście pokaż liczony po stronie klienta dystans (wzór haversine, `lat`/`lng` firmy vs.
+> pozycja użytkownika), np. „2,3 km" — firmy bez `lat`/`lng` przy tym sortowaniu na koniec
+> listy, bez dystansu. Dodaj klucze i18n (PL/EN) na nową opcję sortowania i komunikat przy
+> odmowie/braku wsparcia geolokalizacji.
+>
+> Zaktualizuj `docs/ARCHITECTURE.md` (usuń notę, że Maps jest zaślepione), status `ADR-004`
+> w `docs/DECISIONS.md` na "potwierdzone", i dopisz w sekcji RODO tego pliku nową formę
+> przetwarzania: lokalizacja użytkownika z `navigator.geolocation`, tylko w pamięci
+> przeglądarki, nigdzie nie zapisywana.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Projekt Google Cloud + limit budżetu + klucz ograniczony do domeny
-- [ ] Plan zaakceptowany
-- [ ] Autouzupełnianie firmy (Places) w `CardForm.tsx`
-- [ ] Mapa lokalizacji na `/companies/:id`
-- [ ] `docs/DECISIONS.md`/`ARCHITECTURE.md` zaktualizowane
-- [ ] lint/test + commit
+- [x] Projekt Google Cloud + klucz ograniczony do interfejsów (Maps JavaScript API +
+      Places API (New), nie wszystkie 35)
+- [ ] Limit budżetu (billing alert) w Google Cloud — **świadomie odłożone 2026-08-09**:
+      projekt działa na darmowym okresie próbnym (środki do 8 listopada 2026), Google nie
+      pobiera opłat automatycznie po jego zakończeniu bez ręcznej aktywacji pełnego konta.
+      Wrócić do tego punktu przed aktywacją pełnego konta rozliczeniowego / przed
+      wdrożeniem produkcyjnym (patrz checklista "Przed pierwszym wdrożeniem
+      produkcyjnym" wyżej w tym pliku).
+- [x] Plan zaakceptowany (architektura po stronie przeglądarki, nie serwerowy proxy —
+      ustalone 2026-08-09, patrz `ADR-004`)
+- [x] Autouzupełnianie firmy (Places) w `CardForm.tsx` — własny komponent
+      `PlacesAutocomplete.tsx` na `google.maps.places.AutocompleteSuggestion`
+      (`useMapsLibrary("places")`), nie gotowy web component `<gmp-place-autocomplete>`
+      (wymagałby osobno włączonego "Places UI Kit")
+- [x] Mapa lokalizacji na `/companies/:id` (`CompanyMap.tsx`; firmy bez `lat`/`lng` —
+      bez błędu, bez mapy) — zwykły `Marker`, nie `AdvancedMarker` (bez potrzeby Map ID)
+- [x] Sortowanie „Najbliżej mnie" na `/companies` + widoczny dystans przy firmach
+      (`src/lib/distance.ts`, haversine)
+- [x] Obsługa odmowy zgody/braku wsparcia geolokalizacji — baner + reszta strony działa
+      bez zmian (zweryfikowane w przeglądarce: odmowa geolokalizacji nie psuje filtra/listy)
+- [x] `docs/DECISIONS.md` (status ADR-004 → potwierdzone + nowa nota RODO) /
+      `ARCHITECTURE.md` / `API.md` (usunięty niezaimplementowany `/api/places/search`) /
+      `SETUP.md` zaktualizowane
+- [x] i18n uzupełnione (PL/EN)
+- [x] lint/test przechodzą (134/134); commit — do potwierdzenia z użytkowniczką
 
-## Sesja V4.3 — Integracja Groq AI — wymaga decyzji przed startem
+Nota implementacyjna: `@vis.gl/react-google-maps` nie ma w swoim buncie dyrektywy
+`"use client"` — użyty bezpośrednio w `src/app/layout.tsx` (Server Component) łamał
+granicę RSC (`createContext is not a function` przy `next build`). Naprawione przez
+własny wrapper `src/components/GoogleMapsProvider.tsx` z jawnym `"use client"`.
+Zweryfikowane end-to-end w przeglądarce 2026-08-09: wyszukiwanie Places zwraca realne
+podpowiedzi, wybór zapisuje `lat`/`lng` w bazie (potwierdzone przez `GET /api/companies`),
+mapa renderuje się na `/companies/:id`, sortowanie „najbliżej mnie" z prawidłowym
+fallbackiem przy odmowie geolokalizacji.
+
+## Sesja V4.2 — Integracja Groq AI — wymaga decyzji przed startem
 
 Uwaga terminologiczna: zakładam, że chodzi o **Groq** (szybkie API do inferencji modeli
 językowych), nie o inną markę o podobnej nazwie — popraw, jeśli chodziło o coś innego.
@@ -620,7 +633,7 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 - [ ] `.env.example`/`docs/SETUP.md` zaktualizowane
 - [ ] lint/test + commit
 
-## Sesja V4.4 — Prawdziwy upload plików/zdjęć voucherów (object storage) — wymaga decyzji przed startem
+## Sesja V4.3 — Prawdziwy upload plików/zdjęć voucherów (object storage) — wymaga decyzji przed startem
 
 Kontekst: Sesja 11 świadomie wprowadziła `voucherFileUrl` jako zwykłe pole tekstowe
 (treść/link), bez uploadu pliku — `docs/DATABASE.md` i `CLAUDE.md` wprost mówią, że to
@@ -742,6 +755,59 @@ Prompt (skróć/dostosuj):
 - [ ] Plan zaakceptowany
 - [ ] Przełącznik wariantu w `SettingsMenu.tsx`
 - [ ] `data-variant` + inline init script, brak mignięcia przy ładowaniu
+- [ ] lint/test + commit
+
+---
+
+## Faza V6 — logowanie
+
+Uwaga: odpalana po Fazie V4 (nowe API) i Fazie V5 (grafika) — świadomie na końcu, bo to
+rozszerzenie już działającego mechanizmu logowania (Google OAuth, Sesja 14), nie coś, od
+czego zależą inne fazy. Nic w V4 ani V5 nie czeka na tę sesję.
+
+## Sesja V6.1 — Logowanie: dodatkowe metody (hasło i/lub magic link) — wymaga decyzji przed startem
+
+Kontekst: dziś jedyna metoda logowania to Google OAuth (Sesja 14, `ADR-003`), skonfigurowana
+przez Auth.js/NextAuth (`src/server/auth.ts`). Konto pozostaje **zawsze opcjonalne** — to
+architektoniczny fundament apki (patrz poprawki opisane przy Sesji 14: konto i tryb bez
+konta to trwale rozłączne przestrzenie danych), nie tylko sugestia do zachowania.
+
+Do wyboru, w kolejności rosnącej złożoności:
+1. **Login + hasło (Credentials provider w NextAuth)** — nie wymaga żadnej zewnętrznej
+   usługi/API, najszybsze do wdrożenia. Wymaga hashowania haseł (bcrypt/argon2), ekranu
+   rejestracji, resetu hasła (reset z kolei wymaga wysyłki e-maili — patrz punkt 2). Najlepiej
+   pasuje do celu "użytkownik rozwija profil o dodatkowe pola" — masz już tabelę `User`
+   (Prisma) do rozbudowy.
+2. **Magic link (e-mail bez hasła)** — wygodniejsze, ale wymaga dostawcy wysyłki e-mail
+   (Resend/Postmark/SES) i klucza API, czyli nowej zależności zewnętrznej i kosztu.
+3. **Oba naraz** — najwięcej pracy, ale daje użytkownikowi wybór.
+
+Rekomendacja: login + hasło jako pierwszy krok (zero nowych zależności zewnętrznych,
+najmniejsze ryzyko), magic link jako osobna sesja później, jeśli faktycznie potrzebny. To
+jednak decyzja produktowa — potwierdź przed uruchomieniem sesji:
+- Którą metodę(y) wdrażamy teraz?
+- Jeśli magic link: który dostawca e-mail i czy masz już klucz API?
+- Jakie dodatkowe pola profilu użytkownika mają się pojawić od razu (imię, telefon,
+  preferencje), a jakie mogą poczekać na osobną sesję?
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Dodaj [ustalona metoda] logowania obok istniejącego Google OAuth, przez NextAuth
+> (`src/server/auth.ts`), zgodnie z `ADR-003` (konto zawsze opcjonalne — zweryfikuj, że
+> żadna funkcja rdzeniowa dalej nie wymaga logowania) i
+> `v3_paczka_dok/v2/docs/API.md`. [Jeśli hasło:] rozszerz model `User` w Prisma o pole na
+> hash hasła, dodaj ekran rejestracji/logowania e-mail+hasło, hashowanie przez
+> bcrypt/argon2 (sprawdź aktywne utrzymanie paczki przed dodaniem do `package.json` —
+> zasada z Sesji 13). [Jeśli magic link:] skonfiguruj Email provider NextAuth z [dostawca],
+> dodaj zmienną w `.env.example` na klucz API. Rozszerz `User` o pola profilu: [ustalona
+> lista]. Zaktualizuj `docs/ARCHITECTURE.md`/`docs/DATABASE.md` o opis zmiany (konwencja z
+> Sesji 16).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Metoda(y) logowania i pola profilu ustalone
+- [ ] Plan zaakceptowany
+- [ ] Nowa metoda logowania działa obok Google OAuth
+- [ ] Zweryfikowane: konto nadal w pełni opcjonalne, przestrzenie danych nadal rozłączne
+- [ ] `docs/` zaktualizowane
 - [ ] lint/test + commit
 
 ## Rzeczy, o które trzeba pytać, a nie zgadywać

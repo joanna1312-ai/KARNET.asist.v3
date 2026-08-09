@@ -6,6 +6,7 @@ import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
 import { CATEGORY_COLOR_PALETTE, type CategoryColor } from "@/server/system-categories";
+import { PlacesAutocomplete } from "./PlacesAutocomplete";
 
 export interface CompanyOption {
   id: string;
@@ -30,6 +31,9 @@ export interface CardFormValues {
   companyMode: CompanyMode;
   companyId: string;
   newCompanyName: string;
+  newCompanyLat: number | null;
+  newCompanyLng: number | null;
+  newCompanyGooglePlaceId: string | null;
   newCompanyCategorySelection: string;
   newCategoryName: string;
   newCategoryColor: CategoryColor | "";
@@ -44,6 +48,9 @@ export const emptyCardFormValues: CardFormValues = {
   companyMode: "existing",
   companyId: "",
   newCompanyName: "",
+  newCompanyLat: null,
+  newCompanyLng: null,
+  newCompanyGooglePlaceId: null,
   newCompanyCategorySelection: "",
   newCategoryName: "",
   newCategoryColor: "",
@@ -214,33 +221,40 @@ export function CardForm({
           </>
         ) : (
           <div className="flex flex-col gap-3 rounded-lg border border-black/10 p-3 dark:border-white/10">
-            {/* Miejsce pod przyszłą integrację Google Places (ADR-004) — na razie
-                bez podłączonego API, tylko wizualna zaślepka na przyszłe wyszukiwanie. */}
-            <input
-              type="text"
-              disabled
-              placeholder={t("mapsSearchPlaceholder")}
-              className="rounded-lg border border-black/10 bg-black/5 px-3 py-2 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
-            />
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t("mapsSearchHint")}
-            </p>
-
             <div className="flex flex-col gap-1">
               <label htmlFor={`${formId}-new-company-name`} className="text-sm font-medium">
                 {t("newCompanyNameLabel")}
               </label>
-              <input
+              {/* Wyszukiwanie przez Google Places API (New) — Sesja V4.1 (ADR-004). Wybór
+                  podpowiedzi ustawia lat/lng/googlePlaceId; ręczne wpisanie nazwy bez
+                  wyboru podpowiedzi nadal działa (te trzy pola zostają puste, jak przed
+                  tą sesją). */}
+              <PlacesAutocomplete
                 id={`${formId}-new-company-name`}
-                type="text"
                 value={values.newCompanyName}
                 disabled={submitting}
                 placeholder={t("newCompanyNamePlaceholder")}
-                onChange={(event) =>
-                  setValues((prev) => ({ ...prev, newCompanyName: event.target.value }))
+                noResultsLabel={t("placesNoResults")}
+                onChange={(newCompanyName) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    newCompanyName,
+                    newCompanyLat: null,
+                    newCompanyLng: null,
+                    newCompanyGooglePlaceId: null,
+                  }))
                 }
-                className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
+                onPlaceSelect={(place) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    newCompanyName: place.name,
+                    newCompanyLat: place.lat,
+                    newCompanyLng: place.lng,
+                    newCompanyGooglePlaceId: place.googlePlaceId,
+                  }))
+                }
               />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t("mapsSearchHint")}</p>
               {errorFor("newCompanyName") && (
                 <p className="text-sm text-status-urgent">
                   {t(`errors.${errorFor("newCompanyName")}`)}
