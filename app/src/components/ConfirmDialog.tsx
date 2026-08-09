@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
+import { Button } from "@/components/ui/Button";
+import { CARD_SURFACE_CLASS } from "@/components/ui/Card";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -50,28 +52,19 @@ export function ConfirmDialog({
       onClick={(event) => {
         if (event.target === dialogRef.current) onCancel();
       }}
-      className="m-auto max-h-[min(32rem,calc(100vh-2rem))] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-black/10 bg-white p-6 text-foreground shadow-xl backdrop:bg-black/40 dark:border-white/10 dark:bg-zinc-900"
+      className={`m-auto max-h-[min(32rem,calc(100vh-2rem))] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto p-6 text-foreground shadow-xl backdrop:bg-black/40 ${CARD_SURFACE_CLASS}`}
     >
       <h2 id={titleId} className="text-lg font-semibold">
         {title}
       </h2>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{body}</p>
       <div className="mt-6 flex flex-wrap justify-end gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex min-h-11 items-center rounded-full px-4 text-sm font-medium text-foreground hover:bg-black/5 dark:hover:bg-white/10"
-        >
+        <Button type="button" variant="ghost" onClick={onCancel}>
           {cancelLabel}
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          disabled={confirmDisabled}
-          className="flex min-h-11 items-center rounded-full bg-coral px-4 text-sm font-semibold text-coral-ink hover:brightness-95 disabled:opacity-50"
-        >
+        </Button>
+        <Button type="button" variant="danger-solid" onClick={onConfirm} disabled={confirmDisabled}>
           {confirmLabel}
-        </button>
+        </Button>
       </div>
     </dialog>
   );

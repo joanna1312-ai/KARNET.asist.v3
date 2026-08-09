@@ -1,5 +1,6 @@
 "use client";
 
+import { Ticket } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -11,10 +12,13 @@ import {
   emptyCardFormValues,
   voucherFileUrlForSave,
 } from "@/components/CardForm";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { CompanyMap } from "@/components/CompanyMap";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
-import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
 import { uploadVoucherFile } from "@/lib/voucher-upload";
@@ -201,22 +205,15 @@ export default function CompanyDetailsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-semibold">{company.name}</h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                <span
-                  aria-hidden="true"
-                  className={`mr-2 inline-block h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[company.category.color]}`}
-                />
+              <p className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+                <CategoryIcon slug={company.category.slug} color={company.category.color} />
                 {categoryDisplayName(company.category, tCategory)}
               </p>
             </div>
             {!formOpen && (
-              <button
-                type="button"
-                onClick={openAddForm}
-                className="flex min-h-11 shrink-0 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
-              >
+              <Button type="button" onClick={openAddForm} className="shrink-0">
                 {t("addCardButton")}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -249,9 +246,9 @@ export default function CompanyDetailsPage() {
           <div>
             <h2 className="text-lg font-semibold">{t("cardsTitle")}</h2>
             {cards !== null && cards.length === 0 && (
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <EmptyState icon={Ticket} className="mt-2">
                 {t("emptyState")}
-              </p>
+              </EmptyState>
             )}
 
             {cards !== null && cards.length > 0 && (

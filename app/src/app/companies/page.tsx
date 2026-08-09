@@ -1,10 +1,13 @@
 "use client";
 
+import { Building2, Star } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
-import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { categoryDisplayName } from "@/lib/category-display";
 import { haversineDistanceKm, type LatLng } from "@/lib/distance";
 import type { CategoryColor } from "@/server/system-categories";
 
@@ -26,21 +29,6 @@ interface ApiCompany {
   lng: number | null;
   category: ApiCategory;
   isFavorite: boolean;
-}
-
-function StarIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="1.6"
-      className="h-5 w-5"
-      aria-hidden="true"
-    >
-      <path d="M12 3l2.7 5.9 6.3.6-4.8 4.2 1.4 6.2L12 16.9 6.4 20l1.4-6.2L3 9.5l6.3-.6L12 3z" />
-    </svg>
-  );
 }
 
 export default function CompaniesPage() {
@@ -196,7 +184,7 @@ export default function CompaniesPage() {
       )}
 
       {companies !== null && companies.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("emptyState")}</p>
+        <EmptyState icon={Building2}>{t("emptyState")}</EmptyState>
       )}
 
       {companies !== null && companies.length > 0 && (
@@ -264,11 +252,8 @@ export default function CompaniesPage() {
                 className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 gap-y-1"
               >
                 <p className="min-w-0 truncate font-medium">{company.name}</p>
-                <p className="flex shrink-0 items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-                  <span
-                    aria-hidden="true"
-                    className={`h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[company.category.color]}`}
-                  />
+                <p className="flex shrink-0 items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+                  <CategoryIcon slug={company.category.slug} color={company.category.color} />
                   {categoryDisplayName(company.category, tCategory)}
                   {sortBy === "nearest" &&
                     distanceToCompanyKm(company) != null &&
@@ -284,11 +269,16 @@ export default function CompaniesPage() {
                 }
                 className={
                   company.isFavorite
-                    ? "flex size-11 shrink-0 items-center justify-center text-accent-deep"
-                    : "flex size-11 shrink-0 items-center justify-center text-zinc-400 hover:text-accent-deep dark:text-zinc-500"
+                    ? "flex size-11 shrink-0 items-center justify-center text-favorite"
+                    : "flex size-11 shrink-0 items-center justify-center text-zinc-400 hover:text-favorite dark:text-zinc-500"
                 }
               >
-                <StarIcon filled={company.isFavorite} />
+                <Star
+                  className="h-5 w-5"
+                  fill={company.isFavorite ? "currentColor" : "none"}
+                  strokeWidth={1.6}
+                  aria-hidden="true"
+                />
               </button>
             </li>
           ))}

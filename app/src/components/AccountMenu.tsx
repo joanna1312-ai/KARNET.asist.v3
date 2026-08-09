@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { Button } from "@/components/ui/Button";
 
 // Konto i urządzenie to dwie rozłączne przestrzenie danych, które nigdy się nie mieszają
 // (patrz src/server/card-owner.ts) — zalogowanie NIE przenosi danych zapisanych wcześniej
@@ -16,13 +17,9 @@ export function AccountMenu() {
 
   if (status !== "authenticated") {
     return (
-      <button
-        type="button"
-        onClick={() => signIn("google")}
-        className="flex min-h-11 items-center truncate rounded-full bg-black/5 px-3 text-sm font-medium hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
-      >
+      <Button type="button" variant="neutral" onClick={() => signIn("google")} className="truncate">
         {t("signInButton")}
-      </button>
+      </Button>
     );
   }
 
@@ -36,13 +33,9 @@ export function AccountMenu() {
       >
         {t("signedInAs", { name })}
       </span>
-      <button
-        type="button"
-        onClick={() => signOut()}
-        className="flex min-h-11 items-center truncate rounded-full bg-black/5 px-3 text-sm font-medium hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15"
-      >
+      <Button type="button" variant="neutral" onClick={() => signOut()} className="truncate">
         {t("signOutButton")}
-      </button>
+      </Button>
     </div>
   );
 }

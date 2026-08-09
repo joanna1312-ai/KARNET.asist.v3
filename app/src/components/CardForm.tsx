@@ -2,8 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { DEFAULT_CATEGORY_ICON } from "@/lib/category-icons";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
 import { CATEGORY_COLOR_PALETTE, type CategoryColor } from "@/server/system-categories";
 import {
@@ -174,6 +179,9 @@ export function CardForm({
   const errors: FormErrorCode[] = clientErrors.length > 0 ? clientErrors : serverErrors;
   const errorFor = (field: keyof CardFormValues) =>
     errors.find((code) => FIELD_FOR_ERROR[code] === field);
+  const selectedCategory = categories.find(
+    (category) => category.id === values.newCompanyCategorySelection
+  );
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -246,14 +254,13 @@ export function CardForm({
 
         {values.companyMode === "existing" ? (
           <>
-            <select
+            <Select
               id={`${formId}-company`}
               value={values.companyId}
               disabled={submitting}
               onChange={(event) =>
                 setValues((prev) => ({ ...prev, companyId: event.target.value }))
               }
-              className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
             >
               <option value="" disabled>
                 {t("companyPlaceholder")}
@@ -263,7 +270,7 @@ export function CardForm({
                   {company.name}
                 </option>
               ))}
-            </select>
+            </Select>
             {errorFor("companyId") && (
               <p className="text-sm text-status-urgent">
                 {t(`errors.${errorFor("companyId")}`)}
@@ -320,28 +327,35 @@ export function CardForm({
               >
                 {t("categoryLabel")}
               </label>
-              <select
-                id={`${formId}-new-company-category`}
-                value={values.newCompanyCategorySelection}
-                disabled={submitting}
-                onChange={(event) =>
-                  setValues((prev) => ({
-                    ...prev,
-                    newCompanyCategorySelection: event.target.value,
-                  }))
-                }
-                className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
-              >
-                <option value="" disabled>
-                  {t("categoryPlaceholder")}
-                </option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {categoryDisplayName(category, tCategory)}
+              <div className="relative">
+                {selectedCategory && (
+                  <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2">
+                    <CategoryIcon slug={selectedCategory.slug} color={selectedCategory.color} />
+                  </span>
+                )}
+                <Select
+                  id={`${formId}-new-company-category`}
+                  value={values.newCompanyCategorySelection}
+                  disabled={submitting}
+                  onChange={(event) =>
+                    setValues((prev) => ({
+                      ...prev,
+                      newCompanyCategorySelection: event.target.value,
+                    }))
+                  }
+                  style={selectedCategory ? { paddingLeft: "2.5rem" } : undefined}
+                >
+                  <option value="" disabled>
+                    {t("categoryPlaceholder")}
                   </option>
-                ))}
-                <option value={NEW_CATEGORY_SENTINEL}>{t("newCategoryOption")}</option>
-              </select>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {categoryDisplayName(category, tCategory)}
+                    </option>
+                  ))}
+                  <option value={NEW_CATEGORY_SENTINEL}>{t("newCategoryOption")}</option>
+                </Select>
+              </div>
               {errorFor("newCompanyCategorySelection") && (
                 <p className="text-sm text-status-urgent">
                   {t(`errors.${errorFor("newCompanyCategorySelection")}`)}
@@ -358,7 +372,7 @@ export function CardForm({
                   >
                     {t("newCategoryNameLabel")}
                   </label>
-                  <input
+                  <Input
                     id={`${formId}-new-category-name`}
                     type="text"
                     value={values.newCategoryName}
@@ -367,7 +381,6 @@ export function CardForm({
                     onChange={(event) =>
                       setValues((prev) => ({ ...prev, newCategoryName: event.target.value }))
                     }
-                    className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
                   />
                   {errorFor("newCategoryName") && (
                     <p className="text-sm text-status-urgent">
@@ -390,12 +403,14 @@ export function CardForm({
                         onClick={() =>
                           setValues((prev) => ({ ...prev, newCategoryColor: color }))
                         }
-                        className={`size-11 rounded-full ${CATEGORY_COLOR_CLASS[color]} ${
+                        className={`flex size-11 items-center justify-center rounded-full text-white ${CATEGORY_COLOR_CLASS[color]} ${
                           values.newCategoryColor === color
                             ? "ring-2 ring-offset-2 ring-black/60 dark:ring-white/60 dark:ring-offset-black"
                             : ""
                         }`}
-                      />
+                      >
+                        <DEFAULT_CATEGORY_ICON className="size-5" strokeWidth={2} />
+                      </button>
                     ))}
                   </div>
                   {errorFor("newCategoryColor") && (
@@ -443,7 +458,7 @@ export function CardForm({
           <label htmlFor={`${formId}-total-visits`} className="text-sm font-medium">
             {t("totalVisitsLabel")}
           </label>
-          <input
+          <Input
             id={`${formId}-total-visits`}
             type="number"
             min={1}
@@ -452,7 +467,6 @@ export function CardForm({
             onChange={(event) =>
               setValues((prev) => ({ ...prev, totalVisits: event.target.value }))
             }
-            className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
           />
           {errorFor("totalVisits") && (
             <p className="text-sm text-status-urgent">
@@ -466,7 +480,7 @@ export function CardForm({
         <label htmlFor={`${formId}-expiry`} className="text-sm font-medium">
           {t("expiryDateLabel")}
         </label>
-        <input
+        <Input
           id={`${formId}-expiry`}
           type="date"
           value={values.expiryDate}
@@ -474,7 +488,6 @@ export function CardForm({
           onChange={(event) =>
             setValues((prev) => ({ ...prev, expiryDate: event.target.value }))
           }
-          className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {values.type === CardType.unlimited
@@ -492,7 +505,7 @@ export function CardForm({
         <label htmlFor={`${formId}-voucher-mode`} className="text-sm font-medium">
           {t("voucherModeLabel")}
         </label>
-        <select
+        <Select
           id={`${formId}-voucher-mode`}
           value={values.voucherMode}
           disabled={submitting}
@@ -502,14 +515,13 @@ export function CardForm({
               voucherMode: event.target.value as VoucherMode,
             }))
           }
-          className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         >
           {(Object.values(VoucherMode) as VoucherMode[]).map((mode) => (
             <option key={mode} value={mode}>
               {t(`voucherModeOptions.${mode}`)}
             </option>
           ))}
-        </select>
+        </Select>
         {errorFor("voucherMode") && (
           <p className="text-sm text-status-urgent">
             {t(`errors.${errorFor("voucherMode")}`)}
@@ -542,7 +554,7 @@ export function CardForm({
             <label htmlFor={`${formId}-voucher-file-url`} className="text-sm font-medium">
               {t("voucherFileUrlLabel")}
             </label>
-            <input
+            <Input
               id={`${formId}-voucher-file-url`}
               type="text"
               value={values.voucherFileUrl}
@@ -551,7 +563,6 @@ export function CardForm({
               onChange={(event) =>
                 setValues((prev) => ({ ...prev, voucherFileUrl: event.target.value }))
               }
-              className="min-h-11 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
             />
           </>
         ) : (
@@ -624,21 +635,12 @@ export function CardForm({
       )}
 
       <div className="mt-2 flex flex-wrap justify-end gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={submitting}
-          className="flex min-h-11 items-center rounded-full px-4 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-        >
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
           {t("cancelButton")}
-        </button>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="flex min-h-11 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
-        >
+        </Button>
+        <Button type="submit" disabled={submitting}>
           {submitting ? t("savingButton") : t("saveButton")}
-        </button>
+        </Button>
       </div>
     </form>
   );

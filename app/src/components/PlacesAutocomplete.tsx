@@ -2,6 +2,7 @@
 
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { useEffect, useRef, useState } from "react";
+import { Input } from "@/components/ui/Input";
 
 export interface PlaceSelection {
   name: string;
@@ -106,7 +107,7 @@ export function PlacesAutocomplete({
 
   return (
     <div className="relative">
-      <input
+      <Input
         id={id}
         type="text"
         value={value}
@@ -116,7 +117,6 @@ export function PlacesAutocomplete({
         onChange={(event) => onChange(event.target.value)}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         onBlur={() => window.setTimeout(() => setOpen(false), 150)}
-        className="min-h-11 w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
       />
       {open && (
         <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-black/10 bg-white text-sm shadow-lg dark:border-white/10 dark:bg-zinc-900">

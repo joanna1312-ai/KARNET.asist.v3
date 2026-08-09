@@ -1,5 +1,6 @@
 "use client";
 
+import { Archive, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -12,12 +13,15 @@ import {
   NEW_CATEGORY_SENTINEL,
   voucherFileUrlForSave,
 } from "@/components/CardForm";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
-import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { categoryDisplayName } from "@/lib/category-display";
 import { uploadVoucherFile } from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus } from "@/server/card-status";
@@ -341,29 +345,21 @@ export default function CardsPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="min-w-0 text-2xl font-semibold">{t("title")}</h1>
-        <button
-          type="button"
-          onClick={openAddForm}
-          className="flex min-h-11 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
-        >
+        <Button type="button" onClick={openAddForm}>
           {t("addButton")}
-        </button>
+        </Button>
       </div>
 
       <div className="flex w-fit gap-1 rounded-full border border-black/10 p-1 dark:border-white/10">
         {(["active", "archived"] as const).map((tabOption) => (
-          <button
+          <Button
             key={tabOption}
             type="button"
+            variant={tab === tabOption ? "primary" : "ghost"}
             onClick={() => setTab(tabOption)}
-            className={`flex min-h-11 items-center rounded-full px-4 text-sm font-medium ${
-              tab === tabOption
-                ? "bg-mint text-mint-ink"
-                : "hover:bg-black/5 dark:hover:bg-white/10"
-            }`}
           >
             {t(tabOption === "active" ? "tabActive" : "tabArchived")}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -398,20 +394,17 @@ export default function CardsPage() {
       )}
 
       {cards !== null && cards.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <EmptyState icon={tab === "archived" ? Archive : Ticket}>
           {t(tab === "archived" ? "archiveEmptyState" : "emptyState")}
-        </p>
+        </EmptyState>
       )}
 
       {cards !== null && cards.length > 0 && (
         <div className="flex flex-col gap-6">
           {groupedCards.map(({ category, cards: categoryCards }) => (
             <div key={category.id} className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 px-1">
-                <span
-                  aria-hidden="true"
-                  className={`h-2.5 w-2.5 rounded-full ${CATEGORY_COLOR_CLASS[category.color]}`}
-                />
+              <div className="flex items-center gap-1.5 px-1">
+                <CategoryIcon slug={category.slug} color={category.color} />
                 <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                   {categoryDisplayName(category, tCategory)}
                 </h2>
@@ -449,32 +442,24 @@ export default function CardsPage() {
                     </Link>
                     <div className="flex shrink-0 gap-2">
                       {tab === "archived" ? (
-                        <button
-                          type="button"
-                          onClick={() => openRenewForm(card)}
-                          className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                        >
+                        <Button type="button" variant="ghost" onClick={() => openRenewForm(card)}>
                           {t("renewButton")}
-                        </button>
+                        </Button>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => openEditForm(card)}
-                          className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                        >
+                        <Button type="button" variant="ghost" onClick={() => openEditForm(card)}>
                           {t("editButton")}
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
                         type="button"
+                        variant="danger"
                         onClick={() => {
                           setDeleteError(false);
                           setDeleteTarget(card);
                         }}
-                        className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
                       >
                         {t("deleteButton")}
-                      </button>
+                      </Button>
                     </div>
                   </li>
                 ))}
