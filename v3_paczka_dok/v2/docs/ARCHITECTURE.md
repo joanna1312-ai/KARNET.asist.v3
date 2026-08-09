@@ -1,11 +1,12 @@
 # Architektura — Karnet.asist
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Zaktualizowano: 2026-08-09 (Faza V4 — Doradca AI, upload vouchera do Supabase Storage)
 
-> Status: DRAFT na podstawie prototypu `karnet-asist-prototyp_v6.html`. Stos techniczny
-> potwierdzony (ADR-001, ADR-002) — patrz [DECISIONS.md](DECISIONS.md). Reszta
-> architektury (przepływy, encje) nadal w statusie DRAFT do weryfikacji przy
-> implementacji.
+> Status: stos techniczny potwierdzony (ADR-001, ADR-002) — patrz
+> [DECISIONS.md](DECISIONS.md). Sekcje dotyczące Google Maps/Places (ADR-004), Doradcy AI
+> (ADR-008) i uploadu vouchera (ADR-009) opisują stan faktycznie zaimplementowany w Fazie
+> V4, nie propozycję.
 
 ## Widok systemu
 
@@ -18,15 +19,19 @@ flowchart LR
   subgraph Server
     API["API (Next.js Route Handlers)"]
     DB[(PostgreSQL)]
-    Storage[(Object storage\nvouchery/zdjęcia)]
+    Storage[(Supabase Storage\nvouchery/zdjęcia, bucket prywatny)]
   end
-  GMaps["Google Maps / Places API"]
+  GMaps["Google Maps / Places API\n(Maps JS + Places API New)"]
+  Groq["Groq LLM\n(llama-3.3-70b-versatile)"]
 
   Web --> API
   Mobile -. przyszłość .-> API
   API --> DB
-  API --> Storage
+  API -- "1. sign-upload / 3. confirm" --> Storage
+  Web -- "2. PUT pliku (podpisany URL)" --> Storage
   Web --> GMaps
+  API -- "Text Search (GOOGLE_PLACES_SERVER_KEY)" --> GMaps
+  API --> Groq
 ```
 
 W prototypie frontend, "backend" i "baza danych" to jeden statyczny plik HTML z danymi
@@ -40,6 +45,31 @@ lokalizacji (Maps JavaScript API) działają po stronie klienta przez
 `@vis.gl/react-google-maps`. Serwer (`API`) zapisuje jedynie wynik (`lat`/`lng`/
 `googlePlaceId`) w `companies`, tak jak każde inne pole formularza — nie pośredniczy w
 samym wywołaniu do Google.
+
+**Doradca AI (Sesja V4.2, ADR-008):** `/recommendations` woła własny endpoint
+`POST /api/ai/recommendations`, który po stronie serwera łączy wynik Google Places API
+(New) Text Search (klucz `GOOGLE_PLACES_SERVER_KEY`, **inny** niż kliencki
+`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` powyżej) z historią karnetów wywołującego z własnej
+bazy, i dopiero ten kontekst wysyła do Groq (`llama-3.3-70b-versatile`, zwykły `fetch`,
+bez dodatkowej zależności npm). Groq nie ma dostępu do internetu — pełni tylko rolę
+warstwy syntezy nad faktami dostarczonymi przez backend; prompt systemowy zabrania
+wymyślania nazw miejsc spoza dostarczonych list. Każdy błąd zewnętrznego API (brak
+klucza, timeout, zły JSON) jest łapany po stronie serwera i zwraca `null` — endpoint
+zawsze odpowiada `200`, strona pokazuje wtedy łagodny komunikat "brak rekomendacji", bez
+rozróżnienia dla użytkownika między "nic w okolicy" a "błąd integracji" (błędy widoczne
+tylko w logach serwera).
+
+**Upload vouchera (Sesja V4.3, ADR-009):** plik/zdjęcie vouchera **nie** przechodzi przez
+`API` — trafia bezpośrednio z przeglądarki do Supabase Storage. Powód: limit ciała
+requestu na Vercel Serverless Functions (~4.5 MB) jest mniejszy niż dopuszczalny rozmiar
+pliku (10 MB). Flow trójkrokowy: (1) `POST .../voucher-file/sign-upload` — serwer
+weryfikuje właściciela karnetu i zwraca podpisany URL do zapisu; (2) przeglądarka wysyła
+plik zwykłym `PUT` prosto do Supabase Storage tym URL-em; (3)
+`POST .../voucher-file/confirm` — serwer zapisuje ścieżkę (prefiks `storage:`) w
+`voucherFileUrl` dopiero po potwierdzeniu udanego uploadu. Bucket jest **prywatny** —
+odczyt (`GET .../voucher-file`) generuje świeży podpisany URL (ważny 5 minut) przy każdym
+wejściu na szczegóły karnetu, nigdy trwały link. Szczegóły: [DECISIONS.md](DECISIONS.md),
+ADR-009.
 
 ## Kluczowe encje domenowe
 
@@ -62,7 +92,9 @@ przeliczenie statusu archiwizacji.
 **Dodanie karnetu** — kreator 3-krokowy: (1) firma istniejąca / nowa (wpisana ręcznie lub
 wybrana z podpowiedzi Google Places — Sesja V4.1) + kategoria, (2) typ karnetu (limit +
 liczba wejść, lub bez limitu) + data ważności (wymagana tylko dla „bez limitu”), (3)
-voucher/QR (jeden dla karnetu lub osobny na wejście) + podsumowanie → zapis.
+voucher/QR (jeden dla karnetu lub osobny na wejście), pokazywany jako tekst/link **albo**
+jako wgrany plik/zdjęcie (Sesja V4.3, przełącznik w formularzu — nie oba naraz) +
+podsumowanie → zapis.
 
 **Archiwizacja** — reguła obliczana przy każdym renderze, nie jest osobnym stanem
 zapisanym ręcznie: `archived = usedUp || (expiry && expiry < dziś)`. W produkcji: albo
@@ -100,6 +132,13 @@ sortowanie po dystansie od swojej bieżącej pozycji (`navigator.geolocation`, z
 przeglądarki). Dystans liczony w całości po stronie klienta (wzór haversine) na już
 pobranej liście firm — firmy bez `lat`/`lng` trafiają na koniec listy. Odmowa zgody lub
 brak wsparcia przeglądarki nie wpływa na żadną inną funkcję strony.
+
+**Rekomendacje AI (Sesja V4.2)** — na `/recommendations` użytkownik opcjonalnie wybiera
+kategorię i zgadza się na udostępnienie pozycji przeglądarce → `POST
+/api/ai/recommendations` (patrz wyżej i `API.md`) zwraca listę poleconych miejsc z
+okolicy (z linkiem do profilu Google Maps) i sugestii na bazie własnej historii karnetów,
+albo `null`, jeśli nic sensownego nie udało się złożyć (w tym przy błędzie zewnętrznego
+API — patrz wyżej).
 
 **Logowanie/wylogowanie (Sesja 14)** — logowanie przez Google (Auth.js/NextAuth) przełącza,
 z której przestrzeni danych korzysta aplikacja: zalogowany widzi i zapisuje wyłącznie

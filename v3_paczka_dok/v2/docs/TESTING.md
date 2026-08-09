@@ -1,7 +1,8 @@
 # Strategia testów — Karnet.asist
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08 · Sekcja e2e
-> zaktualizowana: 2026-08-06 (Sesja 13)
+> zaktualizowana: 2026-08-06 (Sesja 13) · Stan e2e Google Maps/Places zaktualizowany:
+> 2026-08-09 (Faza V4)
 
 Next.js + Vitest (jednostkowe/integracyjne) + Playwright (e2e), zgodnie z pozostałymi
 projektami z tego kursu.
@@ -33,9 +34,10 @@ refaktorze:
 1. Dodanie nowego karnetu przez kreator (firma istniejąca → typ → voucher → zapis) —
    zaimplementowane: `app/e2e/card-crud.spec.ts`
 2. Dodanie karnetu przez wybór firmy z Google Maps (mock w środowisku testowym, żeby nie
-   zależeć od realnego API w CI) — **pominięte na razie**: integracja Google Maps/Places
-   nie jest zaimplementowana (ADR-004, patrz też Sesja 16 w
-   `plan-pracy-claude-code.md`); dodać ten test, gdy integracja wejdzie do zakresu
+   zależeć od realnego API w CI) — integracja Google Maps/Places jest zaimplementowana od
+   Sesji V4.1 (ADR-004, potwierdzone), ale **ten e2e test wciąż nie istnieje**: brakuje
+   mocka `@vis.gl/react-google-maps`/Places w środowisku Playwright — pozostaje realną
+   luką w pokryciu, nie tylko odłożoną formalnością
 3. Zalogowanie wejścia i weryfikacja aktualizacji licznika wykorzystanych wejść —
    zaimplementowane: `app/e2e/visits.spec.ts`
 4. Edycja i usunięcie wejścia z historii — zaimplementowane: `app/e2e/visits.spec.ts`
@@ -70,5 +72,8 @@ regresje specyficzne dla silnika.
   `cards`/`visits` nie są scope'owane per urządzenie, tylko globalnie współdzielone.
   Konsekwencja: testy działają na jednym workerze (`workers: 1`) — równoległe czyściłyby
   sobie nawzajem dane.
-- Google Maps/Places API mockowane w testach (nie zużywać limitu/budżetu w CI) — do
-  wdrożenia razem z punktem 2 wyżej, gdy integracja realnie powstanie.
+- Google Maps/Places API **nie jest** obecnie mockowane w e2e (patrz punkt 2 wyżej) — do
+  zrobienia, żeby nie zużywać limitu/budżetu realnego klucza w CI i nie robić testów
+  zależnymi od zewnętrznej usługi. Groq i Google Places (server-side, Doradca AI, ADR-008)
+  też nie mają dedykowanego e2e ani mocka — pokryte tylko testami jednostkowymi
+  `ai-recommendations.ts` (patrz repo, `src/server/ai-recommendations.ts` i test obok).

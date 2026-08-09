@@ -350,10 +350,14 @@ Prompt (skróć/dostosuj):
 - [ ] `npm audit` czysty (3 podatności zniknęły)
 - [ ] lint/test/test:e2e/build przechodzą + commit
 
-> Uwaga: `package.json` już pokazuje `"next": "16.3.0"` i jest commit
-> "Sesja 18: aktualizacja Next.js 16.2.12 -> 16.3.0 (CVE w postcss/sharp)" w historii
-> gita — najpewniej ukończone, tylko checklista wyżej nie została odhaczona. Potwierdź
-> `npm audit` przed odhaczeniem, zamiast zakładać.
+> Uwaga (zaktualizowane 2026-08-09): Sesja 18 rzeczywiście zaktualizowała `next` do
+> `16.3.0` (commit "Sesja 18: aktualizacja Next.js 16.2.12 -> 16.3.0..."), ale **to
+> zostało później cofnięte** — commit "Cofnij Next.js do 15.5.23 (backport) -
+> niekompatybilnosc 16.x z Vercel": build platform Vercela nie rozpoznawał outputu Next
+> 16 przy wdrożeniu ("No framework detected", zero funkcji), patrz `DEPLOYMENT.md`.
+> `package.json` obecnie pokazuje `"next": "^15.5.23"` (dist-tag "backport"), nie 16.x —
+> ta checklista dotyczy więc stanu przejściowego, nieaktualnego względem produkcji.
+> Rewizja do 16.x dopiero gdy wsparcie Vercela dla Next 16 dojrzeje.
 
 ---
 

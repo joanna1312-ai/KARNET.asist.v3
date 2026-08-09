@@ -10,12 +10,23 @@ datami ważności. Niezależna od konkretnych klubów/salonów; konto opcjonalne
 
 ## Status projektu
 
+**Aktualizacja 2026-08-09:** wersja produkcyjna jest już zbudowana i wdrożona —
+`https://karnet.asist.dropia.pro` (kod w `app/`, plan sesji w
+`plan-pracy-claude-code.md` w katalogu głównym repo). `docs/` w tym katalogu opisuje
+tę wersję produkcyjną (nie tylko propozycję/draft) — część plików była aktualizowana na
+bieżąco (`API.md`, `DATABASE.md`, `DECISIONS.md`, `ARCHITECTURE.md`), inne
+(`SETUP.md`, `TESTING.md`, `DEPLOYMENT.md`) opisują zarówno stan potwierdzony, jak i
+świadomie odłożone elementy — sprawdzaj datę "Zaktualizowano" w nagłówku każdego pliku.
+
+Poniższy opis prototypu pozostaje jako punkt wyjścia/historia projektu, nie jako
+aktualny stan aplikacji:
+
 Ukończony **prototyp klikalny** (statyczny HTML/CSS/JS, bez backendu i bez trwałego
 zapisu danych) — kolejne wersje `v1`–`v6` dokumentują iteracje nad designem i zakresem
-funkcji. Aktualna wersja: **`karnet-asist-prototyp_v6.html`** (otwórz bezpośrednio w
-przeglądarce).
+funkcji. Ostatnia wersja prototypu: **`karnet-asist-prototyp_v6.html`** (otwórz
+bezpośrednio w przeglądarce).
 
-Ten katalog zawiera też **draft dokumentacji technicznej** pod przyszłą wersję
+Ten katalog zawiera też dokumentację techniczną, na podstawie której zbudowano wersję
 produkcyjną — patrz [`CLAUDE.md`](CLAUDE.md) i [`docs/`](docs/).
 
 ## Zawartość repo

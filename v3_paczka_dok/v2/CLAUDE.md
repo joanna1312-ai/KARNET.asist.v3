@@ -1,6 +1,10 @@
 # Karnet.asist
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Zaktualizowano: 2026-08-09 — MVP ukończone i wdrożone na produkcję
+> (`https://karnet.asist.dropia.pro`); Faza V4 (Google Maps/Places, Doradca AI, upload
+> vouchera) też ukończona i zmergowana do `main` — patrz oznaczenia "zrobione" w sekcji
+> "Zakres" niżej i `plan-pracy-claude-code.md` w katalogu głównym repo po pełny log sesji.
 
 ## Twoja rola
 
@@ -33,12 +37,15 @@ pamięć). Karnet.asist centralizuje to w jednym miejscu, bez konieczności zak�
 - i18n PL/EN, tryb ciemny (już działają w prototypie — przenieść 1:1)
 
 **Może wejść w kolejnym kroku, nie blokuje pierwszego wdrożenia:**
-- Realna integracja Google Maps/Places (`ADR-004`) — na start wystarczy ręczne dodawanie
-  firmy z listy/nazwą; UI może już mieć na to miejsce, ale bez podłączonego API
+- Realna integracja Google Maps/Places (`ADR-004`) — **zrobione, Sesja V4.1** (po
+  stronie przeglądarki, `@vis.gl/react-google-maps`)
 - Ulubieni partnerzy
-- Upload i podgląd vouchera/QR jako plik (na start może być polem tekstowym/placeholderem)
+- Upload i podgląd vouchera/QR jako plik — **zrobione, Sesja V4.3** (`ADR-009`,
+  bezpośredni upload do Supabase Storage, bucket prywatny)
 - Logowanie/synchronizacja konta między urządzeniami (`ADR-003` zakłada, że to *nadbudowa*
-  nad trybem bez konta, nie odwrotnie)
+  nad trybem bez konta, nie odwrotnie) — **zrobione, Sesja 14**
+- Doradca AI (Groq + Google Places, `ADR-008`) — **zrobione, Sesja V4.2**, nie było
+  ujęte w pierwotnym MVP, dodane w Fazie V4
 
 **Świadomie poza zakresem (patrz też `ADR-005`):** płatności, rezerwacje zajęć,
 rozliczenia z operatorami (Multisport), OCR ze zdjęcia, natywna aplikacja mobilna.
@@ -103,8 +110,10 @@ budowy wersji produkcyjnej** — część decyzji jest jeszcze otwarta, patrz
 - **Baza danych:** PostgreSQL + Prisma ORM
 - **Auth:** Auth.js/NextAuth, konto **opcjonalne** (tylko do synchronizacji — zgodnie z
   briefem produktowym)
-- **Mapy:** Google Maps JavaScript API + Places API (w prototypie zaślepione mockiem)
-- **Pliki (vouchery/zdjęcia):** magazyn obiektowy S3-compatible (np. Supabase Storage / R2)
+- **Mapy:** Google Maps JavaScript API + Places API (w prototypie zaślepione mockiem;
+  realna integracja po stronie przeglądarki od Sesji V4.1, `ADR-004`)
+- **Pliki (vouchery/zdjęcia):** magazyn obiektowy S3-compatible — ostatecznie Supabase
+  Storage, bucket prywatny + podpisane URL-e (Sesja V4.3, `ADR-009`)
 - **Mobile:** web-first / PWA na start; natywne aplikacje — patrz
   [docs/MOBILE_ROADMAP.md](docs/MOBILE_ROADMAP.md)
 
