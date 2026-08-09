@@ -5,6 +5,7 @@
     "themeAria": "Przełącz tryb ciemny",
     "localeToggleAria": "Wybór języka",
     "companiesNav": "Firmy",
+    "recommendationsNav": "Doradca AI",
     "settingsAria": "Ustawienia",
     "settingsLocaleSection": "Język",
     "settingsThemeSection": "Tryb jasny/ciemny"
@@ -84,6 +85,20 @@
     "geoUnavailable": "Ta przeglądarka nie obsługuje geolokalizacji, więc sortowanie po dystansie jest niedostępne.",
     "addFavorite": "Dodaj do ulubionych",
     "removeFavorite": "Usuń z ulubionych"
+  },
+  "recommendationsPage": {
+    "title": "Doradca AI",
+    "intro": "Na podstawie miejsc w Twojej okolicy i Twoich dotychczasowych karnetów podpowiemy, co warto sprawdzić. To tylko sugestia — zawsze sprawdź szczegóły bezpośrednio u usługodawcy.",
+    "categoryLabel": "Kategoria",
+    "categoryAll": "Wszystkie kategorie",
+    "submitButton": "Pokaż rekomendacje",
+    "loading": "Szukam…",
+    "geoDenied": "Nie udostępniono lokalizacji, więc nie możemy znaleźć miejsc w Twojej okolicy. Możesz zezwolić na lokalizację w ustawieniach przeglądarki i spróbować ponownie.",
+    "geoUnavailable": "Ta przeglądarka nie obsługuje geolokalizacji, więc ta funkcja jest niedostępna.",
+    "loadError": "Nie udało się pobrać rekomendacji. Spróbuj ponownie.",
+    "noResults": "Brak rekomendacji AI w tej chwili. Spróbuj ponownie później albo z inną kategorią.",
+    "nearbyHeading": "Polecane w okolicy",
+    "relatedHeading": "Może Cię zainteresować"
   },
   "companyDetailsPage": {
     "backLink": "Wróć do listy firm",

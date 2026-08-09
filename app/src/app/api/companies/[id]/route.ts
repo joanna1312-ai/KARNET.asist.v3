@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getVerifiedDeviceId } from "@/server/request-device";
+import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
+import { ownerFilter } from "@/server/card-owner";
 
 const categorySelect = {
   id: true,
@@ -19,12 +20,15 @@ const companySelect = {
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/companies/:id — dane firmy + karnety zweryfikowanego urządzenia w tej
-// firmie (filtr po companyId, docs/API.md — nie po nazwie jak w prototypie).
-// Wymaga device tokena, bo sens tego endpointu to pokazanie *własnych* karnetów.
+// GET /api/companies/:id — dane firmy + karnety wywołującego w tej firmie (filtr po
+// companyId, docs/API.md — nie po nazwie jak w prototypie). Identity jak w /api/cards
+// (ADR-007/Sesja 14): zalogowany widzi karnety konta (userId), niezalogowany — karnety
+// bieżącego urządzenia (deviceId), przez ownerFilter (te przestrzenie się nie mieszają).
+// Wymaga którejś z tych tożsamości, bo sens tego endpointu to pokazanie *własnych*
+// karnetów.
 export async function GET(request: Request, { params }: RouteParams) {
-  const deviceId = await getVerifiedDeviceId(request);
-  if (!deviceId) {
+  const identity = await getCallerIdentity(request);
+  if (!hasIdentity(identity)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -39,7 +43,7 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 
   const cards = await prisma.card.findMany({
-    where: { companyId: id, deviceId, deletedAt: null },
+    where: { companyId: id, deletedAt: null, ...ownerFilter(identity) },
     orderBy: { createdAt: "desc" },
   });
 

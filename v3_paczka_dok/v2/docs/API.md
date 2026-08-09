@@ -115,6 +115,38 @@ wyświetla się wprost po `name`. `POST /api/companies` przyjmuje `categoryId` (
 nazwę kategorii — musi wskazywać kategorię systemową albo własną kategorię wywołującego
 urządzenia, inaczej `400 { "errors": ["categoryRequired"] }`.
 
+## Doradca AI (Sesja V4.2a, `ADR-008`)
+
+| Metoda | Ścieżka | Opis |
+|---|---|---|
+| `POST` | `/api/ai/recommendations` | rekomendacje miejsc w okolicy (Google Places (New) + Groq) i sugestie na bazie dotychczasowych karnetów wywołującego |
+
+Wymaga `Authorization: Device <token>` albo zalogowanej sesji (jak `/api/cards`) — inaczej
+`401 { "error": "unauthorized" }`. Body:
+
+```json
+{ "lat": 52.2297, "lng": 21.0122, "categoryId": "uuid (opcjonalnie)", "categoryName": "Siłownia (opcjonalnie)", "locale": "pl" }
+```
+
+Brak `lat`/`lng` → `400 { "error": "locationRequired" }`. Odpowiedź zawsze `200`:
+
+```json
+{
+  "recommendations": {
+    "recommendations": [{ "name": "...", "reason": "...", "mapsUrl": "https://maps.google.com/?cid=..." }],
+    "relatedSuggestions": [{ "name": "...", "reason": "..." }]
+  }
+}
+```
+
+`recommendations` (pole zewnętrzne) jest `null`, gdy brak klucza API, błąd/timeout Groq
+lub Google Places, albo po prostu brak wystarczających danych (nic w okolicy i pusta
+historia karnetów) — to zawsze sekcja dodatkowa, nigdy błąd 5xx. Model dostaje twardy
+zakaz wymyślania nazw miejsc spoza dostarczonego kontekstu (patrz `ADR-008`). `mapsUrl`
+(opcjonalny, tylko w `recommendations`, nigdy w `relatedSuggestions`) to link do profilu
+miejsca na Google Maps, wzięty wprost z pola `googleMapsUri` zwróconego przez Google
+Places Text Search — bez dodatkowego wywołania API (V4.2b).
+
 ## Urządzenie (tryb bez konta)
 
 | Metoda | Ścieżka | Opis |

@@ -598,40 +598,81 @@ podpowiedzi, wybór zapisuje `lat`/`lng` w bazie (potwierdzone przez `GET /api/c
 mapa renderuje się na `/companies/:id`, sortowanie „najbliżej mnie" z prawidłowym
 fallbackiem przy odmowie geolokalizacji.
 
-## Sesja V4.2 — Integracja Groq AI — wymaga decyzji przed startem
+## Sesja V4.2 — Integracja Groq AI (doradca miejsc) — rozbita na V4.2a/V4.2b (ustalone 2026-08-09)
 
-Uwaga terminologiczna: zakładam, że chodzi o **Groq** (szybkie API do inferencji modeli
-językowych), nie o inną markę o podobnej nazwie — popraw, jeśli chodziło o coś innego.
+Uwaga terminologiczna: **Groq** (szybkie API do inferencji modeli językowych), nie inna
+marka o podobnej nazwie. Groq sam w sobie nie ma dostępu do internetu ani do danych o
+miejscach — to czysta warstwa rozumowania/syntezy nad kontekstem, który mu sami złożymy
+server-side (dane z własnej bazy + Google Places (New), już zintegrowanego w V4.1).
 
-Kontekst: to nowa zależność zewnętrzna (koszt, klucz API, ryzyko halucynacji modelu) —
-zanim wejdzie do kodu, potrzebny konkretny przypadek użycia, samo "połączenie z AI" nic nie
-robi. `ADR-005` wprost wyklucza OCR ze zdjęcia z zakresu MVP — AI do rozpoznawania
-voucherów/zdjęć byłoby świadomym rozszerzeniem tego zakresu, nie czymś do przemycenia przy
-okazji tej sesji.
+Pierwotny pomysł użytkowniczki (Sesja V4.2, 2026-08-09) obejmował 5 rzeczy: polecane
+miejsca w okolicy z kategorii, opinie użytkowników o miejscach, sugestie dodatkowych
+aktywności na bazie dotychczasowych karnetów, oraz porównanie cen karnetów z cenników na
+stronach firm. Ustalone przy planowaniu: rozbić na mniejsze sesje (jedna decyzja/ryzyko na
+sesję, jak reszta Fazy V4), i **porównanie cen wyciąć całkiem poza zakres Fazy V4** —
+wymagałoby albo ręcznego katalogowania cen (nowy model danych, praca redakcyjna) albo
+scrapowania cudzych stron z realnym ryzykiem pokazania złej ceny (pieniądze użytkownika) i
+kruchości przy zmianach layoutu — osobna decyzja na przyszłość, nie teraz.
 
-Propozycje konkretnych zastosowań (wybierz jedno na sesję, nie wszystkie naraz):
-1. **Chatbot pomocy** — odpowiada na pytania użytkownika na bazie `faq.md`/
-   `getting-started.md`, jako rozszerzenie statycznego modala z Sesji 22.
-2. **Sugestia kategorii przy dodawaniu firmy** — użytkownik wpisuje nazwę firmy, AI
-   proponuje najbardziej pasującą kategorię z listy (systemowej + własnych, Sesja 16).
-3. **Krótkie podsumowanie przy karnecie ze statusem `urgent`** — np. wygenerowany tekst
-   "kończy się za X dni, historycznie wykorzystujesz Y wejść/tydzień".
+`ADR-005` wprost wyklucza OCR ze zdjęcia z zakresu MVP — AI do rozpoznawania
+voucherów/zdjęć nadal jest poza zakresem, nie tylko tej sesji.
 
-Przed startem potwierdź: który przypadek użycia, i czy masz już klucz API Groq.
+### V4.2a — Rekomendacje miejsc + sugestie na bazie historii karnetów
 
-Prompt (skróć/dostosuj, po ustaleniu powyższego):
-> Dodaj integrację z Groq API dla przypadku: [ustalony]. Wywołania wyłącznie po stronie
-> serwera (nowy endpoint w `src/app/api/`, klucz `GROQ_API_KEY` tylko w zmiennych
-> serwerowych, nigdy `NEXT_PUBLIC_*`). Obsłuż błędy/timeout API tak, żeby brak odpowiedzi AI
-> nigdy nie blokował podstawowej funkcji (np. dodania firmy) — to zawsze ulepszenie, nigdy
-> wymóg. Dodaj `GROQ_API_KEY` do `.env.example` (pusta wartość) i opisz w `docs/SETUP.md`.
-> Najpierw krótki plan, poczekaj na akceptację.
+Zakres: (1) "polecane miejsca w okolicy z danej kategorii" i (2) "sugerowane dodatkowe
+aktywności na podstawie dotychczasowych karnetów". Oba bez nowych zależności poza tym, co
+już mamy: `Company`/`Category` z własnej bazy (przez Prisma) + Google Places (New) do
+wyszukania miejsc w promieniu. Nowy endpoint serwerowy (np. `POST /api/ai/recommendations`)
+składa kontekst (historia karnetów usera + wynik Places) i dopiero to wysyła do Groq z
+promptem każącym trzymać się podanych faktów (bez zmyślania miejsc spoza wyniku Places).
 
-- [ ] Przypadek użycia i klucz API ustalone
-- [ ] Plan zaakceptowany
-- [ ] Integracja działa, degraduje się łagodnie przy błędzie API
-- [ ] `.env.example`/`docs/SETUP.md` zaktualizowane
-- [ ] lint/test + commit
+Wymaga **osobnego klucza Google** ograniczonego po IP/serwerze (dzisiejszy
+`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` z V4.1 jest ograniczony do referrerów przeglądarki, nie
+nadaje się do wywołań z backendu) — do ustalenia przy starcie tej sesji razem z kluczem
+Groq.
+
+### V4.2b — Link do profilu Google Maps przy nazwie miejsca
+
+Pierwsza wersja tej podsesji (2026-08-09) pokazywała podsumowanie opinii z Place Details
+(New) — użytkowniczka zdecydowała tego samego dnia, że jej się to nie podoba, i poprosiła o
+całkowite usunięcie. **Zakres ostateczny:** nazwa każdego polecanego miejsca (sekcja
+"Polecane w okolicy") linkuje wprost do jego profilu na Google Maps — przez pole
+`googleMapsUri`, które Google Places Text Search zwraca w tej samej odpowiedzi co reszta
+danych o miejscu (bez dodatkowego wywołania API, bez dodatkowego cache'a). Robione po
+V4.2a, bo to mały dodatek do tego samego endpointu.
+
+Wspólne dla obu podsesji:
+- Wywołania Groq (i serwerowe wywołania Places) wyłącznie po stronie serwera, klucze tylko
+  w zmiennych serwerowych, nigdy `NEXT_PUBLIC_*`.
+- Brak odpowiedzi AI nigdy nie blokuje reszty aplikacji — to zawsze sekcja dodatkowa,
+  degraduje się cicho przy błędzie/timeout Groq lub Places.
+- Cache wyników (per lokalizacja+kategoria, TTL rzędu godziny) — obie zależności kosztują
+  za wywołanie.
+- `GROQ_API_KEY` (i nowy serwerowy klucz Google) do `.env.example` (puste wartości) +
+  opis w `docs/SETUP.md`.
+
+Przed startem V4.2a: **użytkowniczka jeszcze nie ma klucza Groq** (zakłada konto na
+console.groq.com) — sesja nie startuje, dopóki klucz nie istnieje.
+
+- [x] Klucz Groq założony
+- [x] Osobny serwerowy klucz Google (Places, bez ograniczenia po IP na czas dev) założony
+- [x] Plan V4.2a zaakceptowany
+- [x] V4.2a: rekomendacje + sugestie z historii karnetów działają, degradują się łagodnie
+      — zweryfikowane end-to-end w przeglądarce 2026-08-09 (prawdziwe wyniki z Google
+      Places dla zapytania "Siłownia w pobliżu" w Warszawie + spójne uzasadnienie z Groq)
+- [x] ~~V4.2b: opinie Google Places~~ — zbudowane, potem usunięte na życzenie
+      użytkowniczki (2026-08-09, "nie podoba mi się"); patrz wersja ostateczna niżej
+- [x] V4.2b (wersja ostateczna): nazwa polecanego miejsca linkuje do jego profilu Google
+      Maps (`googleMapsUri` z Text Search, bez dodatkowego wywołania API) — zweryfikowane
+      end-to-end w przeglądarce 2026-08-09
+- [x] `.env`/`.env.example`/`docs/SETUP.md` zaktualizowane (`GROQ_API_KEY`,
+      `GOOGLE_PLACES_SERVER_KEY`)
+- [x] `docs/DECISIONS.md` (`ADR-008` + nowa nota RODO) / `docs/API.md` zaktualizowane
+- [x] Cache wyników — TTL ~godzina w pamięci procesu dla wyszukiwania miejsc Google
+      Places; Groq świadomie NIE cache'owany (zależy od historii konkretnego użytkownika,
+      patrz `ADR-008`). Zastrzeżenie: cache per-proces, nie współdzielony między
+      instancjami serverless — do rewizji przy realnym ruchu produkcyjnym.
+- [x] lint (eslint) / test (151/151) / `next build` przechodzą — stan końcowy V4.2
 
 ## Sesja V4.3 — Prawdziwy upload plików/zdjęć voucherów (object storage) — wymaga decyzji przed startem
 
