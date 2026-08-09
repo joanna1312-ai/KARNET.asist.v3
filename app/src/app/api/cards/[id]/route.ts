@@ -7,6 +7,12 @@ import {
   parseCardPatch,
 } from "@/server/card-rules";
 import { findOwnedCard, ownerFilter } from "@/server/card-owner";
+import { removeVoucherObject } from "@/server/storage";
+import {
+  isStorageVoucherFileUrl,
+  isVoucherPathOwnedByCard,
+  voucherStoragePath,
+} from "@/server/voucher-file";
 
 const categorySelect = {
   id: true,
@@ -94,6 +100,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
   }
 
+  const nextVoucherFileUrl = merged.voucherFileUrl ?? null;
+
   const card = await prisma.card.update({
     where: { id },
     data: {
@@ -102,10 +110,23 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       totalVisits: merged.totalVisits ?? null,
       expiryDate: merged.expiryDate ?? null,
       voucherMode: merged.voucherMode!,
-      voucherFileUrl: merged.voucherFileUrl ?? null,
+      voucherFileUrl: nextVoucherFileUrl,
     },
     include: { company: { select: companySelect } },
   });
+
+  // Plik w object storage zastąpiony/usunięty tym patchem (Sesja V4.3, ADR-009) — sprzątamy
+  // poprzedni obiekt, ale tylko gdy jego ścieżka faktycznie należała do TEGO karnetu. Karnet
+  // odnowiony przez "Odnów" (cards/page.tsx) może dziedziczyć ścieżkę karnetu źródłowego —
+  // taką ścieżkę zostawiamy w spokoju, żeby nie skasować pliku wciąż widocznego na
+  // zarchiwizowanym karnecie źródłowym.
+  if (
+    isStorageVoucherFileUrl(existing.voucherFileUrl) &&
+    existing.voucherFileUrl !== nextVoucherFileUrl &&
+    isVoucherPathOwnedByCard(voucherStoragePath(existing.voucherFileUrl), id)
+  ) {
+    await removeVoucherObject(voucherStoragePath(existing.voucherFileUrl)).catch(() => {});
+  }
 
   return NextResponse.json({ card });
 }

@@ -9,6 +9,7 @@ import {
   CardFormValues,
   CategoryOption,
   emptyCardFormValues,
+  voucherFileUrlForSave,
 } from "@/components/CardForm";
 import { CompanyMap } from "@/components/CompanyMap";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -16,6 +17,7 @@ import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
+import { uploadVoucherFile } from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus } from "@/server/card-status";
 
@@ -73,6 +75,7 @@ export default function CompanyDetailsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverErrors, setServerErrors] = useState<CardInputErrorCode[]>([]);
+  const [voucherUploadError, setVoucherUploadError] = useState(false);
 
   const reload = useCallback(async () => {
     const result = await fetchCompany(companyId);
@@ -116,6 +119,7 @@ export default function CompanyDetailsPage() {
 
   function openAddForm() {
     setServerErrors([]);
+    setVoucherUploadError(false);
     setFormOpen(true);
   }
 
@@ -127,6 +131,7 @@ export default function CompanyDetailsPage() {
   async function handleFormSubmit(values: CardFormValues) {
     setSubmitting(true);
     setServerErrors([]);
+    setVoucherUploadError(false);
 
     const payload = {
       companyId: values.companyId,
@@ -134,7 +139,7 @@ export default function CompanyDetailsPage() {
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,
       voucherMode: values.voucherMode,
-      voucherFileUrl: values.voucherFileUrl.trim() === "" ? null : values.voucherFileUrl.trim(),
+      voucherFileUrl: voucherFileUrlForSave(values),
     };
 
     const response = await deviceFetch("/api/cards", {
@@ -143,9 +148,8 @@ export default function CompanyDetailsPage() {
       body: JSON.stringify(payload),
     });
 
-    setSubmitting(false);
-
     if (!response.ok) {
+      setSubmitting(false);
       const body: { errors?: CardInputErrorCode[] } = await response
         .json()
         .catch(() => ({}));
@@ -153,6 +157,15 @@ export default function CompanyDetailsPage() {
       return;
     }
 
+    const savedBody: { card: { id: string } } = await response.json();
+
+    // Upload pliku vouchera (Sesja V4.3) — patrz analogiczny komentarz w cards/page.tsx.
+    if (values.voucherInputMode === "file" && values.voucherFile) {
+      const uploaded = await uploadVoucherFile(savedBody.card.id, values.voucherFile);
+      if (!uploaded) setVoucherUploadError(true);
+    }
+
+    setSubmitting(false);
     closeForm();
     await reload();
   }
@@ -179,6 +192,9 @@ export default function CompanyDetailsPage() {
       </Link>
 
       {loadError && <p className="text-sm text-status-urgent">{t("loadError")}</p>}
+      {voucherUploadError && (
+        <p className="text-sm text-status-urgent">{t("voucherUploadFailed")}</p>
+      )}
 
       {company && (
         <>

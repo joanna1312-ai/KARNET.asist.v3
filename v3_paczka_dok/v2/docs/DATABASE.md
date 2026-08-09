@@ -74,7 +74,7 @@ zawsze + kategorie, gdzie `created_by_device_id` = zweryfikowany `deviceId` wywo
 | `used_visits` | int, default 0 | |
 | `expiry_date` | date, **nullable** | **opcjonalna dla `limit`, wymagana dla `unlimited`** — reguła z v5/v6 |
 | `voucher_mode` | enum: `single`, `per_visit` | |
-| `voucher_file_url` | text, nullable | docelowo plik w object storage; **na start (MVP) zwykłe pole tekstowe** (treść/link vouchera), bez uploadu — patrz `CLAUDE.md` |
+| `voucher_file_url` | text, nullable | treść/link (Sesja 11) **albo** plik w Supabase Storage (Sesja V4.3, `ADR-009`) — plik rozpoznawany po prefiksie `storage:` przed ścieżką w buckecie (np. `storage:cards/{cardId}/{uuid}.jpg`); bez prefiksu to zwykły tekst/link. Nigdy trwały publiczny URL — bucket jest prywatny, odczyt/zapis idzie przez podpisane URL-e z `/api/cards/:id/voucher-file*` |
 | `deleted_at` | timestamptz, nullable | miękkie usuwanie (rekomendacja) |
 | `created_at`, `updated_at` | timestamptz | |
 

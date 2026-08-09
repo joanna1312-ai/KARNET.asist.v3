@@ -10,6 +10,7 @@ import {
   CompanyOption,
   emptyCardFormValues,
   NEW_CATEGORY_SENTINEL,
+  voucherFileUrlForSave,
 } from "@/components/CardForm";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -17,9 +18,11 @@ import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
+import { uploadVoucherFile } from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus } from "@/server/card-status";
 import type { CategoryColor } from "@/server/system-categories";
+import { isStorageVoucherFileUrl } from "@/server/voucher-file";
 
 interface ApiCategory {
   id: string;
@@ -56,6 +59,9 @@ function cardToFormValues(card: ApiCard): CardFormValues {
     expiryDate: card.expiryDate ? card.expiryDate.slice(0, 10) : "",
     voucherMode: card.voucherMode,
     voucherFileUrl: card.voucherFileUrl ?? "",
+    voucherInputMode: isStorageVoucherFileUrl(card.voucherFileUrl) ? "file" : "text",
+    voucherFile: null,
+    voucherRemoveFile: false,
   };
 }
 
@@ -101,6 +107,7 @@ export default function CardsPage() {
   const [renewSource, setRenewSource] = useState<ApiCard | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverErrors, setServerErrors] = useState<CardInputErrorCode[]>([]);
+  const [voucherUploadError, setVoucherUploadError] = useState(false);
 
   const [deleteTarget, setDeleteTarget] = useState<ApiCard | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -142,6 +149,7 @@ export default function CardsPage() {
     setEditingCard(null);
     setRenewSource(null);
     setServerErrors([]);
+    setVoucherUploadError(false);
     setFormOpen(true);
   }
 
@@ -149,6 +157,7 @@ export default function CardsPage() {
     setEditingCard(card);
     setRenewSource(null);
     setServerErrors([]);
+    setVoucherUploadError(false);
     setFormOpen(true);
   }
 
@@ -156,6 +165,7 @@ export default function CardsPage() {
     setEditingCard(null);
     setRenewSource(card);
     setServerErrors([]);
+    setVoucherUploadError(false);
     setFormOpen(true);
   }
 
@@ -169,6 +179,7 @@ export default function CardsPage() {
   async function handleFormSubmit(values: CardFormValues) {
     setSubmitting(true);
     setServerErrors([]);
+    setVoucherUploadError(false);
 
     let companyId = values.companyId;
 
@@ -233,7 +244,7 @@ export default function CardsPage() {
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,
       voucherMode: values.voucherMode,
-      voucherFileUrl: values.voucherFileUrl.trim() === "" ? null : values.voucherFileUrl.trim(),
+      voucherFileUrl: voucherFileUrlForSave(values),
     };
 
     const response = editingCard
@@ -248,15 +259,26 @@ export default function CardsPage() {
           body: JSON.stringify(payload),
         });
 
-    setSubmitting(false);
-
     if (!response.ok) {
+      setSubmitting(false);
       const body: { errors?: CardInputErrorCode[] } = await response
         .json()
         .catch(() => ({}));
       setServerErrors(body.errors ?? []);
       return;
     }
+
+    const savedBody: { card: { id: string } } = await response.json();
+
+    // Upload pliku vouchera (Sesja V4.3) — osobne wywołanie PO zapisaniu karnetu, bo
+    // endpoint uploadu potrzebuje już istniejącego id karnetu. Niepowodzenie tu nie cofa
+    // zapisu karnetu — pokazujemy nieblokujący komunikat, plik da się dograć w edycji.
+    if (values.voucherInputMode === "file" && values.voucherFile) {
+      const uploaded = await uploadVoucherFile(savedBody.card.id, values.voucherFile);
+      if (!uploaded) setVoucherUploadError(true);
+    }
+
+    setSubmitting(false);
 
     const wasRenewing = renewSource !== null;
     closeForm();
@@ -367,6 +389,9 @@ export default function CardsPage() {
       )}
 
       {loadError && <p className="text-sm text-status-urgent">{t("loadError")}</p>}
+      {voucherUploadError && (
+        <p className="text-sm text-status-urgent">{t("voucherUploadFailed")}</p>
+      )}
 
       {cards === null && !loadError && (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">…</p>

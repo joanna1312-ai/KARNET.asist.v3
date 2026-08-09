@@ -10,7 +10,8 @@
 - Node.js LTS
 - PostgreSQL (lokalnie albo przez Docker / usługę typu Neon/Supabase)
 - Klucz Google Maps/Places API (z ograniczeniem do domeny/adresu, billing włączony)
-- (opcjonalnie) konto na object storage (Supabase Storage / Cloudflare R2) dla voucherów
+- Konto Supabase (ten sam projekt co `DATABASE_URL`) z bucketem Supabase Storage dla
+  uploadu voucherów (Sesja V4.3, `ADR-009`) — patrz niżej
 
 ## Zmienne środowiskowe (`.env`)
 
@@ -26,6 +27,7 @@ DEVICE_TOKEN_SECRET=...
 GROQ_API_KEY=...
 STORAGE_BUCKET_URL=...
 STORAGE_ACCESS_KEY=...
+STORAGE_BUCKET_NAME=...
 ```
 
 `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` — klucz Google Maps JavaScript API + Places API (New)
@@ -50,6 +52,34 @@ językowych), używany wyłącznie po stronie serwera przez doradcę AI (Sesja V
 klucza albo błąd/timeout wywołania nigdy nie blokuje reszty aplikacji — `POST
 /api/ai/recommendations` zawsze zwraca `200` z `recommendations: null` w takim
 przypadku, strona `/recommendations` pokazuje wtedy tylko łagodny komunikat.
+
+`STORAGE_BUCKET_URL` / `STORAGE_ACCESS_KEY` / `STORAGE_BUCKET_NAME` — Supabase Storage dla
+uploadu voucherów (Sesja V4.3, `ADR-009`). Wszystkie trzy tylko po stronie serwera
+(`@/server/storage.ts`, biblioteka `@supabase/supabase-js`), nigdy z prefiksem
+`NEXT_PUBLIC_`. Skąd je wziąć w Supabase Dashboard (interfejs bywa przenoszony między
+wersjami — jeśli poniższe ścieżki nie zgadzają się z tym, co widzisz, szukaj po nazwie
+sekcji):
+- `STORAGE_BUCKET_URL` — Project Settings → API Keys (lub bezpośrednio
+  `/project/<project-ref>/settings/api-keys`) → **Data API** → pole "API URL", bez
+  końcówki `/rest/v1/` (sam origin, np. `https://<project-ref>.supabase.co`). Można też
+  wyliczyć z Project ID (Project Settings → General): `https://<project-id>.supabase.co`.
+- `STORAGE_ACCESS_KEY` — ta sama strona API Keys, sekcja **Secret keys** (dawniej
+  `service_role`; nowy format klucza to `sb_secret_...`, stary JWT-owy `service_role`
+  nadal działa, jeśli projekt go jeszcze ma pod zakładką "Legacy anon, service_role API
+  keys"). **Nie** `anon`/`Publishable key` — ten ma za mało uprawnień do zapisu w
+  prywatnym buckecie.
+- `STORAGE_BUCKET_NAME` — nazwa bucketa w Storage (lewe menu → **Storage**), np.
+  `voucher-files-dev` lokalnie, `voucher-files` na produkcji (patrz niżej).
+
+**Założenie bucketa (raz, w Supabase Dashboard → Storage → New bucket):**
+- Nazwa: `voucher-files-dev` (dev) / `voucher-files` (produkcja) — **osobne buckety**,
+  żeby dane testowe nie mieszały się z prawdziwymi plikami użytkowników (`ADR-009`).
+- **Public bucket: wyłączone** (musi zostać prywatny — dostęp tylko przez podpisane URL-e).
+- Allowed MIME types: `image/jpeg,image/png,image/webp,application/pdf`.
+- File size limit: `10 MB`.
+Jeśli formularz tworzenia bucketa nie ma pól na MIME types/file size limit, utwórz bucket
+bez nich i ustaw je edycją bucketa (ikona ołówka) zaraz potem — to jedyne miejsce, które
+faktycznie egzekwuje typ/rozmiar pliku, nie da się tego obejść manipulując requestem.
 
 `DEVICE_TOKEN_SECRET` — sekret do podpisywania tokenów urządzenia w trybie bez konta
 (`ADR-007`); losowy, min. 32 bajty (np. `openssl rand -base64 32`), używany wyłącznie

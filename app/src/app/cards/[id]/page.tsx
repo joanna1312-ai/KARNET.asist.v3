@@ -10,6 +10,11 @@ import { CardType } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate, formatTime } from "@/lib/format";
 import { isCardArchived } from "@/server/card-status";
+import {
+  isStorageVoucherFileUrl,
+  voucherFileKindFromPath,
+  voucherStoragePath,
+} from "@/server/voucher-file";
 import { VisitInputErrorCode } from "@/server/visit-rules";
 
 interface ApiVisit {
@@ -36,6 +41,64 @@ function visitToFormValues(visit: ApiVisit): VisitFormValues {
     visitTime: visit.visitTime ? visit.visitTime.slice(11, 16) : "",
     note: visit.note ?? "",
   };
+}
+
+// Podgląd pliku vouchera wgranego do Supabase Storage (Sesja V4.3, ADR-009) — bucket jest
+// prywatny, więc zamiast trwałego linku pobieramy świeży podpisany URL przy każdym
+// wejściu na stronę (endpoint sam sprawdza własność karnetu, jak reszta /api/cards/*).
+function VoucherFilePreview({ cardId, voucherFileUrl }: { cardId: string; voucherFileUrl: string }) {
+  const t = useTranslations("cardDetailsPage");
+  const [url, setUrl] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    setUrl(null);
+    setError(false);
+
+    deviceFetch(`/api/cards/${cardId}/voucher-file`)
+      .then((response) => {
+        if (!response.ok) throw new Error();
+        return response.json();
+      })
+      .then((body: { url: string }) => {
+        if (!ignore) setUrl(body.url);
+      })
+      .catch(() => {
+        if (!ignore) setError(true);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [cardId, voucherFileUrl]);
+
+  if (error) {
+    return <p className="mt-1 text-sm text-status-urgent">{t("voucherLoadError")}</p>;
+  }
+
+  if (!url) {
+    return <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("voucherLoading")}</p>;
+  }
+
+  if (voucherFileKindFromPath(voucherStoragePath(voucherFileUrl)) === "pdf") {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-1 inline-block text-sm font-medium hover:underline"
+      >
+        {t("voucherOpenPdf")}
+      </a>
+    );
+  }
+
+  // Podpisany URL Supabase (wygasa po kilku minutach) nie jest znaną domeną na
+  // build-time — next/image wymagałby remotePatterns dla efemerycznego hosta i tak nie
+  // dałoby żadnej korzyści.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt="" className="mt-2 max-h-64 rounded-lg" />;
 }
 
 type FetchCardResult =
@@ -255,7 +318,9 @@ export default function CardDetailsPage() {
           {card.voucherFileUrl && (
             <div className="rounded-2xl border border-black/10 p-4 dark:border-white/10">
               <h2 className="text-sm font-medium">{t("voucherLabel")}</h2>
-              {/^https?:\/\//.test(card.voucherFileUrl) ? (
+              {isStorageVoucherFileUrl(card.voucherFileUrl) ? (
+                <VoucherFilePreview cardId={card.id} voucherFileUrl={card.voucherFileUrl} />
+              ) : /^https?:\/\//.test(card.voucherFileUrl) ? (
                 <a
                   href={card.voucherFileUrl}
                   target="_blank"
