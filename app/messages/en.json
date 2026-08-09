@@ -5,6 +5,7 @@
     "themeAria": "Toggle dark mode",
     "localeToggleAria": "Language selection",
     "companiesNav": "Companies",
+    "recommendationsNav": "AI Advisor",
     "settingsAria": "Settings",
     "settingsLocaleSection": "Language",
     "settingsThemeSection": "Light/Dark mode"
@@ -84,6 +85,20 @@
     "geoUnavailable": "This browser doesn't support geolocation, so sorting by distance isn't available.",
     "addFavorite": "Add to favorites",
     "removeFavorite": "Remove from favorites"
+  },
+  "recommendationsPage": {
+    "title": "AI Advisor",
+    "intro": "Based on places near you and your existing passes, we'll suggest what's worth checking out. This is just a suggestion — always confirm details directly with the provider.",
+    "categoryLabel": "Category",
+    "categoryAll": "All categories",
+    "submitButton": "Show recommendations",
+    "loading": "Searching…",
+    "geoDenied": "Location wasn't shared, so we can't find places near you. You can allow location access in your browser settings and try again.",
+    "geoUnavailable": "This browser doesn't support geolocation, so this feature isn't available.",
+    "loadError": "Couldn't load recommendations. Try again.",
+    "noResults": "No AI recommendations right now. Try again later or with a different category.",
+    "nearbyHeading": "Recommended nearby",
+    "relatedHeading": "You might also like"
   },
   "companyDetailsPage": {
     "backLink": "Back to companies",

@@ -125,6 +125,59 @@ kont zalogowanych (`ADR-003`), więc mobile (patrz `MOBILE_ROADMAP.md`) dostaje 
 dodatkowej pracy. Wymaga nowego endpointu `POST /api/device/register` (patrz
 `API.md`) oraz zmiennej środowiskowej `DEVICE_TOKEN_SECRET` (patrz `SETUP.md`).
 
+## ADR-008 — Doradca AI (Groq): warstwa syntezy nad kontekstem, wyłącznie po stronie serwera
+
+**Status:** potwierdzone (Sesja V4.2a, 2026-08-09; V4.2b zmienione tego samego dnia po
+informacji zwrotnej użytkowniczki — patrz niżej).
+**Decyzja:** nowy endpoint `POST /api/ai/recommendations` (patrz `API.md`) łączy dwa
+źródła danych po stronie serwera — wynik Google Places API (New) **Text Search** (nie
+Nearby Search: akceptuje dowolny tekst zapytania, więc działa też dla kategorii własnych
+użytkownika z Sesji 16, nie tylko 5 systemowych z ich zamkniętym zbiorem Google "types") w
+promieniu 5 km od pozycji użytkownika, oraz historię jego karnetów z własnej bazy — i
+dopiero ten złożony kontekst wysyła do Groq (`llama-3.3-70b-versatile`, REST API
+kompatybilne z OpenAI, zwykły `fetch`, bez dodatkowej zależności npm). Prompt systemowy
+twardo zabrania wymyślania nazw miejsc spoza dostarczonych list. Wywołania Groq i Places
+wyłącznie po stronie serwera — dwa nowe klucze serwerowe, `GROQ_API_KEY` i
+`GOOGLE_PLACES_SERVER_KEY` (ten drugi to **osobny** klucz Google, nie
+`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` z `ADR-004`, bo tamten jest ograniczony do referrerów
+przeglądarki). Każdy błąd na tej ścieżce (brak klucza, timeout, 4xx/5xx zewnętrznego API,
+niepoprawny JSON od modelu) jest łapany i zwraca `null` — endpoint zawsze odpowiada `200`,
+strona `/recommendations` pokazuje wtedy tylko łagodny komunikat. Groq sam w sobie nie ma
+dostępu do internetu ani wiedzy o rzeczywistych miejscach — pełni wyłącznie rolę warstwy
+rozumowania/syntezy nad kontekstem złożonym przez backend, nie źródła faktów.
+**Uzasadnienie:** to nowa płatna zależność zewnętrzna z realnym ryzykiem halucynacji —
+ograniczenie modelu wyłącznie do faktów podanych w promptcie jest jedynym sposobem, żeby
+uniknąć polecania nieistniejących miejsc. Pierwotny pomysł (Sesja V4.2, 2026-08-09)
+obejmował też porównanie cen karnetów ze scrapowanych cenników firm — świadomie wycięte
+poza Fazę V4 (nie tylko odłożone): wymagałoby albo ręcznego katalogowania cen, albo
+scrapowania cudzych stron z ryzykiem pokazania błędnej ceny (realne pieniądze
+użytkownika); osobna decyzja na przyszłość.
+**V4.2b — wersja ostateczna (opinie zastąpione linkiem do Google Maps, 2026-08-09):**
+pierwsza wersja V4.2b dociągała do 3 recenzji z Place Details (New) dla góry listy
+"polecane w okolicy" — użytkowniczka zdecydowała tego samego dnia, że nie chce tej
+funkcji, i poprosiła o jej całkowite usunięcie. Zastąpione czymś prostszym: nazwa każdego
+polecanego miejsca linkuje wprost do jego profilu na Google Maps, przez pole
+`googleMapsUri`, które Text Search zwraca **w tej samej odpowiedzi** co reszta danych o
+miejscu — bez dodatkowego wywołania API, bez dodatkowego cache'a, bez pytań o ToS
+dotyczące przechowywania treści recenzji (ten problem po prostu przestał istnieć wraz z
+usunięciem funkcji). Link dołączany tylko do `recommendations` (nie
+`relatedSuggestions`), tak samo jak przy pierwszej wersji opinii — z tego samego powodu:
+`relatedSuggestions` to zwykle własne, dotychczasowe firmy użytkownika, bez gwarancji
+dopasowania do wyniku Google Places.
+**Cache (dodane 2026-08-09):** prosty cache TTL (~godzina) w pamięci procesu dla wyniku
+Google Places Text Search (klucz: zaokrąglone `lat`/`lng` do ~1 km + kategoria + język).
+Celowo **nie** obejmuje odpowiedzi Groq — ta zależy od historii karnetów konkretnego
+wywołującego, więc współdzielenie jej między użytkownikami byłoby wyciekiem cudzych
+spersonalizowanych sugestii. To cache per-proces, nie współdzielony między instancjami
+serverless (Vercel) ani między cold startami — pomaga w dev i w seriach żądań na tym samym
+"ciepłym" procesie; docelowo na produkcyjną skalę rozważyć Redis/Vercel KV, jeśli koszt
+wywołań Places okaże się problemem.
+**Do zrobienia przed produkcją:** ograniczenie `GOOGLE_PLACES_SERVER_KEY` po adresie IP
+serwera w Google Cloud Console (dziś "None" — dev na zmiennym IP domowym, patrz
+`SETUP.md`), ustawienie limitu budżetu na koncie Groq i na interfejsie Places API (New)
+analogicznie do `ADR-004`, ocena czy cache w pamięci procesu wystarcza przy realnym ruchu
+na Vercel czy potrzebny współdzielony cache.
+
 ## RODO — dane osobowe przetwarzane przez aplikację
 
 **Status:** proponowane, do potwierdzenia przed pierwszym wdrożeniem produkcyjnym.
@@ -167,6 +220,10 @@ szczególnie zakres klauzuli informacyjnej i ewentualną potrzebę DPIA.
 - Storage plików (Supabase Storage / Cloudflare R2) — przechowuje zdjęcia voucherów.
 - Google (Maps/Places API) — otrzymuje zapytania o lokalizację/nazwę firmy; **nie**
   powinien otrzymywać danych osobowych użytkownika (e-mail, notatki) w treści zapytań.
+- Groq (`ADR-008`, Sesja V4.2a) — otrzymuje przybliżoną pozycję użytkownika (za jego
+  zgodą) i nazwy firm z jego historii karnetów jako kontekst promptu doradcy AI; **nie**
+  powinien otrzymywać e-maila, notatek ani innych danych osobowych. Serwery Groq — do
+  zweryfikowania, czy w UE/EOG czy poza (transfer poza EOG), przed produkcją.
 
 Przed pierwszym wdarożeniem produkcyjnym: sprawdzić, czy wybrani dostawcy oferują
 standardową umowę powierzenia (większość dużych dostawców cloud ma gotowy DPA do
@@ -184,8 +241,16 @@ przetwarzania, przenoszenie danych, sprzeciw — muszą być technicznie możliw
 zrealizowania (np. eksport/usunięcie konta z poziomu UI lub przez kontakt), nie tylko
 zapisane w regulaminie.
 
-**Model AI:** aplikacja **nie wysyła** danych użytkownika do zewnętrznego modelu AI w
-runtime — Google Maps/Places to nie jest model AI. Jeśli w przyszłości pojawi się funkcja
-oparta o LLM (np. rozpoznawanie danych ze zdjęcia vouchera), wymaga to osobnego wpisu ADR
-z jawną informacją: jakie dane trafiają do dostawcy modelu, w jakim celu, oraz komunikatu
-dla użytkownika przed użyciem tej funkcji (nie retroaktywnie w regulaminie).
+**Model AI (zaktualizowane w Sesji V4.2a, `ADR-008`):** doradca AI na `/recommendations`
+(`POST /api/ai/recommendations`) wysyła do Groq (dostawcy modelu LLM) i do Google Places
+API (New) następujące dane: **przybliżoną pozycję użytkownika** (`lat`/`lng` z
+`navigator.geolocation`, tylko za jego zgodą — natywny prompt przeglądarki, jak w
+`ADR-004`) oraz **nazwy firm, w których użytkownik ma karnety** (z jego historii, bez
+e-maila, notatek czy innych danych osobowych). W odróżnieniu od sortowania "najbliżej
+mnie" z `ADR-004` (gdzie pozycja żyje wyłącznie w pamięci przeglądarki), tutaj pozycja
+**opuszcza przeglądarkę** — trafia do naszego serwera (endpoint), stamtąd do Google
+Places (jako część zapytania tekstowego o miejsca w okolicy), i nigdzie nie jest
+zapisywana w bazie (istnieje tylko na czas jednego żądania). Nazwy firm z historii karnetów
+trafiają do Groq jako kontekst promptu, również bez zapisu po stronie Groq w naszej bazie.
+Funkcja jest w pełni opcjonalna — nieużycie jej (nieklinięcie przycisku "Pokaż
+rekomendacje") oznacza brak jakiegokolwiek przetwarzania.
