@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { getVisitInputErrors, VisitInputErrorCode } from "@/server/visit-rules";
 
 export interface VisitFormValues {
@@ -79,7 +80,7 @@ export function VisitForm({
         <label htmlFor={`${formId}-date`} className="text-sm font-medium">
           {t("visitDateLabel")}
         </label>
-        <input
+        <Input
           id={`${formId}-date`}
           type="date"
           value={values.visitDate}
@@ -87,7 +88,6 @@ export function VisitForm({
           onChange={(event) =>
             setValues((prev) => ({ ...prev, visitDate: event.target.value }))
           }
-          className="min-h-11 w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         {errorFor("visitDate") && (
           <p className="text-sm text-status-urgent">{t(`errors.${errorFor("visitDate")}`)}</p>
@@ -98,7 +98,7 @@ export function VisitForm({
         <label htmlFor={`${formId}-time`} className="text-sm font-medium">
           {t("visitTimeLabel")}
         </label>
-        <input
+        <Input
           id={`${formId}-time`}
           type="time"
           value={values.visitTime}
@@ -106,7 +106,6 @@ export function VisitForm({
           onChange={(event) =>
             setValues((prev) => ({ ...prev, visitTime: event.target.value }))
           }
-          className="min-h-11 w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("visitTimeHint")}</p>
       </div>
@@ -115,14 +114,13 @@ export function VisitForm({
         <label htmlFor={`${formId}-note`} className="text-sm font-medium">
           {t("noteLabel")}
         </label>
-        <input
+        <Input
           id={`${formId}-note`}
           type="text"
           maxLength={80}
           value={values.note}
           disabled={submitting}
           onChange={(event) => setValues((prev) => ({ ...prev, note: event.target.value }))}
-          className="min-h-11 w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/15"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("noteHint")}</p>
         {errorFor("note") && (
