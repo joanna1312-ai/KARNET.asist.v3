@@ -479,16 +479,26 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 
 Checklista z `docs/DEPLOYMENT.md`:
 
-- [ ] Limit/budżet na Google Maps API ustawiony
-- [ ] Automatyczne kopie zapasowe bazy danych
-- [ ] Monitoring błędów (np. Sentry) podłączony
-- [ ] Polityka prywatności / regulamin gotowe (aplikacja przetwarza dane osobowe)
-- [ ] Umowy powierzenia danych (DPA) z dostawcami hostingu/bazy/storage
-- [ ] Techniczna możliwość usunięcia konta i danych na żądanie
-- [ ] Jeśli Supabase: RLS włączone na wszystkich tabelach z danymi użytkownika,
-      przetestowane kluczem `anon`
-- [ ] `service_role` (Supabase) tylko po stronie serwera, nigdy z prefiksem
-      `NEXT_PUBLIC_`
+- [ ] Limit/budżet na Google Maps API ustawiony (N/A na razie — Maps jeszcze nie
+      podłączone, poza zakresem MVP)
+- [x] Automatyczne kopie zapasowe bazy danych — `pg_dump` przez GitHub Actions
+      (`.github/workflows/db-backup.yml`), cron 02:00 UTC, szyfrowane AES-256,
+      artifact z 30-dniową retencją (Supabase Free nie ma natywnych backupów)
+- [ ] Monitoring błędów (np. Sentry) podłączony — **świadomie odłożone do kolejnej
+      wersji aplikacji** (decyzja 2026-08-09)
+- [ ] Polityka prywatności / regulamin gotowe (aplikacja przetwarza dane osobowe) —
+      **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09)
+- [ ] Umowy powierzenia danych (DPA) z dostawcami hostingu/bazy/storage —
+      **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09)
+- [ ] Techniczna możliwość usunięcia konta i danych na żądanie —
+      **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09)
+- [x] Jeśli Supabase: RLS włączone na wszystkich tabelach z danymi użytkownika,
+      przetestowane kluczem `anon` — zweryfikowane bezpośrednio w bazie
+      (`relrowsecurity = true` na wszystkich 9 tabelach) i przez REST API
+      (`users`/`cards`/`companies` zwracają `200` + pustą listę kluczem anon)
+- [x] `service_role` (Supabase) tylko po stronie serwera, nigdy z prefiksem
+      `NEXT_PUBLIC_` — aplikacja w ogóle nie używa klucza `service_role`
+      (łączy się bezpośrednio przez `DATABASE_URL`)
 
 ---
 
