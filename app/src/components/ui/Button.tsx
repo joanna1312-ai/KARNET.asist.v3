@@ -1,14 +1,18 @@
 import type { ButtonHTMLAttributes } from "react";
 
+// Warianty odzwierciedlają system, który już istniał (rozproszony po plikach) —
+// nie wprowadzają nowej kolorystyki:
 const VARIANT_STYLES = {
-  // Wypełniony przycisk akcji głównej — odpowiednik "filled button" z Material 3 /
-  // przycisku akcji w iOS HIG. Pigułkowy kształt jak w referencji marki.
-  primary: "bg-accent text-white hover:bg-accent-deep",
-  // "Tonal button" — subtelne tło z tokenu marki, dla akcji drugoplanowych.
-  secondary: "bg-mint/30 text-mint-ink hover:bg-mint/45 dark:bg-mint/20 dark:hover:bg-mint/30",
-  // "Text/outlined button" — najniższy priorytet wizualny.
+  // Główna akcja (Zapisz, Dodaj karnet/wejście) — mięta, tak jak w referencji marki.
+  primary: "bg-mint text-mint-ink hover:brightness-95",
+  // Neutralny wypełniony przycisk (np. logowanie) — mniej wyróżniony niż primary.
+  neutral: "bg-black/5 text-foreground hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15",
+  // Drugorzędna akcja (Anuluj, Edytuj, Odnów) — przezroczysty, tylko hover.
   ghost: "bg-transparent text-foreground hover:bg-black/5 dark:hover:bg-white/10",
-  danger: "bg-status-urgent text-white hover:opacity-90",
+  // Destrukcyjna akcja w wierszu listy (Usuń) — jak ghost, ale czerwony tekst.
+  danger: "bg-transparent text-status-urgent hover:bg-black/5 dark:hover:bg-white/10",
+  // Potwierdzenie usunięcia w dialogu (wysoki priorytet, wypełniony) — koral.
+  "danger-solid": "bg-coral text-coral-ink hover:brightness-95",
 } as const;
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -19,7 +23,7 @@ export function Button({ variant = "primary", className = "", disabled, ...props
   return (
     <button
       disabled={disabled}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${VARIANT_STYLES[variant]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${VARIANT_STYLES[variant]} ${className}`}
       {...props}
     />
   );

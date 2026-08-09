@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Button } from "@/components/ui/Button";
 import { emptyVisitFormValues, VisitForm, VisitFormValues } from "@/components/VisitForm";
 import { CardType } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
@@ -301,13 +302,9 @@ export default function CardDetailsPage() {
               </p>
             </div>
             {!archived && (
-              <button
-                type="button"
-                onClick={openAddForm}
-                className="flex min-h-11 shrink-0 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
-              >
+              <Button type="button" onClick={openAddForm} className="shrink-0">
                 {t("addVisitButton")}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -381,23 +378,19 @@ export default function CardDetailsPage() {
                       )}
                     </div>
                     <div className="flex shrink-0 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openEditForm(visit)}
-                        className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                      >
+                      <Button type="button" variant="ghost" onClick={() => openEditForm(visit)}>
                         {t("editButton")}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="danger"
                         onClick={() => {
                           setDeleteError(false);
                           setDeleteTarget(visit);
                         }}
-                        className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
                       >
                         {t("deleteButton")}
-                      </button>
+                      </Button>
                     </div>
                   </li>
                 ))}

@@ -9,7 +9,7 @@ export async function Header() {
   const t = await getTranslations("header");
 
   return (
-    <header className="flex min-h-[60px] shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-black/10 px-4 py-2 dark:border-white/10">
+    <header className="flex min-h-[60px] shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 bg-gradient-to-r from-coral/25 via-background to-mint/25 px-4 py-2 shadow-md">
       <Link
         href="/"
         aria-label={t("homeAria")}

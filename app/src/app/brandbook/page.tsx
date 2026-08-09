@@ -103,9 +103,10 @@ export default function BrandbookPage() {
       <Section title="Przyciski">
         <Card className="flex flex-wrap items-center gap-3">
           <Button variant="primary">Dodaj karnet</Button>
-          <Button variant="secondary">Zobacz szczegóły</Button>
           <Button variant="ghost">Anuluj</Button>
+          <Button variant="neutral">Zaloguj przez Google</Button>
           <Button variant="danger">Usuń</Button>
+          <Button variant="danger-solid">Usuń na pewno</Button>
           <Button variant="primary" disabled>
             Wyłączony
           </Button>

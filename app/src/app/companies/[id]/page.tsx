@@ -14,6 +14,7 @@ import {
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { CompanyMap } from "@/components/CompanyMap";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/Button";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
@@ -208,13 +209,9 @@ export default function CompanyDetailsPage() {
               </p>
             </div>
             {!formOpen && (
-              <button
-                type="button"
-                onClick={openAddForm}
-                className="flex min-h-11 shrink-0 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
-              >
+              <Button type="button" onClick={openAddForm} className="shrink-0">
                 {t("addCardButton")}
-              </button>
+              </Button>
             )}
           </div>
 

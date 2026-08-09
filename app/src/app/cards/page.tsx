@@ -15,6 +15,7 @@ import {
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/Button";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
@@ -342,29 +343,21 @@ export default function CardsPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="min-w-0 text-2xl font-semibold">{t("title")}</h1>
-        <button
-          type="button"
-          onClick={openAddForm}
-          className="flex min-h-11 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95"
-        >
+        <Button type="button" onClick={openAddForm}>
           {t("addButton")}
-        </button>
+        </Button>
       </div>
 
       <div className="flex w-fit gap-1 rounded-full border border-black/10 p-1 dark:border-white/10">
         {(["active", "archived"] as const).map((tabOption) => (
-          <button
+          <Button
             key={tabOption}
             type="button"
+            variant={tab === tabOption ? "primary" : "ghost"}
             onClick={() => setTab(tabOption)}
-            className={`flex min-h-11 items-center rounded-full px-4 text-sm font-medium ${
-              tab === tabOption
-                ? "bg-mint text-mint-ink"
-                : "hover:bg-black/5 dark:hover:bg-white/10"
-            }`}
           >
             {t(tabOption === "active" ? "tabActive" : "tabArchived")}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -447,32 +440,24 @@ export default function CardsPage() {
                     </Link>
                     <div className="flex shrink-0 gap-2">
                       {tab === "archived" ? (
-                        <button
-                          type="button"
-                          onClick={() => openRenewForm(card)}
-                          className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                        >
+                        <Button type="button" variant="ghost" onClick={() => openRenewForm(card)}>
                           {t("renewButton")}
-                        </button>
+                        </Button>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => openEditForm(card)}
-                          className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-                        >
+                        <Button type="button" variant="ghost" onClick={() => openEditForm(card)}>
                           {t("editButton")}
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
                         type="button"
+                        variant="danger"
                         onClick={() => {
                           setDeleteError(false);
                           setDeleteTarget(card);
                         }}
-                        className="flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-status-urgent hover:bg-black/5 dark:hover:bg-white/10"
                       >
                         {t("deleteButton")}
-                      </button>
+                      </Button>
                     </div>
                   </li>
                 ))}

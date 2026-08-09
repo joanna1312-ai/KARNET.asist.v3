@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { Button } from "@/components/ui/Button";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
 import { DEFAULT_CATEGORY_ICON } from "@/lib/category-icons";
@@ -640,21 +641,12 @@ export function CardForm({
       )}
 
       <div className="mt-2 flex flex-wrap justify-end gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={submitting}
-          className="flex min-h-11 items-center rounded-full px-4 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
-        >
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
           {t("cancelButton")}
-        </button>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="flex min-h-11 items-center rounded-full bg-mint px-4 text-sm font-semibold text-mint-ink hover:brightness-95 disabled:opacity-50"
-        >
+        </Button>
+        <Button type="submit" disabled={submitting}>
           {submitting ? t("savingButton") : t("saveButton")}
-        </button>
+        </Button>
       </div>
     </form>
   );

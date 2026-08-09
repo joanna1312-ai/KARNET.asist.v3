@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
+import { Button } from "@/components/ui/Button";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -57,21 +58,12 @@ export function ConfirmDialog({
       </h2>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{body}</p>
       <div className="mt-6 flex flex-wrap justify-end gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex min-h-11 items-center rounded-full px-4 text-sm font-medium text-foreground hover:bg-black/5 dark:hover:bg-white/10"
-        >
+        <Button type="button" variant="ghost" onClick={onCancel}>
           {cancelLabel}
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          disabled={confirmDisabled}
-          className="flex min-h-11 items-center rounded-full bg-coral px-4 text-sm font-semibold text-coral-ink hover:brightness-95 disabled:opacity-50"
-        >
+        </Button>
+        <Button type="button" variant="danger-solid" onClick={onConfirm} disabled={confirmDisabled}>
           {confirmLabel}
-        </button>
+        </Button>
       </div>
     </dialog>
   );
