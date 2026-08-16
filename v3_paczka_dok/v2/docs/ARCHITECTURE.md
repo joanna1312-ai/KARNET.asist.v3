@@ -1,12 +1,15 @@
 # Architektura — Karnet.asist
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
-> Zaktualizowano: 2026-08-09 (Faza V4 — Doradca AI, upload vouchera do Supabase Storage)
+> Zaktualizowano: 2026-08-16 (Faza V5b — przeprojektowanie mobilne + PWA/Web Push;
+> poprzednio 2026-08-09, Faza V4 — Doradca AI, upload vouchera do Supabase Storage)
 
 > Status: stos techniczny potwierdzony (ADR-001, ADR-002) — patrz
 > [DECISIONS.md](DECISIONS.md). Sekcje dotyczące Google Maps/Places (ADR-004), Doradcy AI
-> (ADR-008) i uploadu vouchera (ADR-009) opisują stan faktycznie zaimplementowany w Fazie
-> V4, nie propozycję.
+> (ADR-008), uploadu vouchera (ADR-009) i PWA/Web Push (niżej) opisują stan faktycznie
+> zaimplementowany, nie propozycję. Web Push wymaga jeszcze zmiennych środowiskowych
+> (VAPID/CRON_SECRET) na produkcji i testu na urządzeniu — patrz `plan-pracy-claude-code.md`,
+> sekcja „Faza V5b”, checklista na końcu.
 
 ## Widok systemu
 
@@ -70,6 +73,33 @@ plik zwykłym `PUT` prosto do Supabase Storage tym URL-em; (3)
 odczyt (`GET .../voucher-file`) generuje świeży podpisany URL (ważny 5 minut) przy każdym
 wejściu na szczegóły karnetu, nigdy trwały link. Szczegóły: [DECISIONS.md](DECISIONS.md),
 ADR-009.
+
+**PWA i Web Push (Faza V5b):** aplikacja instaluje się na ekran główny telefonu
+(`manifest.ts`, ikony 192/512 generowane dynamicznie z tych samych proporcji co
+`icon.tsx`) i rejestruje service worker (`public/sw.js`) — **świadomie tylko pod kątem
+Web Push**, bez cache'owania zasobów offline w tej fazie (`display: standalone`, nie
+pełne PWA offline-first). To odpowiedź na pytanie „czy PWA wystarczy na start”, otwarte w
+`MOBILE_ROADMAP.md` od Sesji 1 — potwierdzone: tak, natywna aplikacja (React Native)
+zostaje odłożona.
+
+Przypomnienia o kończącym się karnecie (7 i 2 dni przed `expiry_date`) idą przez Web Push,
+nie przez e-mail (brak dostawcy wysyłki maili w projekcie — patrz `ADR` przy Sesji V6.1).
+Flow: przeglądarka prosi o zgodę i rejestruje subskrypcję (`src/lib/push-client.ts`) →
+`POST /api/push/subscribe` zapisuje ją w `push_subscriptions`, kluczowana po `endpoint`
+(upsert — ponowna rejestracja tej samej przeglądarki nadpisuje wiersz, nie duplikuje) →
+codzienny cron (`GET /api/cron/reminders`, chroniony `CRON_SECRET`, wywoływany z GitHub
+Actions — `.github/workflows/reminders.yml`, 7:00 UTC) wybiera karnety z terminem
+dokładnie za 7 albo 2 dni (`src/server/reminders.ts` — czysta funkcja, testowalna bez
+bazy, próg „dokładnie”, nie „7 lub mniej”, żeby przypomnienie przyszło raz, nie
+codziennie) i wysyła powiadomienia przez `web-push` (`src/server/push-sender.ts`),
+sprzątając po drodze subskrypcje, które przeglądarka już unieważniła (404/410).
+Własność subskrypcji: ten sam rozłączny model `userId`/`deviceId` co `Card`/`Favorite`
+(patrz wyżej i `DATABASE.md`) — subskrypcja zapisana pod kontem widoczna tylko kontu,
+pod urządzeniem tylko temu urządzeniu, bez mieszania.
+
+iOS wymaga zainstalowania do ekranu głównego (tryb standalone), żeby Web Push w ogóle
+działał (ograniczenie platformy Safari/WebKit, nie tej aplikacji) — ekran Konto pokazuje
+wtedy podpowiedź instalacji zamiast prośby o zgodę na powiadomienia.
 
 ## Kluczowe encje domenowe
 

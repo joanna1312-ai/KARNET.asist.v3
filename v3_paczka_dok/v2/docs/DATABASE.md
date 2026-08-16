@@ -2,8 +2,8 @@
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
-> Zaktualizowano: 2026-08-09 — opisuje faktyczny schemat Prisma wersji produkcyjnej (po
-> Fazie V4), nie propozycję.
+> Zaktualizowano: 2026-08-16 — opisuje faktyczny schemat Prisma wersji produkcyjnej (po
+> Fazie V4 i Fazie V5b — PWA/Web Push), nie propozycję.
 
 ## Tabele
 
@@ -115,12 +115,29 @@ kolumnę / materializowany widok.
 
 Klucz główny złożony `(user_id, company_id)` lub `(device_id, company_id)`.
 
+### `push_subscriptions` (Web Push — Faza V5b)
+
+| Kolumna | Typ | Uwagi |
+|---|---|---|
+| `id` | uuid PK | |
+| `user_id` | uuid FK → users, nullable | jak w `cards`/`favorites` — dokładnie jedno z `user_id`/`device_id`, nigdy oba |
+| `device_id` | text, nullable | jak wyżej |
+| `endpoint` | text, unique | identyfikuje kanał push konkretnej przeglądarki/urządzenia (nie użytkownika) — ponowna rejestracja tej samej przeglądarki robi upsert po tej kolumnie, nie duplikuje wiersza |
+| `p256dh`, `auth` | text | klucze publiczne subskrypcji, zwracane przez `PushManager.subscribe()` w przeglądarce, wymagane do szyfrowania treści powiadomienia (spec Web Push) |
+| `locale` | text, default `pl` | do wyboru języka treści przypomnienia w `src/server/push-sender.ts` |
+| `created_at` | timestamptz | |
+
+Subskrypcje unieważnione przez przeglądarkę (serwer push odpowiada `404`/`410` przy
+wysyłce) są usuwane automatycznie przy najbliższej próbie wysyłki — nie ma osobnego
+zadania porządkującego.
+
 ## Relacje
 
 ```
 users 1───N cards N───1 companies N───1 categories
 cards 1───N visits
 users/device N───N companies  (favorites)
+users/device 1───N push_subscriptions
 device 1───N categories  (własne kategorie, prywatne per urządzenie)
 ```
 
@@ -164,6 +181,9 @@ powinny mieć różną skalę pilności.
   wyszukiwanie „w pobliżu” zacznie być realne, nie mockowe
 - `categories(created_by_device_id)` — filtrowanie własnych kategorii urządzenia w
   `GET /api/categories`
+- `push_subscriptions(user_id)`, `push_subscriptions(device_id)` — wyszukiwanie
+  subskrypcji właściciela karnetu przy wysyłce przypomnień; `endpoint` ma unikalny
+  indeks przez samo `@unique` w Prisma
 
 ## Dostęp do danych i RLS (jeśli Supabase)
 
@@ -174,7 +194,7 @@ Jeśli baza danych lub storage voucherów zostaną uruchomione na Supabase (jedn
   z frontendu przez klienta Supabase.** Klucz `service_role` (pełny dostęp, omija RLS)
   używany jest wyłącznie po stronie serwera i nigdy nie trafia do kodu klienckiego.
 - Mimo to **RLS (Row Level Security) musi być włączone na wszystkich tabelach** zawierających
-  dane użytkownika (`cards`, `visits`, `favorites`) — jako druga warstwa zabezpieczenia,
+  dane użytkownika (`cards`, `visits`, `favorites`, `push_subscriptions`) — jako druga warstwa zabezpieczenia,
   na wypadek błędu w API, przyszłej zmiany architektury (np. bezpośredni dostęp z
   frontendu) lub pomyłkowego użycia klucza `anon` zamiast `service_role`.
 - Minimalna polityka RLS na start: wiersz widoczny/edytowalny tylko wtedy, gdy

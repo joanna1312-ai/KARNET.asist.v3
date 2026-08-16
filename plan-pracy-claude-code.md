@@ -814,6 +814,113 @@ Prompt (skróć/dostosuj):
 
 ---
 
+## Faza V5b — przeprojektowanie mobilne (PWA) — ukończona 2026-08-16
+
+Kontekst: różni się od Sesji 17 (tylko dopasowanie istniejącego web-owego layoutu do
+wąskich ekranów) — to pełne przeprojektowanie doświadczenia mobilnego wg paczki handoffu
+`v5b/design_handoff_mobile_pwa` (mockupy `.dc.html`, ekrany 1a–1r), plus realna warstwa PWA
+(manifest, service worker, Web Push), której wcześniej świadomie nie było (patrz
+`MOBILE_ROADMAP.md`, punkt 3 „Czy PWA wystarczy na start" — **odpowiedź: tak, na start
+PWA wystarcza**, natywna aplikacja zostaje odłożona zgodnie z pierwotnym roadmapem).
+Branch `Faza_v5b`, sześć etapów wg `PLAN_PRAC.md` z paczki handoffu, każdy pokazywany i
+zatwierdzany z właścicielką projektu przed implementacją. Wariant nawigacji: **1b**
+(dolny pasek zakładek + centralny FAB na `/cards`), wybrany świadomie zamiast 1a/1c/1d/1e.
+
+Zakres:
+- **Etap 1** — `BottomTabBar.tsx` (widoczny `md:hidden`, Header/Footer desktopowe dostają
+  `hidden md:flex`/`md:block`), nowa trasa `/account` (przenosi treść dawnego
+  `AccountMenu`/`SettingsMenu`/`HelpMenu`/`Footer` na jeden ekran), tryb wyglądu
+  rozszerzony o „Auto" (`src/lib/theme.ts`, `AppearanceControl.tsx`) obok istniejącego
+  jasny/ciemny.
+- **Etap 2** — `VisitDots.tsx` (kropki + liczba), `QuickVisitButton.tsx` („+1" bezpośrednio
+  na karcie listy, optymistyczna aktualizacja), `UndoToast.tsx`/`ToastProvider.tsx`
+  (cofnięcie wejścia w 5 s), nowy nagłówek `/cards/[id]` (edycja/usuwanie karnetu
+  przeniesione do ikon w nagłówku, historia wejść z kafelkiem daty).
+- **Etap 3** — nagłówek `/cards` w stylu marki, zakładki Aktywne/Archiwum jako pigułki,
+  `ArchivedCardItem.tsx` (płaska lista bez grupowania po kategorii), szkielety ładowania.
+- **Etap 4** — `CardWizard/` (kreator karnetu jako trzy pełnoekranowe kroki, nowa trasa
+  `/cards/new`) **tylko na mobile** — desktop (`md:` i wyżej) zachowuje dotychczasowy
+  jednoformularzowy `CardForm.tsx` bez zmian, świadomie bez współdzielenia JSX między
+  wariantami (różnią się zbyt mocno wizualnie — kafelki/stepper na mobile vs. radio/input
+  na desktopie), tylko wspólnym typem stanu (`CardFormValues`) i tą samą walidacją
+  (`getCardInputErrors` bez zmian).
+- **Etap 5** — mapa zbiorcza (`CompaniesOverviewMap.tsx`) nad listą `/companies` (zwykłe
+  `Marker`, nie `AdvancedMarker` — jak `CompanyMap.tsx`, bez kolorowych pinezek per
+  kategoria, żeby nie wymagać Map ID), pigułki kategorii na `/recommendations` (dotknięcie
+  od razu odpala geolokalizację + zapytanie), ekran onboardingu na `/`
+  (`OnboardingScreen.tsx`) pokazywany tylko gościom bez konta i bez żadnego karnetu —
+  decyzja zapada po stronie klienta (`deviceFetch("/api/cards")`), bo tożsamość
+  urządzenia-gościa żyje tylko w `localStorage`, nie da się tego rozstrzygnąć na
+  serwerze. Nowy `AppShell.tsx` ukrywa Header/Footer/BottomTabBar na tym jednym ekranie.
+- **Etap 6** — PWA: `manifest.ts` + ikony 192/512 generowane dynamicznie (te same
+  proporcje co `icon.tsx`), `public/sw.js` (`push`/`notificationclick`, bez
+  cache'owania offline w tej fazie). Web Push: nowa tabela `push_subscriptions`
+  (migracja `20260816154744_add_push_subscriptions`, ten sam rozłączny model własności
+  `userId`/`deviceId` co `Favorite`/`Card`), `POST`/`DELETE /api/push/subscribe`,
+  `GET /api/cron/reminders` (chroniony `CRON_SECRET`, wybiera karnety z terminem
+  dokładnie za 7 albo 2 dni — `src/server/reminders.ts`, testowalne bez bazy),
+  `src/server/push-sender.ts` (wysyłka przez `web-push`, sprząta subskrypcje unieważnione
+  przez przeglądarkę). GitHub Actions `.github/workflows/reminders.yml`, codziennie
+  7:00 UTC. Przełącznik przypomnień w `/account` podłączony pod prawdziwą subskrypcję;
+  podpowiedź o instalacji na ekran główny dla iOS (Web Push tam wymaga trybu standalone).
+
+Po drodze znalezione i naprawione błędy (warte odnotowania, bo mogą się powtórzyć w
+podobnych miejscach):
+- Klasa `hidden` łączona z komponentem, który ma **wbudowane** `inline-flex` (np.
+  `Button.tsx`) nie działa niezawodnie — obie klasy mają tę samą specyficzność, kolejność
+  w wygenerowanym CSS Tailwinda nie jest gwarantowana (ten sam problem, który komentarz w
+  `ui/Select.tsx` już opisywał dla `pl-10` vs. `px-3`). Naprawa: `hidden`/`md:*` zawsze na
+  **owijającym elemencie bez własnego `display`**, nie bezpośrednio na komponencie z
+  zshardkodowaną klasą displaya.
+- Endpoint `GET /api/cron/reminders` jawnie przekazywał dokładny czas wywołania
+  (`new Date()`) zamiast początku dnia do `filterCardsForReminders` — psuło zaokrąglenie
+  granicy 7/2 dni po południu (karnet z terminem za "7 dni" liczonych od północy wypadał
+  jako "6.x dnia" po południu i nie łapał się w oknie przypomnienia). Naprawa: funkcja ma
+  własny domyślny `referenceDate = startOfToday()`, wywołujący nie powinien go nadpisywać
+  dokładnym czasem.
+- Hydratacja `AppearanceControl.tsx` — SSR nie ma dostępu do `localStorage`, więc pierwszy
+  render klienta czasem nie zgadzał się z serwerem, gdy w `localStorage` był już zapisany
+  motyw inny niż domyślny. Naprawa: `useState` startuje zawsze od stałej wartości „auto",
+  realny odczyt `localStorage` dopiero w `useEffect` po zamontowaniu (ten sam wzorzec co
+  istniejący `ThemeToggle.tsx`, tam już rozwiązany przez `suppressHydrationWarning` na
+  pojedynczej ikonie — tu potrzebne pełne odroczenie do efektu, bo różnica dotyczy kilku
+  elementów naraz, nie jednej ikony).
+
+Świadome odstępstwa od mockupów (v5b), zaakceptowane po drodze:
+- Daty w liście/szczegółach karnetu zostają w dotychczasowym długim polskim formacie
+  („30 listopada 2026”), nie w skróconym numerycznym z mockupu — spójność z resztą appki
+  ważniejsza niż pikselowa wierność jednemu ekranowi.
+- Brak liczby „X karnet(y)” przy firmie na `/companies` (wymagałoby zmiany API i jego
+  testów — nieproporcjonalne do wartości tej jednej linijki UI).
+- FAB w dolnym pasku pozostaje widoczny też w zakładce Archiwum na `/cards` (mockup 1i go
+  tam nie pokazuje) — stan zakładki żyje lokalnie na stronie, nie w URL, więc nie ma go
+  skąd odczytać w globalnym `BottomTabBar.tsx` bez rozszerzania zakresu.
+- Widget na ekranie blokady (1o) pominięty — niewykonalne w PWA, potwierdzone w handoffie
+  jako materiał na etap natywny.
+
+**Do zrobienia zanim przypomnienia push zadziałają na produkcji** (poza zakresem tej
+sesji — wymaga danych/dostępu, których nie miał Claude Code):
+- [ ] `VAPID_PUBLIC_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
+      `VAPID_SUBJECT`, `CRON_SECRET` w zmiennych środowiskowych Vercel (Production i
+      Preview)
+- [ ] Sekrety `CRON_TARGET_URL` i `CRON_SECRET` w GitHub → Settings → Secrets and
+      variables → Actions (ta sama wartość `CRON_SECRET` co w Vercel)
+- [ ] Przetestowany `reminders.yml` (`Run workflow` ręcznie) — kod 200, sensowny JSON
+- [ ] Instalacja i realne powiadomienie sprawdzone na urządzeniu (Android i iPhone ≥ 16.4)
+- [ ] Scalenie `Faza_v5b` → `main` po ręcznym teście na urządzeniu
+
+- [x] Wszystkie 6 etapów zaakceptowane ekran po ekranie przed implementacją
+- [x] `npm run lint` + `npx tsc --noEmit` + `npm run test` zielone po każdym etapie
+      (180 → 187 testów, 23 pliki)
+- [x] Migracja Prisma (`push_subscriptions`) uruchomiona na lokalnej bazie deweloperskiej,
+      nigdy na produkcyjnej Supabase
+- [x] Zweryfikowane w przeglądarce (podgląd mobile + desktop) na żywych danych, nie tylko
+      w kodzie: lista/szczegóły/kreator/archiwum/onboarding/mapa firm/pigułki doradcy/cron
+- [x] Commit + push na `origin/Faza_v5b` (main nietknięty)
+- [x] `docs/` (ten wpis + `ARCHITECTURE.md`/`DATABASE.md`/`API.md`/`MOBILE_ROADMAP.md`)
+
+---
+
 ## Faza V6 — logowanie
 
 Uwaga: odpalana po Fazie V4 (nowe API) i Fazie V5 (grafika) — świadomie na końcu, bo to

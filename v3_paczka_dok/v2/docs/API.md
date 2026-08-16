@@ -2,9 +2,9 @@
 
 > Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
-> Zaktualizowano: 2026-08-09 — opisuje faktycznie zaimplementowane endpointy wersji
-> produkcyjnej (po Fazie V4), nie propozycję. Specyfikacja OpenAPI obok kodu — do rozważenia
-> w kolejnej wersji, nie zrobione.
+> Zaktualizowano: 2026-08-16 — opisuje faktycznie zaimplementowane endpointy wersji
+> produkcyjnej (po Fazie V4 i Fazie V5b — PWA/Web Push), nie propozycję. Specyfikacja
+> OpenAPI obok kodu — do rozważenia w kolejnej wersji, nie zrobione.
 
 Konwencja: JSON, autoryzacja opcjonalna — jeśli brak sesji/tokenu, żądania działają
 na `deviceId` odczytanym z **podpisanego** tokena urządzenia (nagłówek
@@ -198,6 +198,46 @@ Przykład odpowiedzi:
 Klient przechowuje `token` (nie surowy `deviceId`) i wysyła go w nagłówku
 `Authorization: Device <token>` przy każdym kolejnym żądaniu. Token ma TTL ok. 180 dni,
 odnawiany automatycznie w tle przed wygaśnięciem.
+
+## Web Push (Faza V5b)
+
+| Metoda | Ścieżka | Opis |
+|---|---|---|
+| `POST` | `/api/push/subscribe` | zapisuje/aktualizuje subskrypcję push wywołującego (upsert po `endpoint`) |
+| `DELETE` | `/api/push/subscribe` | usuwa subskrypcję (wyłączenie przypomnień w `/account`) |
+| `GET` | `/api/cron/reminders` | wysyła przypomnienia (7/2 dni przed `expiry_date`) do wszystkich subskrypcji trafionych karnetów — wywoływane z zewnątrz (cron), nie z aplikacji |
+
+Autoryzacja `POST`/`DELETE /api/push/subscribe` identyczna jak reszta API bez konta —
+`Authorization: Device <token>` albo zalogowana sesja (`getCallerIdentity`), `401`, gdy
+brak obu.
+
+`POST /api/push/subscribe` — body:
+```json
+{
+  "endpoint": "https://fcm.googleapis.com/fcm/send/...",
+  "keys": { "p256dh": "...", "auth": "..." },
+  "locale": "pl"
+}
+```
+`400 { "error": "invalid_subscription" }`, gdy brakuje `endpoint` albo któregoś z kluczy.
+`204` przy sukcesie. Subskrypcja zapisywana pod `userId` (zalogowany) albo `deviceId`
+(gość) — ten sam rozłączny model co `cards`/`favorites` (`DATABASE.md`).
+
+`DELETE /api/push/subscribe` — body `{ "endpoint": "..." }`. Idempotentne — usunięcie
+nieistniejącej subskrypcji też zwraca `204`.
+
+`GET /api/cron/reminders` — chroniony nagłówkiem `Authorization: Bearer <CRON_SECRET>`
+(zmienna środowiskowa, **nie** ten sam sekret co `DEVICE_TOKEN_SECRET`), `401` bez niego
+albo z błędną wartością. Wywoływany codziennie z GitHub Actions
+(`.github/workflows/reminders.yml`, 7:00 UTC) — nie ma limitu częstotliwości po stronie
+endpointu, więc sekret jest jedyną ochroną przed masową wysyłką na żądanie. Odpowiedź:
+```json
+{ "matched": 2, "sent": 3, "failed": 0 }
+```
+`matched` — liczba karnetów z terminem dokładnie za 7 albo 2 dni; `sent`/`failed` liczą
+się per subskrypcja (jeden karnet może mieć kilka subskrypcji — kilka przeglądarek/urządzeń
+tego samego właściciela). Subskrypcje, dla których wysyłka zwróciła `404`/`410` (przeglądarka
+je unieważniła), są usuwane automatycznie w trakcie tego samego wywołania.
 
 ## Auth (opcjonalne)
 
