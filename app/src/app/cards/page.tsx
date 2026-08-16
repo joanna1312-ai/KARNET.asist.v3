@@ -1,7 +1,6 @@
 "use client";
 
 import { Archive, Ticket } from "lucide-react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -13,18 +12,18 @@ import {
   NEW_CATEGORY_SENTINEL,
   voucherFileUrlForSave,
 } from "@/components/CardForm";
+import { ArchivedCardItem } from "@/components/ArchivedCardItem";
+import { CardListItem } from "@/components/CardListItem";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { StatusBadge } from "@/components/StatusBadge";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
-import { formatDate } from "@/lib/format";
 import { categoryDisplayName } from "@/lib/category-display";
 import { uploadVoucherFile } from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
-import { getCardWarningStatus } from "@/server/card-status";
 import type { CategoryColor } from "@/server/system-categories";
 import { isStorageVoucherFileUrl } from "@/server/voucher-file";
 
@@ -129,6 +128,20 @@ export default function CardsPage() {
     }
   }, [tab]);
 
+  // Aktualizacja optymistyczna licznika po "+1"/cofnięciu z listy (Etap 2) — bez
+  // pełnego refetchu, żeby akcja była natychmiastowa; pełne dane wracają dopiero
+  // przy kolejnym reload() (np. karnet, który właśnie wyczerpał limit, zniknie
+  // z aktywnych dopiero wtedy, nie w trakcie okna "Cofnij").
+  function handleVisitCountChange(cardId: string, delta: 1 | -1) {
+    setCards((prev) =>
+      prev
+        ? prev.map((card) =>
+            card.id === cardId ? { ...card, usedVisits: card.usedVisits + delta } : card
+          )
+        : prev
+    );
+  }
+
   useEffect(() => {
     let ignore = false;
 
@@ -149,13 +162,13 @@ export default function CardsPage() {
     };
   }, [tab]);
 
-  function openAddForm() {
+  const openAddForm = useCallback(() => {
     setEditingCard(null);
     setRenewSource(null);
     setServerErrors([]);
     setVoucherUploadError(false);
     setFormOpen(true);
-  }
+  }, []);
 
   function openEditForm(card: ApiCard) {
     setEditingCard(card);
@@ -318,7 +331,6 @@ export default function CardsPage() {
   }
 
   const t = useTranslations("cardsPage");
-  const tDetails = useTranslations("cardDetailsPage");
   const tDeleteDialog = useTranslations("deleteCardDialog");
   const tCategory = useTranslations("companyCategory");
 
@@ -342,24 +354,38 @@ export default function CardsPage() {
   }, [cards, tCategory]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 pt-4 pb-10 md:gap-6 md:py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="min-w-0 text-2xl font-semibold">{t("title")}</h1>
-        <Button type="button" onClick={openAddForm}>
-          {t("addButton")}
-        </Button>
+        <div className="min-w-0">
+          <Logo size="sm" className="mb-1 opacity-60" />
+          <h1 className="font-brand text-[27px] leading-[1.15] font-extrabold tracking-[-0.02em]">
+            {t("title")}
+          </h1>
+        </div>
+        {/* Mobile: dodawanie karnetu idzie przez FAB w BottomTabBar (wariant 1b). Owinięte w
+        div zamiast "hidden" bezpośrednio na Button — Button ma wbudowane "inline-flex" o tej
+        samej specyficzności co "hidden", więc nadpisanie klasą nie działałoby niezawodnie. */}
+        <div className="hidden shrink-0 md:block">
+          <Button type="button" onClick={openAddForm}>
+            {t("addButton")}
+          </Button>
+        </div>
       </div>
 
-      <div className="flex w-fit gap-1 rounded-full border border-black/10 p-1 dark:border-white/10">
+      <div className="flex w-fit gap-1 rounded-full bg-black/5 p-1 dark:bg-white/10">
         {(["active", "archived"] as const).map((tabOption) => (
-          <Button
+          <button
             key={tabOption}
             type="button"
-            variant={tab === tabOption ? "primary" : "ghost"}
             onClick={() => setTab(tabOption)}
+            className={`min-h-9 rounded-full px-4 text-sm font-semibold transition-colors ${
+              tab === tabOption
+                ? "bg-foreground text-background"
+                : "text-foreground/50 hover:text-foreground"
+            }`}
           >
             {t(tabOption === "active" ? "tabActive" : "tabArchived")}
-          </Button>
+          </button>
         ))}
       </div>
 
@@ -390,7 +416,14 @@ export default function CardsPage() {
       )}
 
       {cards === null && !loadError && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">…</p>
+        <div className="flex flex-col gap-3" aria-hidden>
+          {[0, 1, 2].map((index) => (
+            <div
+              key={index}
+              className="h-[76px] animate-pulse rounded-[20px] bg-black/5 dark:bg-white/5"
+            />
+          ))}
+        </div>
       )}
 
       {cards !== null && cards.length === 0 && (
@@ -399,7 +432,7 @@ export default function CardsPage() {
         </EmptyState>
       )}
 
-      {cards !== null && cards.length > 0 && (
+      {cards !== null && cards.length > 0 && tab === "active" && (
         <div className="flex flex-col gap-6">
           {groupedCards.map(({ category, cards: categoryCards }) => (
             <div key={category.id} className="flex flex-col gap-3">
@@ -411,62 +444,33 @@ export default function CardsPage() {
               </div>
               <ul className="flex flex-col gap-3">
                 {categoryCards.map((card) => (
-                  <li
+                  <CardListItem
                     key={card.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 p-4 dark:border-white/10"
-                  >
-                    <Link href={`/cards/${card.id}`} className="min-w-0 flex-1 hover:underline">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <p className="min-w-0 truncate font-medium">{card.company.name}</p>
-                        <StatusBadge
-                          status={getCardWarningStatus({
-                            type: card.type,
-                            totalVisits: card.totalVisits,
-                            usedVisits: card.usedVisits,
-                            expiryDate: card.expiryDate ? new Date(card.expiryDate) : null,
-                          })}
-                        />
-                      </div>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        {card.type === CardType.limit && card.totalVisits != null
-                          ? tDetails("limitCounter", {
-                              used: card.usedVisits,
-                              total: card.totalVisits,
-                            })
-                          : tDetails("unlimitedLabel")}
-                        {" · "}
-                        {card.expiryDate
-                          ? tDetails("expiryLabel", { date: formatDate(card.expiryDate) })
-                          : tDetails("noExpiryLabel")}
-                      </p>
-                    </Link>
-                    <div className="flex shrink-0 gap-2">
-                      {tab === "archived" ? (
-                        <Button type="button" variant="ghost" onClick={() => openRenewForm(card)}>
-                          {t("renewButton")}
-                        </Button>
-                      ) : (
-                        <Button type="button" variant="ghost" onClick={() => openEditForm(card)}>
-                          {t("editButton")}
-                        </Button>
-                      )}
-                      <Button
-                        type="button"
-                        variant="danger"
-                        onClick={() => {
-                          setDeleteError(false);
-                          setDeleteTarget(card);
-                        }}
-                      >
-                        {t("deleteButton")}
-                      </Button>
-                    </div>
-                  </li>
+                    card={card}
+                    onVisitCountChange={handleVisitCountChange}
+                    onEdit={() => openEditForm(card)}
+                    onDelete={() => {
+                      setDeleteError(false);
+                      setDeleteTarget(card);
+                    }}
+                    onCardLikelyArchived={() => reload()}
+                  />
                 ))}
               </ul>
             </div>
           ))}
         </div>
+      )}
+
+      {cards !== null && cards.length > 0 && tab === "archived" && (
+        <>
+          <ul className="flex flex-col gap-3">
+            {cards.map((card) => (
+              <ArchivedCardItem key={card.id} card={card} onRenew={() => openRenewForm(card)} />
+            ))}
+          </ul>
+          <p className="px-1 text-sm text-foreground/50">{t("archiveHint")}</p>
+        </>
       )}
 
       <ConfirmDialog

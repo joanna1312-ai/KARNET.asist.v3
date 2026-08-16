@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 // Konto i urządzenie to dwie rozłączne przestrzenie danych (patrz
 // src/server/card-owner.ts) — bez tego paska użytkownik nie miałby jak się
@@ -9,7 +10,10 @@ import { useSession } from "next-auth/react";
 export function GuestNotice() {
   const t = useTranslations("account");
   const { status } = useSession();
+  const pathname = usePathname();
 
+  // Ekran onboardingu (1m) na "/" jest celowo pełnoekranowy, bez tego paska.
+  if (pathname === "/") return null;
   if (status !== "unauthenticated") return null;
 
   return (

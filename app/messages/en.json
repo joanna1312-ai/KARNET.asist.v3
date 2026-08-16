@@ -66,6 +66,42 @@
     "signedInAs": "Signed in as {name}",
     "guestNotice": "You're not signed in — your cards are saved only on this device."
   },
+  "onboarding": {
+    "title": "Your cards, always at hand",
+    "body": "Gym, pool, classes, massage, beauty salon — every visit and deadline in one place. No account, no sign-in, no payments.",
+    "bullet1": "A visit counter you can read at a glance",
+    "bullet2": "A reminder before a card runs out",
+    "bullet3": "Your data stays on this phone unless you decide otherwise",
+    "primaryCta": "Add your first card",
+    "secondaryCta": "I already have a Google account"
+  },
+  "tabs": {
+    "navAria": "Main navigation",
+    "cards": "Cards",
+    "companies": "Companies",
+    "recommendations": "Advisor",
+    "account": "Account",
+    "addCardAria": "Add card"
+  },
+  "accountPage": {
+    "title": "Account",
+    "guestCardTitle": "Guest mode",
+    "guestCardBody": "Cards saved only on this phone",
+    "signedInCardTitle": "Account connected",
+    "signedInCardBody": "Signed in as {name}",
+    "signInButton": "Sign in with Google",
+    "signOutButton": "Sign out",
+    "signInHint": "Signing in is only used to sync between devices. Without an account the app works the same way.",
+    "remindersLabel": "Reminders",
+    "remindersHint": "7 and 2 days before expiry",
+    "iosInstallHint": "On iPhone, add Karnet.asist to your home screen (Share → Add to Home Screen) for notifications to work.",
+    "languageLabel": "Language",
+    "appearanceLabel": "Appearance",
+    "appearanceLight": "Light",
+    "appearanceDark": "Dark",
+    "appearanceAuto": "Auto",
+    "helpRow": "How to use Karnet.asist"
+  },
   "companiesPage": {
     "title": "Companies",
     "loadError": "Couldn't load the list of companies. Try refreshing the page.",
@@ -83,14 +119,18 @@
     "geoDenied": "Location wasn't shared, so the list keeps its previous order. You can allow location access in your browser settings and try again.",
     "geoUnavailable": "This browser doesn't support geolocation, so sorting by distance isn't available.",
     "addFavorite": "Add to favorites",
-    "removeFavorite": "Remove from favorites"
+    "removeFavorite": "Remove from favorites",
+    "nearestPillLabel": "Nearest to me",
+    "mapLoading": "Loading map…"
   },
   "recommendationsPage": {
     "title": "AI Advisor",
     "intro": "Based on places near you and your existing passes, we'll suggest what's worth checking out. This is just a suggestion — always confirm details directly with the provider.",
     "categoryLabel": "Category",
     "categoryAll": "All categories",
+    "categoryAllPill": "All",
     "submitButton": "Show recommendations",
+    "mapButton": "Map",
     "loading": "Searching…",
     "geoDenied": "Location wasn't shared, so we can't find places near you. You can allow location access in your browser settings and try again.",
     "geoUnavailable": "This browser doesn't support geolocation, so this feature isn't available.",
@@ -119,7 +159,11 @@
     "tabArchived": "Archive",
     "editButton": "Edit",
     "deleteButton": "Delete",
-    "renewButton": "Renew"
+    "renewButton": "Renew",
+    "remainingVisitsHint": "{count, plural, one {# visit left} other {# visits left}}",
+    "archiveHint": "Cards land here automatically once the visit limit runs out or the expiry date passes.",
+    "archivedFinishedLabel": "Ended {date}",
+    "archivedExhaustedSuffix": "used up"
   },
   "cardStatus": {
     "ok": "Valid",
@@ -186,6 +230,15 @@
     "saveButton": "Save",
     "cancelButton": "Cancel",
     "savingButton": "Saving…",
+    "stepLabel": "Step {step} of 3",
+    "nextButton": "Next",
+    "backAria": "Back",
+    "step1Title": "Which company?",
+    "step2Title": "What kind of card?",
+    "step3Title": "Add a voucher",
+    "expiryOptionalSuffix": "optional",
+    "expiryRequiredSuffix": "required",
+    "voucherSkipHint": "You can add a voucher later, from the card's details.",
     "errors": {
       "companyRequired": "Choose a company.",
       "typeRequired": "Choose a card type.",
@@ -214,6 +267,7 @@
     "loadError": "Couldn't load this card. Try refreshing the page.",
     "notFound": "This card wasn't found.",
     "limitCounter": "{used}/{total} visits",
+    "totalVisitsSuffix": "visits",
     "unlimitedLabel": "Unlimited visits",
     "expiryLabel": "valid until {date}",
     "noExpiryLabel": "no expiry date",
@@ -226,7 +280,11 @@
     "voucherLoadError": "Couldn't load the voucher file.",
     "voucherOpenPdf": "Open PDF file",
     "editButton": "Edit",
-    "deleteButton": "Delete"
+    "deleteButton": "Delete",
+    "editCardAria": "Edit card",
+    "moreActionsAria": "More options",
+    "deleteCardMenuItem": "Delete card",
+    "saveVisitButton": "Log a visit"
   },
   "visitForm": {
     "addTitle": "New visit",
@@ -259,6 +317,14 @@
     "group_classes": "Group classes",
     "massage": "Massage",
     "beauty": "Beauty"
+  },
+  "toast": {
+    "visitSaved": "Visit saved · {company}",
+    "visitSavedDetail": "{date} · {remaining} visits left",
+    "undo": "Undo",
+    "visitUndone": "Visit undone",
+    "saveFailed": "Couldn't save the visit. Try again.",
+    "addVisitAria": "Log a visit — {company}"
   },
   "footer": {
     "authorLine": "Built by Joanna Dropia, with help from AI (Claude Sonnet 5).",

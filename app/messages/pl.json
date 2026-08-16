@@ -66,6 +66,42 @@
     "signedInAs": "Zalogowano jako {name}",
     "guestNotice": "Nie masz zalogowanego konta — Twoje karnety są zapisane tylko na tym urządzeniu."
   },
+  "onboarding": {
+    "title": "Twoje karnety zawsze pod ręką",
+    "body": "Siłownia, basen, zajęcia, masaż, kosmetyczka — wszystkie wejścia i terminy w jednym miejscu. Bez konta, bez logowania, bez płacenia.",
+    "bullet1": "Licznik wejść, który widzisz jednym rzutem oka",
+    "bullet2": "Przypomnienie, zanim karnet przepadnie",
+    "bullet3": "Dane zostają na telefonie, dopóki sama nie zdecydujesz inaczej",
+    "primaryCta": "Dodaj pierwszy karnet",
+    "secondaryCta": "Mam już konto Google"
+  },
+  "tabs": {
+    "navAria": "Nawigacja główna",
+    "cards": "Karnety",
+    "companies": "Firmy",
+    "recommendations": "Doradca",
+    "account": "Konto",
+    "addCardAria": "Dodaj karnet"
+  },
+  "accountPage": {
+    "title": "Konto",
+    "guestCardTitle": "Tryb bez konta",
+    "guestCardBody": "Karnety zapisane tylko na tym telefonie",
+    "signedInCardTitle": "Konto połączone",
+    "signedInCardBody": "Zalogowano jako {name}",
+    "signInButton": "Zaloguj przez Google",
+    "signOutButton": "Wyloguj",
+    "signInHint": "Logowanie służy tylko do synchronizacji między urządzeniami. Bez konta aplikacja działa tak samo.",
+    "remindersLabel": "Przypomnienia",
+    "remindersHint": "7 i 2 dni przed końcem ważności",
+    "iosInstallHint": "Na iPhonie dodaj Karnet.asist do ekranu głównego (Udostępnij → Dodaj do ekranu początkowego), żeby powiadomienia działały.",
+    "languageLabel": "Język",
+    "appearanceLabel": "Wygląd",
+    "appearanceLight": "Jasny",
+    "appearanceDark": "Ciemny",
+    "appearanceAuto": "Auto",
+    "helpRow": "Jak korzystać z Karnet.asist"
+  },
   "companiesPage": {
     "title": "Firmy",
     "loadError": "Nie udało się pobrać listy firm. Spróbuj odświeżyć stronę.",
@@ -83,14 +119,18 @@
     "geoDenied": "Nie udostępniono lokalizacji, więc lista pokazuje kolejność jak poprzednio. Możesz zezwolić na lokalizację w ustawieniach przeglądarki i spróbować ponownie.",
     "geoUnavailable": "Ta przeglądarka nie obsługuje geolokalizacji, więc sortowanie po dystansie jest niedostępne.",
     "addFavorite": "Dodaj do ulubionych",
-    "removeFavorite": "Usuń z ulubionych"
+    "removeFavorite": "Usuń z ulubionych",
+    "nearestPillLabel": "Najbliżej mnie",
+    "mapLoading": "Wczytywanie mapy…"
   },
   "recommendationsPage": {
     "title": "Doradca AI",
     "intro": "Na podstawie miejsc w Twojej okolicy i Twoich dotychczasowych karnetów podpowiemy, co warto sprawdzić. To tylko sugestia — zawsze sprawdź szczegóły bezpośrednio u usługodawcy.",
     "categoryLabel": "Kategoria",
     "categoryAll": "Wszystkie kategorie",
+    "categoryAllPill": "Wszystkie",
     "submitButton": "Pokaż rekomendacje",
+    "mapButton": "Mapa",
     "loading": "Szukam…",
     "geoDenied": "Nie udostępniono lokalizacji, więc nie możemy znaleźć miejsc w Twojej okolicy. Możesz zezwolić na lokalizację w ustawieniach przeglądarki i spróbować ponownie.",
     "geoUnavailable": "Ta przeglądarka nie obsługuje geolokalizacji, więc ta funkcja jest niedostępna.",
@@ -119,7 +159,11 @@
     "tabArchived": "Archiwum",
     "editButton": "Edytuj",
     "deleteButton": "Usuń",
-    "renewButton": "Odnów"
+    "renewButton": "Odnów",
+    "remainingVisitsHint": "zostało {count, plural, one {# wejście} few {# wejścia} other {# wejść}}",
+    "archiveHint": "Karnety trafiają tu automatycznie, gdy skończy się limit wejść albo minie data ważności.",
+    "archivedFinishedLabel": "Zakończony {date}",
+    "archivedExhaustedSuffix": "wykorzystany"
   },
   "cardStatus": {
     "ok": "Ważny",
@@ -186,6 +230,15 @@
     "saveButton": "Zapisz",
     "cancelButton": "Anuluj",
     "savingButton": "Zapisywanie…",
+    "stepLabel": "Krok {step} z 3",
+    "nextButton": "Dalej",
+    "backAria": "Wstecz",
+    "step1Title": "Jaka to firma?",
+    "step2Title": "Jaki to karnet?",
+    "step3Title": "Dodaj voucher",
+    "expiryOptionalSuffix": "opcjonalna",
+    "expiryRequiredSuffix": "wymagana",
+    "voucherSkipHint": "Możesz dodać voucher później, w szczegółach karnetu.",
     "errors": {
       "companyRequired": "Wybierz firmę.",
       "typeRequired": "Wybierz typ karnetu.",
@@ -214,6 +267,7 @@
     "loadError": "Nie udało się pobrać danych karnetu. Spróbuj odświeżyć stronę.",
     "notFound": "Nie znaleziono tego karnetu.",
     "limitCounter": "{used}/{total} wejść",
+    "totalVisitsSuffix": "wejść",
     "unlimitedLabel": "Bez limitu wejść",
     "expiryLabel": "ważny do {date}",
     "noExpiryLabel": "bez terminu ważności",
@@ -226,7 +280,11 @@
     "voucherLoadError": "Nie udało się wczytać pliku vouchera.",
     "voucherOpenPdf": "Otwórz plik PDF",
     "editButton": "Edytuj",
-    "deleteButton": "Usuń"
+    "deleteButton": "Usuń",
+    "editCardAria": "Edytuj karnet",
+    "moreActionsAria": "Więcej opcji",
+    "deleteCardMenuItem": "Usuń karnet",
+    "saveVisitButton": "Zapisz wejście"
   },
   "visitForm": {
     "addTitle": "Nowe wejście",
@@ -259,6 +317,14 @@
     "group_classes": "Zajęcia grupowe",
     "massage": "Masaż",
     "beauty": "Uroda"
+  },
+  "toast": {
+    "visitSaved": "Zapisano wejście · {company}",
+    "visitSavedDetail": "{date} · zostało {remaining} wejść",
+    "undo": "Cofnij",
+    "visitUndone": "Cofnięto wejście",
+    "saveFailed": "Nie udało się zapisać wejścia. Spróbuj ponownie.",
+    "addVisitAria": "Zapisz wejście — {company}"
   },
   "footer": {
     "authorLine": "Aplikację stworzyła Joanna Dropia, z pomocą AI (Claude Sonnet 5).",

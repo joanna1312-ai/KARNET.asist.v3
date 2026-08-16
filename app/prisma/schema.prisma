@@ -53,11 +53,12 @@ model User {
   emailVerified DateTime? @map("email_verified")
   createdAt     DateTime  @default(now()) @map("created_at")
 
-  cards            Card[]
-  favorites        Favorite[]
-  createdCompanies Company[] @relation("CompanyCreatedBy")
-  accounts         Account[]
-  sessions         Session[]
+  cards             Card[]
+  favorites         Favorite[]
+  createdCompanies  Company[]          @relation("CompanyCreatedBy")
+  accounts          Account[]
+  sessions          Session[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -215,4 +216,28 @@ model Favorite {
   @@unique([userId, companyId])
   @@unique([deviceId, companyId])
   @@map("favorites")
+}
+
+/// Subskrypcja Web Push (Etap 6, PWA) — jedna na przeglądarkę/urządzenie, właścicielstwo
+/// tak samo rozłączne jak przy Favorite/Card: userId (konto) albo deviceId (bez konta),
+/// nigdy oba naraz w praktyce, ale oba nullable z tego samego powodu co gdzie indziej w
+/// tym schemacie (Prisma/Postgres nie pozwala na nullable kolumnę w złożonym kluczu).
+/// `endpoint` unikalny sam w sobie — to on identyfikuje kanał push w przeglądarce
+/// (subskrypcja przeglądarki, nie użytkownika), więc ponowna rejestracja tego samego
+/// urządzenia nadpisuje istniejący wiersz zamiast duplikować.
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  deviceId  String?  @map("device_id")
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  locale    String   @default("pl")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deviceId])
+  @@map("push_subscriptions")
 }

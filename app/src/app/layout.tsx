@@ -1,12 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Baloo_2, Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { AppShell } from "@/components/AppShell";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
+import { BottomTabBar } from "@/components/BottomTabBar";
 import { Footer } from "@/components/Footer";
 import { GoogleMapsProvider } from "@/components/GoogleMapsProvider";
-import { GuestNotice } from "@/components/GuestNotice";
 import { Header } from "@/components/Header";
+import { ToastProvider } from "@/components/ToastProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +32,11 @@ const baloo = Baloo_2({
 export const metadata: Metadata = {
   title: "KARNET.asist",
   description: "Twoje karnety zawsze pod ręką.",
+};
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: "#faf9f7",
 };
 
 // Ustawia data-theme na <html> zanim strona się wyrenderuje, żeby uniknąć
@@ -62,15 +69,16 @@ export default async function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <AuthSessionProvider>
-            <GoogleMapsProvider>
-              <Header />
-              <GuestNotice />
-              {children}
-              <Footer />
-            </GoogleMapsProvider>
+            <ToastProvider>
+              <GoogleMapsProvider>
+                <AppShell header={<Header />} footer={<Footer />} bottomTabBar={<BottomTabBar />}>
+                  {children}
+                </AppShell>
+              </GoogleMapsProvider>
+            </ToastProvider>
           </AuthSessionProvider>
         </NextIntlClientProvider>
       </body>

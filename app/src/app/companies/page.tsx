@@ -1,10 +1,11 @@
 "use client";
 
-import { Building2, Star } from "lucide-react";
+import { Building2, LocateFixed, Search, Star } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { CompaniesOverviewMap } from "@/components/CompaniesOverviewMap";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
 import { categoryDisplayName } from "@/lib/category-display";
@@ -188,46 +189,87 @@ export default function CompaniesPage() {
       )}
 
       {companies !== null && companies.length > 0 && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <input
-            type="text"
-            value={filterText}
-            onChange={(event) => setFilterText(event.target.value)}
-            placeholder={t("filterNamePlaceholder")}
-            aria-label={t("filterNameLabel")}
-            className="min-h-11 flex-1 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
-          />
-          <select
-            value={filterCategoryId}
-            onChange={(event) => setFilterCategoryId(event.target.value)}
-            aria-label={t("filterCategoryLabel")}
-            className="min-h-11 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
-          >
-            <option value="all">{t("filterCategoryAll")}</option>
-            {categoryOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sortBy}
-            onChange={(event) => {
-              const nextSortBy = event.target.value as SortBy;
-              if (nextSortBy === "nearest") {
-                requestNearestSort();
-              } else {
-                setSortBy(nextSortBy);
-              }
-            }}
-            aria-label={t("sortByLabel")}
-            className="min-h-11 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
-          >
-            <option value="name">{t("sortByName")}</option>
-            <option value="category">{t("sortByCategory")}</option>
-            <option value="nearest">{t("sortByNearest")}</option>
-          </select>
-        </div>
+        <CompaniesOverviewMap
+          pins={companies
+            .filter((company): company is ApiCompany & { lat: number; lng: number } =>
+              company.lat != null && company.lng != null
+            )
+            .map((company) => ({ id: company.id, name: company.name, lat: company.lat, lng: company.lng }))}
+        />
+      )}
+
+      {companies !== null && companies.length > 0 && (
+        <>
+          {/* Mobile: szukajka + pigułka "Najbliżej mnie" zamiast trzech selectów (Etap 5, wariant 1j). */}
+          <div className="flex items-center gap-2 md:hidden">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-foreground/40" aria-hidden />
+              <input
+                type="text"
+                value={filterText}
+                onChange={(event) => setFilterText(event.target.value)}
+                placeholder={t("filterNamePlaceholder")}
+                aria-label={t("filterNameLabel")}
+                className="min-h-11 w-full rounded-full border border-black/10 bg-transparent py-2 pr-3 pl-10 text-sm dark:border-white/10"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={requestNearestSort}
+              aria-pressed={sortBy === "nearest"}
+              className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold ${
+                sortBy === "nearest"
+                  ? "bg-foreground text-background"
+                  : "bg-black/5 text-foreground/70 dark:bg-white/10"
+              }`}
+            >
+              <LocateFixed className="size-4" aria-hidden />
+              {t("nearestPillLabel")}
+            </button>
+          </div>
+
+          {/* Desktop: bez zmian względem stanu sprzed Etapu 5. */}
+          <div className="hidden flex-col gap-3 sm:flex-row sm:items-center md:flex">
+            <input
+              type="text"
+              value={filterText}
+              onChange={(event) => setFilterText(event.target.value)}
+              placeholder={t("filterNamePlaceholder")}
+              aria-label={t("filterNameLabel")}
+              className="min-h-11 flex-1 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
+            />
+            <select
+              value={filterCategoryId}
+              onChange={(event) => setFilterCategoryId(event.target.value)}
+              aria-label={t("filterCategoryLabel")}
+              className="min-h-11 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
+            >
+              <option value="all">{t("filterCategoryAll")}</option>
+              {categoryOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sortBy}
+              onChange={(event) => {
+                const nextSortBy = event.target.value as SortBy;
+                if (nextSortBy === "nearest") {
+                  requestNearestSort();
+                } else {
+                  setSortBy(nextSortBy);
+                }
+              }}
+              aria-label={t("sortByLabel")}
+              className="min-h-11 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
+            >
+              <option value="name">{t("sortByName")}</option>
+              <option value="category">{t("sortByCategory")}</option>
+              <option value="nearest">{t("sortByNearest")}</option>
+            </select>
+          </div>
+        </>
       )}
 
       {sortBy === "nearest" && (geoStatus === "denied" || geoStatus === "unsupported") && (

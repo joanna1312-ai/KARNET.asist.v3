@@ -1,6 +1,7 @@
 "use client";
 
-import { SearchX } from "lucide-react";
+import { Map as MapIcon, Plus, SearchX } from "lucide-react";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -38,6 +39,7 @@ interface RecommendationResult {
 export default function RecommendationsPage() {
   const t = useTranslations("recommendationsPage");
   const tCategory = useTranslations("companyCategory");
+  const tCardsPage = useTranslations("cardsPage");
   const locale = useLocale();
 
   const [categories, setCategories] = useState<ApiCategory[] | null>(null);
@@ -60,7 +62,7 @@ export default function RecommendationsPage() {
     };
   }, []);
 
-  async function requestRecommendations() {
+  function requestRecommendations(categoryId: string = selectedCategoryId) {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setGeoStatus("unsupported");
       return;
@@ -70,19 +72,25 @@ export default function RecommendationsPage() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setGeoStatus("granted");
-        void fetchRecommendations(position.coords.latitude, position.coords.longitude);
+        void fetchRecommendations(position.coords.latitude, position.coords.longitude, categoryId);
       },
       () => setGeoStatus("denied"),
       { enableHighAccuracy: false, timeout: 10000 }
     );
   }
 
-  async function fetchRecommendations(lat: number, lng: number) {
+  // Pigułka kategorii (Etap 5, wariant 1k) ustawia stan i od razu odpala zapytanie w
+  // jednym dotknięciu — categoryId przekazany jawnie, bo setSelectedCategoryId nie
+  // zdąży zaktualizować stanu przed odczytem w tym samym handlerze.
+  function selectCategory(categoryId: string) {
+    setSelectedCategoryId(categoryId);
+    requestRecommendations(categoryId);
+  }
+
+  async function fetchRecommendations(lat: number, lng: number, categoryId: string) {
     setRequestStatus("loading");
     const selectedCategory =
-      selectedCategoryId === "all"
-        ? undefined
-        : categories?.find((category) => category.id === selectedCategoryId);
+      categoryId === "all" ? undefined : categories?.find((category) => category.id === categoryId);
 
     try {
       const response = await deviceFetch("/api/ai/recommendations", {
@@ -121,7 +129,41 @@ export default function RecommendationsPage() {
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("intro")}</p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      {/* Mobile: pigułki kategorii, dotknięcie od razu odpala lokalizację + zapytanie (Etap 5, wariant 1k). */}
+      <div className="flex gap-2 overflow-x-auto pb-1 md:hidden" aria-label={t("categoryLabel")}>
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={() => selectCategory("all")}
+          className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold ${
+            selectedCategoryId === "all"
+              ? "bg-foreground text-background"
+              : "bg-black/5 text-foreground/70 dark:bg-white/10"
+          }`}
+        >
+          {isLoading && selectedCategoryId === "all" ? t("loading") : t("categoryAllPill")}
+        </button>
+        {(categories ?? []).map((category) => (
+          <button
+            key={category.id}
+            type="button"
+            disabled={isLoading}
+            onClick={() => selectCategory(category.id)}
+            className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold ${
+              selectedCategoryId === category.id
+                ? "bg-foreground text-background"
+                : "bg-black/5 text-foreground/70 dark:bg-white/10"
+            }`}
+          >
+            {isLoading && selectedCategoryId === category.id
+              ? t("loading")
+              : categoryDisplayName(category, tCategory)}
+          </button>
+        ))}
+      </div>
+
+      {/* Desktop: bez zmian względem stanu sprzed Etapu 5. */}
+      <div className="hidden flex-col gap-3 sm:flex-row sm:items-center md:flex">
         <select
           value={selectedCategoryId}
           onChange={(event) => setSelectedCategoryId(event.target.value)}
@@ -135,7 +177,7 @@ export default function RecommendationsPage() {
             </option>
           ))}
         </select>
-        <Button type="button" onClick={requestRecommendations} disabled={isLoading}>
+        <Button type="button" onClick={() => requestRecommendations()} disabled={isLoading}>
           {isLoading ? t("loading") : t("submitButton")}
         </Button>
       </div>
@@ -165,19 +207,28 @@ export default function RecommendationsPage() {
                     key={`${item.name}-${index}`}
                     className="rounded-2xl border border-black/10 p-4 dark:border-white/10"
                   >
-                    {item.mapsUrl ? (
-                      <a
-                        href={item.mapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium underline decoration-dotted underline-offset-2 hover:decoration-solid"
-                      >
-                        {item.name}
-                      </a>
-                    ) : (
-                      <p className="font-medium">{item.name}</p>
-                    )}
+                    <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">{item.reason}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {item.mapsUrl && (
+                        <a
+                          href={item.mapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex min-h-9 items-center gap-1.5 rounded-full bg-black/5 px-3.5 text-sm font-semibold text-foreground/70 dark:bg-white/10"
+                        >
+                          <MapIcon className="size-4" aria-hidden />
+                          {t("mapButton")}
+                        </a>
+                      )}
+                      <Link
+                        href="/cards/new"
+                        className="flex min-h-9 items-center gap-1.5 rounded-full bg-mint px-3.5 text-sm font-semibold text-mint-ink"
+                      >
+                        <Plus className="size-4" aria-hidden />
+                        {tCardsPage("addButton")}
+                      </Link>
+                    </div>
                   </li>
                 ))}
               </ul>

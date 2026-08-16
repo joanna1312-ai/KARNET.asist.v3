@@ -1,0 +1,23 @@
+name: Card expiry reminders
+
+on:
+  schedule:
+    # 07:00 UTC codziennie (~08:00-09:00 czasu polskiego, zaleznie od DST) — rano,
+    # zanim dzien sie zacznie, zgodnie z README.md/PLAN_PRAC.md.
+    - cron: "0 7 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/reminders
+        env:
+          # Ustaw w Settings -> Secrets and variables -> Actions:
+          # CRON_TARGET_URL = https://<domena-produkcyjna>/api/cron/reminders
+          # CRON_SECRET = ta sama wartosc co w zmiennych srodowiskowych Vercel.
+          CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail -sS -X GET "$CRON_TARGET_URL" \
+            -H "Authorization: Bearer $CRON_SECRET"

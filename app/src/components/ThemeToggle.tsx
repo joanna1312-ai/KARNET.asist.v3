@@ -3,10 +3,9 @@
 import { Moon, Sun } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { applyTheme, resolveTheme } from "@/lib/theme";
 
-type Theme = "light" | "dark";
-
-function readInitialTheme(): Theme {
+function readInitialTheme(): "light" | "dark" {
   if (typeof document === "undefined") return "light";
   return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
 }
@@ -16,13 +15,12 @@ export function ThemeToggle() {
   // Zainicjowane synchronicznie z atrybutu data-theme, który THEME_INIT_SCRIPT w
   // layout.tsx ustawia przed pierwszym renderem — stąd świadome pominięcie SSR (patrz
   // suppressHydrationWarning niżej: ikona na serwerze zawsze wygląda jak "light").
-  const [theme, setTheme] = useState<Theme>(readInitialTheme);
+  const [theme, setTheme] = useState<"light" | "dark">(readInitialTheme);
 
   function toggleTheme() {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("theme", next);
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(resolveTheme(next));
+    applyTheme(next);
   }
 
   return (
