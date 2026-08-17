@@ -2,10 +2,9 @@
 
 import { Bell, CircleDot, LogIn, Smartphone } from "lucide-react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/Button";
+import { buttonClassName } from "@/components/ui/Button";
 
 const BULLETS = [
   { icon: CircleDot, key: "bullet1", bg: "bg-mint/25", fg: "text-mint-ink" },
@@ -48,15 +47,16 @@ export function OnboardingScreen() {
         >
           {t("primaryCta")}
         </Link>
-        <Button
-          type="button"
-          variant="neutral"
-          onClick={() => signIn("google")}
-          className="justify-center gap-2 border border-black/10 py-3.5 text-base dark:border-white/15"
+        <Link
+          href="/login"
+          className={buttonClassName(
+            "neutral",
+            "justify-center gap-2 border border-black/10 py-3.5 text-base dark:border-white/15"
+          )}
         >
           <LogIn className="size-4" aria-hidden />
           {t("secondaryCta")}
-        </Button>
+        </Link>
       </div>
     </div>
   );

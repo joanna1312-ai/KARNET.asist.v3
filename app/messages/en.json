@@ -61,10 +61,35 @@
     }
   },
   "account": {
-    "signInButton": "Sign in with Google",
+    "signInButton": "Sign in",
     "signOutButton": "Sign out",
     "signedInAs": "Signed in as {name}",
     "guestNotice": "You're not signed in — your cards are saved only on this device."
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "registerTitle": "Create an account",
+    "googleButton": "Sign in with Google",
+    "orDivider": "or",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm password",
+    "loginButton": "Sign in",
+    "registerButton": "Create account",
+    "noAccountYet": "Don't have an account yet?",
+    "registerLink": "Sign up",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "errors": {
+      "invalidCredentials": "Invalid email or password.",
+      "emailTaken": "This email is already in use. Sign in instead or use a different address.",
+      "emailRequired": "Enter an email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordRequired": "Enter a password.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords don't match.",
+      "generic": "Something went wrong. Please try again."
+    }
   },
   "onboarding": {
     "title": "Your cards, always at hand",
@@ -73,7 +98,7 @@
     "bullet2": "A reminder before a card runs out",
     "bullet3": "Your data stays on this phone unless you decide otherwise",
     "primaryCta": "Add your first card",
-    "secondaryCta": "I already have a Google account"
+    "secondaryCta": "I already have an account"
   },
   "tabs": {
     "navAria": "Main navigation",
@@ -89,7 +114,7 @@
     "guestCardBody": "Cards saved only on this phone",
     "signedInCardTitle": "Account connected",
     "signedInCardBody": "Signed in as {name}",
-    "signInButton": "Sign in with Google",
+    "signInButton": "Sign in",
     "signOutButton": "Sign out",
     "signInHint": "Signing in is only used to sync between devices. Without an account the app works the same way.",
     "remindersLabel": "Reminders",

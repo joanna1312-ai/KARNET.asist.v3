@@ -16,6 +16,7 @@
 | `name` | text, nullable | z profilu Google (Sesja 14) |
 | `image` | text, nullable | URL zdjęcia profilowego z Google (Sesja 14) |
 | `email_verified` | timestamptz, nullable | wymagane przez interfejs adaptera Auth.js/NextAuth (Sesja 14); przy OAuth Google zawsze `null` — providerzy OAuth nie przekazują tej informacji do next-auth v4 |
+| `password_hash` | text, nullable | hash bcrypt (Sesja V6.1), tylko dla kont e-mail+hasło — `null` przy kontach Google |
 | `created_at` | timestamptz | |
 
 ### `accounts`, `sessions`, `verification_tokens` (Auth.js/NextAuth — Sesja 14)

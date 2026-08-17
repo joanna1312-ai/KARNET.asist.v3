@@ -241,20 +241,31 @@ je unieważniła), są usuwane automatycznie w trakcie tego samego wywołania.
 
 ## Auth (opcjonalne)
 
-**Zaimplementowane (Sesja 14):** logowanie wyłącznie przez Google OAuth, Auth.js/NextAuth
-v4, `session: { strategy: "jwt" }` (sesja jako podpisany token, nie rekord w bazie —
+**Zaimplementowane (Sesja 14):** logowanie przez Google OAuth, Auth.js/NextAuth v4,
+`session: { strategy: "jwt" }` (sesja jako podpisany token, nie rekord w bazie —
 najbliższe realnie dostępne w NextAuth podejście do ADR-003 "token-based, nie cookie
 sesyjne"; sam handshake OAuth w przeglądarce z natury korzysta z cookie, tego nie da się
-całkowicie ominąć w web-owym flow). Magic link e-mail **nie** jest zaimplementowany —
-świadomie odłożone (brak zdecydowanego dostawcy wysyłki maili).
+całkowicie ominąć w web-owym flow).
+
+**Zaimplementowane (Sesja V6.1):** druga metoda logowania — e-mail+hasło (Credentials
+provider), obok Google, bez nowej zależności zewnętrznej (hasła hashowane przez
+`bcryptjs`, wybrany zamiast natywnego `bcrypt`, żeby uniknąć kompilacji natywnej na
+Vercelu — patrz nota o Next 16 w `plan-pracy-claude-code.md`). Magic link e-mail **nie**
+jest zaimplementowany — nadal świadomie odłożone (brak zdecydowanego dostawcy wysyłki
+maili).
 
 | Metoda | Ścieżka | Opis |
 |---|---|---|
-| `GET`/`POST` | `/api/auth/[...nextauth]` | wbudowane endpointy Auth.js/NextAuth (sign-in, callback, sign-out, session) — Google jako jedyny provider |
+| `GET`/`POST` | `/api/auth/[...nextauth]` | wbudowane endpointy Auth.js/NextAuth (sign-in, callback, sign-out, session) — Google i Credentials jako providery |
+| `POST` | `/api/auth/register` | Zakłada konto e-mail+hasło. Body: `{ email, password }`. `400` przy nieprawidłowym formacie e-maila albo haśle krótszym niż 8 znaków (`errors: [...]`), `409` gdy e-mail jest już zajęty przez dowolne konto — w tym Google-owe bez hasła (świadomie bez auto-linkowania kont istniejącym e-mailem, ryzyko przejęcia konta). Nie loguje samo — klient woła `signIn("credentials", ...)` po sukcesie. |
+
+Ekrany `/login` i `/register` (Sesja V6.1) pokazują obie metody logowania na jednym
+widoku — przycisk Google obok formularza e-mail/hasło — zamiast wymuszać wybór z góry.
 
 Zmienne środowiskowe: `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (domena, na `localhost:3000` w
 dev), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — patrz `.env.example` i instrukcja
-założenia projektu w Google Cloud Console (przekazana osobno przy Sesji 14).
+założenia projektu w Google Cloud Console (przekazana osobno przy Sesji 14). Metoda
+e-mail+hasło nie wymaga nowych zmiennych środowiskowych.
 
 Konto pozostaje w pełni opcjonalne (CLAUDE.md) — żaden endpoint w tym dokumencie nie
 wymaga sesji, wszystkie działają też z samym tokenem urządzenia.

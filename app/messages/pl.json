@@ -61,10 +61,35 @@
     }
   },
   "account": {
-    "signInButton": "Zaloguj przez Google",
+    "signInButton": "Zaloguj się",
     "signOutButton": "Wyloguj",
     "signedInAs": "Zalogowano jako {name}",
     "guestNotice": "Nie masz zalogowanego konta — Twoje karnety są zapisane tylko na tym urządzeniu."
+  },
+  "auth": {
+    "loginTitle": "Zaloguj się",
+    "registerTitle": "Załóż konto",
+    "googleButton": "Zaloguj przez Google",
+    "orDivider": "lub",
+    "emailLabel": "E-mail",
+    "passwordLabel": "Hasło",
+    "confirmPasswordLabel": "Powtórz hasło",
+    "loginButton": "Zaloguj się",
+    "registerButton": "Załóż konto",
+    "noAccountYet": "Nie masz jeszcze konta?",
+    "registerLink": "Zarejestruj się",
+    "alreadyHaveAccount": "Masz już konto?",
+    "loginLink": "Zaloguj się",
+    "errors": {
+      "invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
+      "emailTaken": "Ten e-mail jest już używany. Zaloguj się albo użyj innego adresu.",
+      "emailRequired": "Podaj adres e-mail.",
+      "emailInvalid": "Podaj prawidłowy adres e-mail.",
+      "passwordRequired": "Podaj hasło.",
+      "passwordTooShort": "Hasło musi mieć co najmniej 8 znaków.",
+      "passwordMismatch": "Hasła nie są takie same.",
+      "generic": "Coś poszło nie tak. Spróbuj ponownie."
+    }
   },
   "onboarding": {
     "title": "Twoje karnety zawsze pod ręką",
@@ -73,7 +98,7 @@
     "bullet2": "Przypomnienie, zanim karnet przepadnie",
     "bullet3": "Dane zostają na telefonie, dopóki sama nie zdecydujesz inaczej",
     "primaryCta": "Dodaj pierwszy karnet",
-    "secondaryCta": "Mam już konto Google"
+    "secondaryCta": "Mam już konto"
   },
   "tabs": {
     "navAria": "Nawigacja główna",
@@ -89,7 +114,7 @@
     "guestCardBody": "Karnety zapisane tylko na tym telefonie",
     "signedInCardTitle": "Konto połączone",
     "signedInCardBody": "Zalogowano jako {name}",
-    "signInButton": "Zaloguj przez Google",
+    "signInButton": "Zaloguj się",
     "signOutButton": "Wyloguj",
     "signInHint": "Logowanie służy tylko do synchronizacji między urządzeniami. Bez konta aplikacja działa tak samo.",
     "remindersLabel": "Przypomnienia",

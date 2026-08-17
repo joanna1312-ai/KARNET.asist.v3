@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { Button } from "@/components/ui/Button";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { Button, buttonClassName } from "@/components/ui/Button";
 
 // Konto i urządzenie to dwie rozłączne przestrzenie danych, które nigdy się nie mieszają
 // (patrz src/server/card-owner.ts) — zalogowanie NIE przenosi danych zapisanych wcześniej
@@ -17,9 +18,9 @@ export function AccountMenu() {
 
   if (status !== "authenticated") {
     return (
-      <Button type="button" variant="neutral" onClick={() => signIn("google")} className="truncate">
+      <Link href="/login" className={buttonClassName("neutral", "truncate")}>
         {t("signInButton")}
-      </Button>
+      </Link>
     );
   }
 

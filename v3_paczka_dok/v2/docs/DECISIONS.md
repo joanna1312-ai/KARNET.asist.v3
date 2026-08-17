@@ -39,6 +39,16 @@ tylko dlatego, że wymaga jej interfejs adaptera Prisma, w praktyce pusta). To n
 realnie dostępne w NextAuth podejście do „token-based, nie cookie sesyjne” — sam handshake
 OAuth w przeglądarce z natury i tak przechodzi przez cookie w trakcie logowania, czego nie
 da się całkowicie wyeliminować w web-owym flow logowania.
+**Nota implementacyjna (Sesja V6.1):** druga metoda logowania — e-mail+hasło przez
+`CredentialsProvider` NextAuth, obok Google. `users.password_hash` nullable (kont
+Google-owych nie dotyczy). Hasła hashowane `bcryptjs` (czysty JS, bez kompilacji
+natywnej — świadomy wybór po wcześniejszym problemie z Vercelem i Next 16, patrz Sesja
+18). Rejestracja (`POST /api/auth/register`) odrzuca e-mail już zajęty przez dowolne
+konto, także Google-owe bez hasła — konta nie linkują się automatycznie po samym
+e-mailu, żeby nie otworzyć drogi do przejęcia cudzego konta Google przez rejestrację na
+ten sam adres. Reset hasła **nie** jest zaimplementowany (wymagałby wysyłki e-maili —
+ta sama zależność, którą świadomie odłożono przy magic linku).
+
 **Konto i tryb bez konta to trwale rozłączne przestrzenie danych (poprawka po Sesji 14):**
 pierwsza wersja tej sesji miała `POST /api/auth/link-device`, jednorazowo przenoszący przy
 logowaniu karnety bieżącego urządzenia na konto. Usunięte — okazało się to sprzeczne z

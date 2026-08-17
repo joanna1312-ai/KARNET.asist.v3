@@ -1,14 +1,15 @@
 "use client";
 
 import { Bell, ChevronRight, CircleHelp, Languages, LogIn, Smartphone, Sun } from "lucide-react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AppearanceControl } from "@/components/AppearanceControl";
 import { HelpDialog } from "@/components/HelpDialog";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClassName } from "@/components/ui/Button";
 import { CARD_SURFACE_CLASS } from "@/components/ui/Card";
 import { Switch } from "@/components/ui/Switch";
 import {
@@ -85,15 +86,16 @@ export default function AccountPage() {
             {t("signOutButton")}
           </Button>
         ) : (
-          <Button
-            type="button"
-            variant="neutral"
-            onClick={() => signIn("google")}
-            className="mt-4 w-full justify-center gap-2 bg-white/80 dark:bg-black/20"
+          <Link
+            href="/login"
+            className={buttonClassName(
+              "neutral",
+              "mt-4 w-full justify-center gap-2 bg-white/80 dark:bg-black/20"
+            )}
           >
             <LogIn className="size-4" aria-hidden />
             {t("signInButton")}
-          </Button>
+          </Link>
         )}
 
         <p className="mt-3 text-xs text-foreground/60">{t("signInHint")}</p>
