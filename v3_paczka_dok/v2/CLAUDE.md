@@ -61,18 +61,31 @@ konkretnego kroku (np. "scaffolding Next.js + Prisma + schema bazy", potem osobn
 zakończeniu kroku zatrzymaj się i poczekaj na kolejne polecenie, zamiast przechodzić od
 razu do następnego elementu z listy MVP powyżej.
 
-Przy większych, wieloetapowych zadaniach zaproponuj najpierw krótki plan (kolejność
-kroków) i poczekaj na akceptację, zanim zaczniesz pisać kod.
+Zanim zaczniesz pisać kod, zaproponuj krótki plan i poczekaj na akceptację — dotyczy
+każdego kroku, nie tylko większych, wieloetapowych zadań.
 
-**Format pracy nad każdym krokiem:**
-1. Krótki plan (2-5 punktów), jeśli krok obejmuje więcej niż jeden plik lub decyzję
-   architektoniczną — poczekaj na akceptację przed pisaniem kodu.
-2. Implementacja.
-3. Przed uznaniem kroku za zakończony: uruchom `npm run lint` i `npm run test` (jeśli
+**Format pracy nad każdym krokiem — obowiązuje zawsze, dla każdej sesji:**
+1. Zanim zrobisz cokolwiek, napisz, jak rozumiesz polecenie i co konkretnie zamierzasz
+   zrobić (pliki, podejście, decyzje do podjęcia albo do zapytania) — nawet przy
+   pozornie małej zmianie.
+2. Nie ruszaj kodu, bazy ani plików, dopóki nie dostaniesz wyraźnego potwierdzenia planu
+   z punktu 1. Jeśli plan się zmieni w trakcie pracy (np. po odkryciu czegoś w kodzie) —
+   wróć z poprawionym planem i poczekaj na potwierdzenie ponownie, zamiast ciągnąć dalej
+   na własną rękę.
+3. Implementacja.
+4. Jeśli zmiana dotyka czegoś opisanego w `docs/` (`DATABASE.md`, `API.md`,
+   `ARCHITECTURE.md`, `DECISIONS.md`, `SETUP.md` itd.) — zaktualizuj odpowiedni plik w tej
+   samej sesji, jeśli to konieczne (nie tylko przy dużych zmianach architektonicznych).
+5. Pokaż zmianę na żywo pod `http://localhost:3000/` (`npm run dev`) — nie tylko opisz ją
+   słownie, zweryfikuj w przeglądarce.
+6. Przed uznaniem kroku za zakończony: uruchom `npm run lint` i `npm run test` (jeśli
    dotyczy zmienionego kodu); zgłoś wynik, nie zakładaj po cichu, że przeszły.
-4. Krótkie podsumowanie na końcu: co się zmieniło, czy któraś z reguł z tego pliku
+7. Krótkie podsumowanie na końcu: co się zmieniło, czy któraś z reguł z tego pliku
    (dane/RODO, RLS, env, konto opcjonalne) była w tym kroku istotna i jak ją
    uwzględniono.
+8. Dopiero gdy razem potwierdzicie, że wszystko działa poprawnie: commit, potem push.
+   Push idzie na aktualny branch roboczy danej fazy (patrz `plan-pracy-claude-code.md`),
+   nie bezpośrednio na `main`, chyba że dana sesja jest tam wprost przypisana.
 
 ## Ton i styl treści w UI
 

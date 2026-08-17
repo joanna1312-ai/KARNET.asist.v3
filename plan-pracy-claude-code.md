@@ -15,6 +15,36 @@
 - [ ] Poproś Claude Code o streszczenie zasad z `CLAUDE.md` (zakres MVP, sposób
       pracy, reguły bezpieczeństwa) i potwierdź, że się zgadza, zanim zaczniesz
 
+## Zasady ogólne dla każdej sesji
+
+Obowiązują dla **wszystkich** sesji w tym pliku, niezależnie od fazy — dopisz je raz na
+początku rozmowy z Claude Code (albo trzymaj w osobnym prompcie, który wklejasz przed każdą
+sesją), zanim wkleisz właściwy prompt danej sesji:
+
+1. **Najpierw zrozumienie, potem plan — dopiero potem kod.** Przed jakimkolwiek działaniem
+   Claude Code ma napisać, jak rozumie polecenie i co konkretnie zamierza zrobić (pliki,
+   podejście, decyzje, które podejmuje albo o które pyta). To rozszerza już istniejące
+   „Najpierw krótki plan" na końcu każdego promptu sesji niżej — potwierdź na głos, że tak
+   właśnie rozumiesz zakres, zanim padnie „ok, rób".
+2. **Zero działań bez Twojego potwierdzenia.** Claude Code nie zaczyna zmieniać kodu, bazy
+   ani plików, dopóki wyraźnie nie potwierdzisz planu z punktu 1. Dotyczy to też sytuacji,
+   gdy w trakcie sesji plan się zmienia (np. po odkryciu czegoś w kodzie) — wraca do Ciebie
+   z poprawionym planem, zanim ruszy dalej.
+3. **Dokumentacja techniczna aktualna na bieżąco.** Jeśli zmiana dotyka czegoś opisanego w
+   `docs/` (`DATABASE.md`, `API.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `SETUP.md` itd.) —
+   zaktualizuj odpowiedni plik w tej samej sesji, nie później. Jeśli zmiana jest czysto
+   kosmetyczna/lokalna i nic w `docs/` jej nie dotyczy, nie trzeba nic dopisywać na siłę.
+4. **Pokaż zmianę na żywo pod `http://localhost:3000/`.** Zanim sesja zostanie uznana za
+   skończoną, zmiana ma być zweryfikowana w przeglądarce na działającym `npm run dev` (nie
+   tylko opisana słownie) — dokładnie tak, jak już zakłada workflow tej fazy
+   (patrz [[faza_v4_dev_workflow]] — zawsze lokalna baza, nigdy produkcyjny Supabase).
+5. **Kolejność na końcu: lint/test → Twoje potwierdzenie → commit → push.** Najpierw
+   `npm run lint` i `npm run test` (i `npm run test:e2e`, jeśli sesja tego dotyczy) mają
+   przejść czysto. Dopiero gdy wspólnie potwierdzicie, że wszystko działa poprawnie —
+   commit, a potem push na GitHub. Push idzie na **aktualny branch roboczy tej fazy** (np.
+   `Faza_V4`, `Faza_v5b` — patrz nagłówek danej fazy w tym pliku), nie bezpośrednio na
+   `main`, chyba że dana sesja jest wprost przypisana do pracy na `main`.
+
 ## Środowisko (raz, na początku)
 
 - [ ] Postgres — lokalnie przez Docker albo od razu Neon/Supabase
@@ -965,12 +995,719 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > Sesji 16).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Metoda(y) logowania i pola profilu ustalone
+- [x] Metoda(y) logowania i pola profilu ustalone (login + hasło, rekomendacja z tej
+      sekcji; magic link odłożony; bez dodatkowych pól profilu w tej sesji)
+- [x] Plan zaakceptowany
+- [x] Nowa metoda logowania działa obok Google OAuth (`CredentialsProvider`, `bcryptjs`,
+      nowe ekrany `/login` i `/register` — oba wejścia logowania pokazane razem, nie
+      osobno; `POST /api/auth/register` odrzuca e-mail już zajęty przez dowolne konto,
+      w tym Google-owe bez hasła, świadomie bez auto-linkowania kont)
+- [x] Zweryfikowane: konto nadal w pełni opcjonalne, przestrzenie danych nadal rozłączne
+- [x] `docs/` zaktualizowane (`API.md`, `DATABASE.md`, `DECISIONS.md`/ADR-003)
+- [x] lint/test (192/192) + build + commit — `Faza_V6`, commit `5ad1c1b`
+
+---
+
+## Faza V6b — poprawki UX i nowe funkcje (zestaw 21 zmian, ustalony 2026-08-17)
+
+Uwaga: to lista życzeń z dwóch rozmów z właścicielką projektu (18 punktów + 3 dopiski),
+rozbita na osobne sesje wg tej samej zasady co reszta pliku — jedna decyzja/ryzyko na sesję.
+Punkt 1 z pierwotnej listy 18 ("dodatkowa metoda logowania") to już opisana wyżej
+**Sesja V6.1** — nie duplikowana tu, odpalana tak jak jest (wymaga wcześniej ustalenia
+metody logowania). Przy tytule każdej sesji niżej w nawiasie jest numer oryginalnego punktu
+(„punkt N" dla pierwszych 18, „dopisek N" dla trzech dodanych później), dla łatwego
+odnalezienia.
+
+**Kolejność sesji niżej to szacowana pracochłonność, od największej do najmniejszej** — na
+wyraźną prośbę, żeby dało się ocenić skalę całej fazy. To jednak szacunek, nie pomiar, i w
+paru miejscach ustępuje realnej zależności technicznej — trzy sesje dotyczące zakładki
+„Miejsca" (dodawanie nowych miejsc, filtr kategorii, dokończenie designu) i tak muszą
+wyjść **po** zmianie nazewnictwa „Firmy → Miejsca", niezależnie od tego, że sama zmiana
+nazewnictwa jest mniej pracochłonna — inaczej trzeba by pisać nowy kod raz pod starą, raz
+pod nową nazwą. Każda taka sesja ma to wprost zaznaczone w treści („wymaga wcześniej..."/
+„zależna od...") — jeśli wykonujesz sesje po kolei z tej listy, kieruj się tymi notatkami, a
+nie samą pozycją na liście, gdy się rozjeżdżają. Numer wersji (ostatnia sesja) jest zawsze na
+końcu z definicji — to nie przypadek, że wypada też najlżejsza.
+
+### Sesja V6.2 (punkt 3) — Wiele plików/zdjęć vouchera na jednym karnecie — wymaga decyzji przed startem
+
+Kontekst: `ADR-009`/Sesja V4.3 wprowadziła upload **jednego** pliku vouchera na karnet
+(`cards.voucherFileUrl`, prefiks `storage:` odróżnia plik od zwykłego tekstu/linku, signed
+URL z Supabase Storage, bucket prywatny). Właścicielka chce móc dodać **kilka** plików/zdjęć
+do jednego karnetu (np. przód i tył karty klubowej, kilka voucherów naraz). To zmiana modelu
+danych — pojedyncza kolumna tekstowa nie pomieści listy — więc zanim odpalisz tę sesję,
+rozstrzygnij (zasada „nie zgaduj"):
+
+- Limit liczby plików na karnet (np. 5)?
+- Czy pole tekstowe/link (alternatywa „tekst" z dzisiejszego przełącznika tekst/plik)
+  zostaje jako osobna, dodatkowa opcja obok listy plików, czy przełącznik tekst/plik znika
+  całkowicie na rzecz samej listy plików? Rekomendacja: zostawić tekst/link jako osobną,
+  jedną opcję obok (niezależną od listy plików) — to najmniejsza zmiana względem
+  dzisiejszego UX i nie wymaga migracji istniejących wartości `voucherFileUrl` w trybie
+  tekstowym.
+- Czy przy „Odnów" (karnet z archiwum) nowy karnet dziedziczy wszystkie pliki źródłowego
+  karnetu (jak dziś dziedziczy pojedynczy plik), czy zaczyna bez plików?
+
+Rekomendacja architektoniczna: nowa tabela `CardVoucherFile` (wzorem `push_subscriptions` z
+Fazy V5b) — `id`, `cardId` (FK do `cards`), `storagePath`, `createdAt` — zamiast próby
+upakowania listy w jedną kolumnę tekstową. Kolumna `cards.voucherFileUrl` zostaje bez zmian
+(dalej obsługuje tryb tekstowy, jeśli ustalono wyżej, że zostaje).
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Dodaj obsługę wielu plików/zdjęć vouchera na karnet: nowy model Prisma `CardVoucherFile`
+> (`id`, `cardId` FK do `cards` z `onDelete: Cascade`, `storagePath`, `createdAt`), migracja
+> na **lokalnej bazie deweloperskiej**. Rozszerz upload (wzorem istniejącego trójkrokowego
+> flow z ADR-009: sign-upload → PUT bezpośrednio do Supabase Storage → confirm) o możliwość
+> wielokrotnego wywołania dla tego samego karnetu, do limitu [ustalony wyżej] plików —
+> `confirm` tworzy nowy wiersz `CardVoucherFile` zamiast nadpisywać `voucherFileUrl`. Nowy
+> endpoint `DELETE /api/cards/:id/voucher-files/:fileId` (autoryzacja jak reszta
+> `/api/cards/*`) usuwa jeden plik z bucketa i wiersz z bazy. `GET` zwraca listę świeżych
+> signed URL-i dla wszystkich plików karnetu (nie jeden). W `CardForm.tsx`/`CardWizard/VoucherStep.tsx`
+> zamień pojedynczy input pliku na siatkę miniaturek + przycisk „Dodaj kolejny plik" (do
+> limitu) + usuwanie pojedynczego pliku. [Jeśli tekst/link zostaje:] osobna opcja, niezależna
+> od listy plików, bez zmian względem dzisiejszego zachowania. „Odnów" z archiwum: [ustalona
+> reguła dziedziczenia plików]. Zaktualizuj `docs/DATABASE.md`, `docs/API.md`,
+> `docs/DECISIONS.md` (nowa nota przy `ADR-009` o wielu plikach) i i18n (PL/EN).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Limit plików, los pola tekstowego i reguła dziedziczenia przy „Odnów" ustalone
 - [ ] Plan zaakceptowany
-- [ ] Nowa metoda logowania działa obok Google OAuth
-- [ ] Zweryfikowane: konto nadal w pełni opcjonalne, przestrzenie danych nadal rozłączne
-- [ ] `docs/` zaktualizowane
+- [ ] Migracja `CardVoucherFile` na bazie lokalnej
+- [ ] Upload/usuwanie wielu plików działa end-to-end (zweryfikowane w przeglądarce na
+      realnym buckecie `voucher-files-dev`, nie tylko testami jednostkowymi)
+- [ ] `docs/` i i18n zaktualizowane
 - [ ] lint/test + commit
+
+### Sesja V6.3 (dopisek 1) — Archiwizacja: wejścia z datą przyszłą — wymaga decyzji przed startem
+
+Kontekst: `VisitForm.tsx` pozwala wpisać wejście z dowolną datą — także przyszłą (pole
+`type="date"` bez ograniczenia `min`/`max`, domyślnie dzisiejsza data). `POST
+/api/cards/:id/visits` (`src/app/api/cards/[id]/visits/route.ts`) inkrementuje
+`cards.usedVisits` **natychmiast** przy zapisie wejścia, niezależnie od tego, czy
+`visitDate` jest w przeszłości czy w przyszłości. `isCardArchived` (`src/server/card-status.ts`)
+archiwizuje karnet typu `limit`, gdy `usedVisits >= totalVisits` — czyli **zaplanowane
+wejście z przyszłą datą już dziś liczy się do limitu i może przedwcześnie zarchiwizować
+karnet**, zanim to wejście faktycznie się odbędzie. Właścicielka chce, żeby karnet trafiał do
+archiwum dopiero, gdy **ostatnie** (chronologicznie) wejście ma datę, która już minęła — nie
+wcześniej, nawet jeśli licznik `usedVisits` już osiągnął limit.
+
+To zmiana dobrze udokumentowanej reguły biznesowej (`docs/DATABASE.md`, formuła
+archiwizacji: `used_visits >= total_visits`). Przed startem ustal:
+- Czy licznik „X/Y" widoczny w UI (`VisitDots`, nagłówek szczegółów karnetu) ma dalej
+  pokazywać **wszystkie** zapisane wejścia (w tym przyszłe, jak dziś), czy tylko
+  zrealizowane? Rekomendacja: zostaw jak jest (widoczny licznik = wszystkie zapisane, bo to
+  użyteczna informacja „ile mam zaplanowanych") — zmienia się tylko to, co decyduje o
+  **archiwizacji**.
+- Wpływ na status ostrzegawczy (`getCardWarningStatus`/`StatusBadge`, progi `soon`/`urgent`/
+  `wygasł` wg pozostałych wejść) — dziś liczony z surowego `usedVisits`. Rekomendacja: licz
+  go też na bazie **zrealizowanych** wejść (data ≤ dziś), żeby odznaka nie pokazywała
+  „wygasł"/„urgent", gdy w rzeczywistości pozostały jeszcze zaplanowane, nieodbyte wejścia.
+- Skąd brać „zrealizowane wejścia" po stronie serwera — rekomendacja: policz
+  `COUNT(visits WHERE cardId = ... AND visitDate <= dziś)` zamiast (albo obok) kolumny
+  `usedVisits`, w miejscach decydujących o archiwizacji/statusie (`isCardArchived`,
+  `getCardWarningStatus`, endpoint blokujący dodanie wejścia do zarchiwizowanego karnetu,
+  listing `GET /api/cards`/`GET /api/cards?archived=true`).
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Zmień regułę archiwizacji karnetu typu `limit`, żeby liczyła się liczba wejść
+> **zrealizowanych** (`visitDate <= dziś`), nie surowy licznik `usedVisits` (który dziś
+> rośnie natychmiast po zapisaniu wejścia, niezależnie od daty). Dodaj funkcję pomocniczą
+> (np. rozszerzenie `isCardArchived` o przyjmowanie listy dat wejść albo wyniku zapytania do
+> bazy) zwracającą liczbę wejść z datą ≤ dziś. Użyj jej we wszystkich miejscach dziś
+> opierających się na `usedVisits` do decyzji o archiwizacji: `isCardArchived`
+> (`src/server/card-status.ts`), listing `GET /api/cards`/`GET /api/cards?archived=true`,
+> blokada dodania wejścia do zarchiwizowanego karnetu (`POST /api/cards/:id/visits`). [Jeśli
+> ustalono, że status ostrzegawczy też ma się zmienić:] zastosuj tę samą logikę w
+> `getCardWarningStatus`/`getRemainingVisitsStatus`. Licznik „X/Y" w UI (`VisitDots`,
+> szczegóły karnetu) **zostaje bez zmian** — nadal pokazuje wszystkie zapisane wejścia, w
+> tym przyszłe. Zaktualizuj `docs/DATABASE.md` (formuła archiwizacji) i dodaj/zaktualizuj
+> testy w `src/server/card-status.test.ts` i testach API kart/wejść pod nowe zachowanie
+> (karnet z limitem osiągniętym wyłącznie przyszłymi wejściami nie powinien być
+> zarchiwizowany).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Decyzje (zakres zmiany statusu ostrzegawczego, źródło „zrealizowanych" wejść) podjęte
+- [ ] Plan zaakceptowany
+- [ ] Archiwizacja odroczona do momentu, aż ostatnie zaplanowane wejście ma datę w przeszłości
+- [ ] `docs/DATABASE.md` zaktualizowane
+- [ ] Testy zaktualizowane (w tym scenariusz: limit osiągnięty przyszłymi wejściami ≠ archiwizacja)
+- [ ] lint/test + commit
+
+### Sesja V6.4 (punkt 14) — „Firmy" → „Miejsca" (zmiana nazewnictwa widocznego dla użytkownika)
+
+Kontekst: pracochłonność tej sesji jest niewielka (czysty tekst), ale wykonywana jest tu, wyżej
+niż sugerowałaby jej trudność, bo trzy kolejne sesje tej fazy (V6.5, V6.14, V6.8) dotyczą
+zakładki „Miejsca" i mają sens dopiero po tej zmianie. To zmiana **tylko tekstu wyświetlanego
+użytkownikowi** — nazwy wewnętrzne (model Prisma `Company`, trasa `/companies`, endpointy
+`/api/companies*`, propsy typu `CompanyOption`/`companyMode`/`newCompanyName`) **zostają bez
+zmian**, żeby nie robić niepotrzebnej, ryzykownej migracji nazw w kodzie/API dla czystej
+zmiany słownej — to ten sam wzorzec, co rozdzielenie `categoryDisplayName` (etykieta
+widoczna) od wewnętrznego `slug` enuma kategorii. Słowo „firma"/„firmy"/„firmę" w treści dla
+użytkownika występuje w wielu miejscach `messages/pl.json` (np. `companiesNav`,
+`companiesPage.title`, `companyDetailsPage.*`, `cardForm.companyLabel`/`companyModeOptions`/
+`newCompanyNameLabel`, treść pomocy/FAQ) i analogicznie „company/companies" w
+`messages/en.json` (→ „Place"/„Places").
+
+Prompt (skróć/dostosuj):
+> W `messages/pl.json` zamień każde wystąpienie słowa „firma" w jego odmianach
+> (firma/firmy/firmę/firmie/firm) w tekstach widocznych dla użytkownika na odpowiednią formę
+> „miejsce" (miejsce/miejsca/miejscu/miejsc) — obejmij co najmniej `header.companiesNav`,
+> `companiesPage.*`, `companyDetailsPage.*`, `cardForm.companyLabel`,
+> `cardForm.companyModeOptions`, `cardForm.newCompanyNameLabel` i pochodne placeholdery/błędy,
+> oraz treść pomocy/FAQ (`helpDialog`/`faq`, jeśli tam też występuje). Zrób analogiczną zamianę
+> w `messages/en.json` („company"/„companies" → „place"/„places", z zachowaniem naturalnej
+> angielskiej gramatyki). **Nie zmieniaj** nazw kodowych: model Prisma `Company`, trasa
+> `/companies`, endpointy `/api/companies*`, nazwy propsów/typów w komponentach (`CompanyOption`,
+> `companyMode` itd.) — to wyłącznie zmiana tekstu w słowniku i18n. Przejrzyj też
+> `docs/user/faq.md` i `getting-started.md`, jeśli mają być spójne z nową terminologią w
+> UI (do potwierdzenia, czy dokumentacja użytkownika też ma się zmienić w tej sesji).
+> Najpierw krótki plan (lista kluczy do zmiany), poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] `messages/pl.json`/`en.json` zaktualizowane, nazwy kodowe (model/trasy/API) nietknięte
+- [ ] Zweryfikowane wizualnie na `/companies`, `CardForm`, pomocy/FAQ — brak śladu „firma/company"
+- [ ] lint/test + commit
+
+### Sesja V6.5 (punkt 15) — „Miejsca": dodawanie nowych miejsc z tej zakładki — wymaga decyzji przed startem, zależna od V6.4
+
+Kontekst: dziś jedyny sposób dodania nowej firmy/miejsca to przy okazji dodawania karnetu
+(`CardForm.tsx`, tryb „nowa firma" — wyszukiwarka Google Places lub wpisanie nazwy ręcznie,
+plus wybór/utworzenie kategorii). `/companies` (po Sesji V6.4: „Miejsca") nie ma dziś żadnej
+akcji dodawania. Model `Company` (`prisma/schema.prisma`) ma dziś tylko `name`, `lat`/`lng`,
+`googlePlaceId` — **nie ma pola na tekstowy adres**. Prośba „pola adresowe automatycznie
+uzupełniane" (przy wyszukiwarce) odnosi się więc dziś tylko do `lat`/`lng`/`googlePlaceId` z
+Google Places — nie ma czego wyświetlić jako tekstowy adres bez dodania nowej kolumny.
+Ręczne dodawanie „z opcjonalnymi polami adresowymi" wymaga więc decyzji o nowym polu.
+
+Do ustalenia przed startem:
+- Dodać nową, opcjonalną kolumnę `address` (tekst) do `Company`, wypełnianą albo ręcznie,
+  albo (jeśli Google Places to zwraca w wyniku wyszukiwania) automatycznie przy wyborze
+  podpowiedzi? Rekomendacja: tak — to jedyny sposób pokazać „adres" jako tekst, bo dziś
+  istnieją tylko współrzędne.
+- Czy dodawanie nowego miejsca z tego ekranu wymaga też wyboru/utworzenia kategorii (tak
+  jak w `CardForm`, bo `Company.categoryId` jest wymagane w schemacie), czy miejsce może
+  na start nie mieć kategorii (**wymagałoby** zmiany schematu — `categoryId` dziś nie jest
+  nullable)? Rekomendacja: kategoria wymagana, ten sam UI co w `CardForm` (select + „dodaj
+  własną").
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> [Jeśli dodajemy adres:] dodaj opcjonalną kolumnę `address` (String?) do modelu `Company`
+> w `prisma/schema.prisma`, migracja na **lokalnej bazie deweloperskiej**. Dodaj na stronie
+> „Miejsca" (`src/app/companies/page.tsx`) przycisk „Dodaj miejsce" otwierający formularz
+> (modal albo panel inline, wzorem `CardForm`): pole nazwy przez istniejący
+> `PlacesAutocomplete.tsx` (wybór z wyszukiwarki uzupełnia `lat`/`lng`/`googlePlaceId`
+> [i `address`, jeśli pole Google Places je zwraca — sprawdź `formattedAddress` w odpowiedzi
+> Text Search]), albo wpisanie nazwy ręcznie bez wyboru podpowiedzi (tak jak dziś w
+> `CardForm`) — w trybie ręcznym pole adresu jako zwykły opcjonalny input tekstowy. Wybór/
+> utworzenie kategorii — ten sam blok UI co w `CardForm.tsx` (`NEW_CATEGORY_SENTINEL`,
+> paleta kolorów). Zapis przez istniejący `POST /api/companies` (rozszerzony o `address`).
+> Po zapisaniu odśwież listę miejsc. Wyświetl adres (jeśli ustawiony) w
+> `src/app/companies/[id]/page.tsx`. Zaktualizuj `docs/DATABASE.md`, `docs/API.md`, i18n
+> (PL/EN, z terminologią „miejsce" z Sesji V6.4).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Sesja V6.4 ukończona (wymagana zależność — nazewnictwo „Miejsca")
+- [ ] Decyzje (pole adresu, wymagana kategoria) podjęte
+- [ ] Plan zaakceptowany
+- [ ] Migracja `address` na bazie lokalnej (jeśli dotyczy)
+- [ ] Formularz „Dodaj miejsce" (wyszukiwarka + ręcznie) na `/companies`
+- [ ] Adres widoczny w szczegółach miejsca, jeśli ustawiony
+- [ ] `docs/` i i18n zaktualizowane
+- [ ] lint/test + commit
+
+### Sesja V6.6 (dopisek 2) — Kolorowanie kropek: zrealizowane vs zaplanowane wejścia — wymaga decyzji przed startem, zależna od V6.3
+
+Kontekst: `VisitDots.tsx` dziś przyjmuje tylko liczby (`used`/`total`), nie listę konkretnych
+wejść z datami — wypełnione kropki mają jednolity kolor kategorii (`CATEGORY_COLOR_CLASS`),
+bez rozróżnienia, które wejście już się odbyło, a które jest dopiero zaplanowane na
+przyszłość. Pełna lista wejść z datami (`ApiVisit.visitDate`) jest dziś dostępna tylko na
+stronie szczegółów karnetu (`src/app/cards/[id]/page.tsx`, `card.visits`) — `GET /api/cards`
+(lista) zwraca tylko zbiorczy `usedVisits`/`totalVisits`, bez dat poszczególnych wejść.
+Doprowadzenie tego rozróżnienia do kompaktowych kropek na `/cards` (`CardListItem.tsx`)
+wymagałoby rozszerzenia listy API o dane każdego wejścia dla każdego karnetu — wyraźnie
+większy koszt (payload) dla czysto dekoracyjnego rozróżnienia koloru małych kropek.
+
+Przed startem ustal:
+- Zakres: tylko duży widok kropek na szczegółach karnetu (`size="lg"`, dane już dostępne),
+  czy też kompaktowy widok na liście `/cards` (`size="sm"`, wymaga rozszerzenia
+  `GET /api/cards`)? Rekomendacja: tylko szczegóły karnetu na start — najmniejsze ryzyko, bez
+  zmian w kształcie odpowiedzi listy kart.
+- Kolor/styl dla wejść zaplanowanych (przyszła data) — np. ten sam kolor kategorii, ale w
+  jaśniejszym odcieniu/z obniżoną nieprzezroczystością, czy inny wzór (np. obwódka zamiast
+  pełnego wypełnienia)? Rekomendacja: pełne wypełnienie kolorem kategorii dla zrealizowanych
+  (jak dziś), a dla zaplanowanych — ten sam kolor kategorii, ale z opacity ok. 40–50%, żeby
+  różnica była czytelna bez wprowadzania nowego koloru do palety.
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> W `src/app/cards/[id]/page.tsx` przekaż do `VisitDots` informację, które z zapisanych
+> wejść mają datę w przeszłości, a które w przyszłości (dane już są w `card.visits`, z
+> polem `visitDate`) — np. nowy prop `futureCount` (liczba kropek z końca w stylu
+> „zaplanowane") albo pełniejsza struktura z datami, zależnie od tego, co wygodniej
+> zaimplementować bez łamania istniejącego API `VisitDots`. W `VisitDots.tsx` wypełnione
+> kropki odpowiadające wejściom zrealizowanym (`visitDate <= dziś`) zostają w dzisiejszym
+> stylu (`CATEGORY_COLOR_CLASS`), a kropki odpowiadające wejściom zaplanowanym
+> (`visitDate > dziś`) dostają [ustalony wyżej styl — np. ta sama klasa koloru z
+> `opacity-45`]. Zweryfikuj, czy `card.visits` z API przychodzi posortowane chronologicznie
+> — jeśli nie, posortuj przed przekazaniem do `VisitDots`, żeby kolejność kropek (wypełnione
+> od lewej) miała sens. [Jeśli zdecydowano rozszerzyć też `/cards`:] analogicznie w
+> `CardListItem.tsx`, po rozszerzeniu `GET /api/cards` o niezbędne dane. Dodaj krótkie
+> wyjaśnienie w `docs/user/faq.md`/`getting-started.md`, jeśli już opisują znaczenie kropek.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Sesja V6.3 ukończona (wymagana zależność — rozróżnienie zrealizowane/zaplanowane)
+- [ ] Zakres (szczegóły karnetu vs też lista) i styl koloru dla zaplanowanych wejść ustalone
+- [ ] Plan zaakceptowany
+- [ ] Kropki rozróżniają zrealizowane/zaplanowane wejścia w ustalonym zakresie
+- [ ] Sprawdzone w jasnym/ciemnym motywie
+- [ ] lint/test + commit
+
+### Sesja V6.7 (punkt 13) — Statystyki: raporty tygodniowe/miesięczne — wymaga decyzji przed startem
+
+Kontekst: aplikacja zapisuje każde wejście (`Visit`, z datą) od Sesji 4, ale nigdzie nie ma
+żadnego zbiorczego podsumowania — tylko licznik wykorzystanych wejść na pojedynczym karnecie.
+Właścicielka chce „raporty wejść tygodniowe/miesięczne w formule przyjaznej i użytecznej" —
+świadomie zostawiła to otwarte do zaprojektowania. Zanim odpalisz tę sesję, potwierdź zakres
+(żeby Claude Code nie projektowało funkcji od zera bez akceptacji):
+
+Rekomendowany zakres MVP tej funkcji (do potwierdzenia/skorygowania):
+- Liczba wejść w bieżącym tygodniu i bieżącym miesiącu (suma po wszystkich kartach, aktywnych
+  i archiwalnych).
+- Rozbicie tej liczby po kategoriach (prosta lista/pasek: kategoria + liczba wejść + kropka
+  koloru kategorii, tak jak grupowanie na `/cards`).
+- Najczęściej odwiedzane miejsce w wybranym okresie (nazwa + liczba wejść).
+- Bez wykresów/bibliotek do wizualizacji na start — proste liczby i listy, spójne stylistycznie
+  z resztą UI (karty `rounded-[20px]`/`CARD_SURFACE_CLASS`).
+
+Do ustalenia:
+- Czy tydzień liczony kalendarzowo (pon–niedz) czy jako „ostatnie 7 dni"? Analogicznie
+  miesiąc: kalendarzowy czy „ostatnie 30 dni"?
+- Gdzie w nawigacji ma się pojawić — rekomendacja: nowy wiersz „Statystyki" w `/account`
+  (ten sam wzorzec co istniejący wiersz „Pomoc", `helpRow`, prowadzący do nowej strony
+  `/stats`), żeby nie dokładać piątej pozycji do `BottomTabBar.tsx` (dziś dokładnie 4 zakładki
+  + FAB, dodanie piątej wymagałoby osobnej decyzji o układzie paska).
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Dodaj nowy endpoint `GET /api/stats?period=week|month` (autoryzacja jak reszta API —
+> `deviceId`/`userId`), agregujący `Visit` bieżącej tożsamości w wybranym okresie
+> [kalendarzowy/rolling — ustalone wyżej]: łączna liczba wejść, rozbicie po kategoriach,
+> najczęściej odwiedzane miejsce. Dodaj stronę `/stats` w stylu wizualnym `/account`
+> (karty `CARD_SURFACE_CLASS`, nagłówek z logo jak w Sesji V6.13) z przełącznikiem
+> tydzień/miesiąc. Dodaj wiersz „Statystyki" w `/account` prowadzący do tej strony, wzorem
+> istniejącego wiersza pomocy (`CircleHelp`/`helpRow`). Dodaj klucze i18n (PL/EN). Zaktualizuj
+> `docs/API.md` i `docs/ARCHITECTURE.md` (nowy ekran).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Zakres funkcji (metryki, granice okresu, miejsce w nawigacji) potwierdzony
+- [ ] Plan zaakceptowany
+- [ ] `GET /api/stats` z agregacją tygodniową/miesięczną
+- [ ] Strona `/stats`, link z `/account`
+- [ ] i18n uzupełnione, `docs/` zaktualizowane
+- [ ] lint/test + commit
+
+### Sesja V6.8 (punkt 18) — Dokończenie designu „Miejsca" i „Doradca" analogicznie do „Karnety" — zależna od V6.4, V6.5, V6.13, V6.14
+
+Kontekst: mimo wysokiej pracochłonności ta sesja powinna wyjść jedną z **ostatnich** w tej
+fazie mimo swojej pozycji na liście — zależy od Sesji V6.4 (nazewnictwo), V6.5 (dodawanie
+miejsc), V6.13 (logo) i V6.14 (filtr mobile), a te są niżej na tej liście, bo są mniej
+pracochłonne. Nie stylować tych ekranów dwa razy — odpal tę sesję dopiero po tamtych
+czterech. Dziś `/cards` ma spójny język wizualny (nagłówek z logo + `font-brand` tytuł 27px,
+karty listy `rounded-[20px]` z cieniem — `CardListItem.tsx`, szkielety ładowania jako
+pulsujące bloki). `/companies` i `/recommendations` mają dziś prostszy styl: zwykły
+`text-2xl` nagłówek bez logo (do Sesji V6.13), elementy listy `rounded-2xl border` bez
+cienia, stan ładowania jako sam tekst „…" zamiast szkieletu.
+
+Prompt (skróć/dostosuj):
+> Ujednolić wizualnie `/companies` i `/recommendations` względem `/cards`:
+> 1) Nagłówek strony — `font-brand text-[27px] font-extrabold tracking-[-0.02em]` zamiast
+>    dzisiejszego `text-2xl font-semibold`, logo nad tytułem (już dodane w Sesji V6.13).
+> 2) Elementy list (miejsca na `/companies`, wyniki na `/recommendations`) — styl karty jak
+>    `CardListItem.tsx` (`rounded-[20px] border border-black/[.07] shadow-[0_1px_2px_rgba(0,0,0,.04)]
+>    bg-white dark:bg-zinc-900`) zamiast dzisiejszego `rounded-2xl border` bez cienia.
+> 3) Stan ładowania — pulsujące szkielety (`animate-pulse rounded-[20px] bg-black/5`, wzorem
+>    `/cards`) zamiast samego tekstu „…"/pustego stanu przed pierwszym wynikiem.
+> Nie zmieniaj układu/logiki (filtrów, sortowania, pigułek kategorii, mapy) — to wyłącznie
+> ujednolicenie stylu wizualnego. Zweryfikuj w przeglądarce (mobile i desktop, jasny/ciemny
+> motyw) na wszystkich trzech ekranach obok siebie.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Sesje V6.4, V6.5, V6.13, V6.14 ukończone (wymagane zależności)
+- [ ] Plan zaakceptowany
+- [ ] Nagłówki, karty list i szkielety ładowania spójne z `/cards` na `/companies` i
+      `/recommendations`
+- [ ] Zweryfikowane wizualnie (mobile + desktop, jasny + ciemny motyw)
+- [ ] lint/test + commit
+
+### Sesja V6.9 (punkt 10) — Węższy układ na desktopie (wrażenie ekranu telefonu) — wymaga decyzji przed startem
+
+Kontekst: dziś na desktopie treść stron jest już ograniczona (`max-w-screen-lg` w stopce,
+`max-w-2xl` na `/cards`/`/companies`/`/recommendations`, `max-w-screen-sm` na `/account"),
+ale **nagłówek** (`Header.tsx`) rozciąga się na pełną szerokość ekranu — stąd całość nie
+sprawia wrażenia wąskiej „ramki telefonu", tylko szerokiego paska na górze i węższej treści
+pod spodem. Żeby uzyskać spójne wrażenie wąskiego okna (jak na telefonie) na całej wysokości,
+trzeba ograniczyć też pasek nagłówka, nie tylko treść, i zdecydować, jak potraktować
+przestrzeń po bokach (inny odcień tła jako „ramka", czy po prostu pusty margines).
+
+Przed startem ustal:
+- Docelowa szerokość kolumny na desktopie (np. 480px — zbliżone do proporcji makiet z
+  `v5b/design_handoff_mobile_pwa`, czy inna wartość)?
+- Tło poza kolumną: neutralne/inny odcień (efekt „ramki telefonu" jak w niektórych
+  emulatorach), czy zwykłe tło strony bez wyróżnienia?
+- Czy zmiana dotyczy wszystkich stron (w tym `Header.tsx`/`Footer.tsx`), czy tylko
+  głównych ekranów treści?
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Ogranicz szerokość całej aplikacji na desktopie (`md:` i wyżej) do [ustalona szerokość],
+> wyśrodkowanej w poziomie — obejmij `Header.tsx` i `Footer.tsx` (dziś pełnej szerokości),
+> nie tylko kontenery treści stron. [Jeśli ustalono tło-ramkę:] dodaj [ustalony
+> kolor/odcień] tła na `<body>` poza tą kolumną, żeby całość sprawiała wrażenie wąskiego
+> okna/telefonu na szerokim ekranie. Zweryfikuj na kilku szerokościach desktopowych (np.
+> 1280px, 1920px) i upewnij się, że nic nie łamie się przy przejściu mobile/desktop (768px).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Docelowa szerokość i sposób potraktowania tła poza kolumną ustalone
+- [ ] Plan zaakceptowany
+- [ ] Header/Footer/treść ograniczone do tej samej szerokości na desktopie
+- [ ] Sprawdzone na kilku szerokościach ekranu, w tym granica mobile/desktop (768px)
+- [ ] lint/test + commit
+
+### Sesja V6.10 (punkt 7) — Wyczyszczenie danych karnetów w ustawieniach (czyste konto)
+
+Kontekst: `src/app/account/page.tsx` ma już wzorzec „wiersza" ustawień z ikoną i akcją
+(przypomnienia, język, wygląd, pomoc — sekcja `CARD_SURFACE_CLASS` z `divide-y`). Właścicielka
+chce dodać tam akcję kasującą **wszystkie karnety** (aktywne i archiwalne) bieżącej
+tożsamości (`deviceId` lub zalogowany `userId` — ten sam mechanizm własności co reszta
+`/api/cards/*`, `src/server/card-owner.ts`). To celowo dotyczy tylko karnetów (`Card` +
+kaskadowo powiązane `Visit`, pliki voucherów w Storage) — **nie** kasuje firm/miejsc,
+kategorii własnych ani ulubionych, bo te mogą być współdzielone z innymi urządzeniami/kontem
+inaczej niż karnety.
+
+To akcja nieodwracalna i niszcząca dane — zgodnie z zasadami bezpieczeństwa tego projektu
+wymaga wyraźnego potwierdzenia, silniejszego niż zwykły `ConfirmDialog` używany np. przy
+usuwaniu pojedynczego karnetu (np. wpisanie słowa potwierdzającego albo dodatkowy checkbox
+„rozumiem, że to nieodwracalne") — rozstrzygnij formę potwierdzenia przy akceptacji planu.
+
+Prompt (skróć/dostosuj):
+> Dodaj nowy endpoint `DELETE /api/cards/all` (albo `POST /api/account/reset-cards` — wybierz
+> konwencję spójną z resztą `docs/API.md`), autoryzowany jak reszta `/api/cards/*`, kasujący
+> wszystkie karnety (i kaskadowo wejścia, pliki voucherów w Supabase Storage pod
+> `cards/{id}/`) należące do bieżącej tożsamości (`deviceId`/`userId`) — nie dotyka firm,
+> kategorii ani ulubionych. Dodaj w `src/app/account/page.tsx` nową sekcję/wiersz „Wyczyść
+> dane karnetów" (osobno od pozostałych ustawień, wizualnie oznaczony jako destrukcyjny —
+> wzorem `variant="danger"` z `Button.tsx`), z potwierdzeniem [ustalona forma wyżej,
+> silniejsza niż zwykły `ConfirmDialog`]. Po potwierdzeniu: wywołanie endpointu, komunikat o
+> sukcesie/błędzie, przekierowanie/odświeżenie widoku `/cards` jeśli użytkownik tam wróci.
+> Dodaj klucze i18n (PL/EN). Zaktualizuj `docs/API.md`.
+> Najpierw krótki plan (w tym dokładna forma potwierdzenia), poczekaj na akceptację.
+
+- [ ] Forma potwierdzenia ustalona
+- [ ] Plan zaakceptowany
+- [ ] Endpoint kasujący karnety (+ wejścia + pliki voucherów) bieżącej tożsamości
+- [ ] Akcja w `/account`, potwierdzenie silniejsze niż zwykłe usuwanie pojedynczego karnetu
+- [ ] Zweryfikowane: firmy/kategorie/ulubione nietknięte po użyciu tej akcji
+- [ ] `docs/API.md` i i18n zaktualizowane
+- [ ] lint/test + commit
+
+### Sesja V6.11 (punkt 2) — Usuń pole „Sposób pokazywania vouchera"
+
+Kontekst: `CardForm.tsx` ma dziś dwa niezależne pola dotyczące vouchera, łatwe do pomylenia:
+`voucherMode` (enum Prisma `single`/`per_visit`, etykieta „Sposób pokazywania vouchera",
+select) i osobno `voucherInputMode` (tylko po stronie klienta: „tekst" albo „plik", pod
+nagłówkiem „Voucher"). Sprawdzone w kodzie: **`voucherMode` nie steruje dziś żadnym realnym
+zachowaniem ani wyświetlaniem** — jest zapisywany i odczytywany (`src/app/cards/[id]/page.tsx`),
+ale nic nie różnicuje `single` od `per_visit` w UI. To właśnie to pole właścicielka chce
+usunąć — zostaje tylko wybór tekst/plik (`voucherInputMode`), który realnie coś robi. (Nie
+mylić z Sesją V6.12 niżej — ta dotyczy zupełnie innej części ekranu: podglądu pliku, nie tego
+usuwanego pola.)
+
+To zmiana schematu bazy (kolumna `voucher_mode` w `cards`, `docs/DATABASE.md` wiersz
+`voucher_mode`) — wymaga migracji Prisma. Ponieważ pole i tak nie ma dziś żadnego efektu
+widocznego dla użytkownika, rekomendacja: usunąć całkowicie (kolumna + enum + walidacja),
+a nie tylko ukryć w UI — zgodnie z konwencją tego projektu, żeby nie zostawiać martwego kodu
+(patrz Sesja 9, usunięcie zduplikowanego `isArchived`).
+
+Prompt (skróć/dostosuj):
+> Usuń pole `voucherMode` całkowicie: migracja Prisma usuwająca kolumnę `voucher_mode` z
+> `cards` i enum `VoucherMode` ze schematu (`prisma/schema.prisma`), uruchomiona na **lokalnej
+> bazie deweloperskiej, nigdy na produkcyjnym Supabase** (patrz zasada pracy tej fazy — local
+> Postgres w Dockerze). Usuń pole z `CardFormValues`/`CardForm.tsx` (select „Sposób pokazywania
+> vouchera" i cały ten blok), z `src/server/card-rules.ts` (`voucherModeRequired`, `readVoucherMode`,
+> `voucherMode` z `CardInputCandidate`), z `CardWizard` i wszystkich miejsc budujących payload
+> `POST`/`PATCH /api/cards` (`src/app/cards/page.tsx`, `src/app/cards/new/page.tsx`,
+> `src/app/cards/[id]/page.tsx`). Usuń nieużywane klucze i18n (`voucherModeLabel`,
+> `voucherModeOptions`, `errors.voucherModeRequired`) z `messages/pl.json`/`en.json`.
+> Zaktualizuj `docs/DATABASE.md` (usuń wiersz `voucher_mode`) i `docs/API.md`, jeśli go
+> wymienia. Zaktualizuj testy (`card-rules.test.ts`, testy API kart), które dziś zakładają
+> obecność `voucherMode` w payloadzie.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Migracja Prisma na bazie lokalnej (nie produkcyjnej)
+- [ ] Pole usunięte z formularza, walidacji, API, i18n, dokumentacji
+- [ ] Testy zaktualizowane, lint/test + commit
+
+### Sesja V6.12 (dopisek 3) — Otwieranie pliku/zdjęcia vouchera na pełen ekran
+
+Kontekst: mimo że w pierwotnej prośbie ten punkt nosił nazwę „Sposób pokazywania vouchera",
+**nie** dotyczy pola `voucherMode` usuwanego w Sesji V6.11 wyżej — to inna część aplikacji:
+podgląd wgranego pliku/zdjęcia vouchera na szczegółach karnetu (`VoucherFilePreview` w
+`src/app/cards/[id]/page.tsx`). Dziś zdjęcie renderuje się jako mały, ograniczony podgląd
+(`<img className="mt-2 max-h-64 rounded-lg" />`), bez możliwości powiększenia — plik PDF już
+dziś otwiera się w pełni w nowej karcie (`target="_blank"`), więc dotyczy to praktycznie
+tylko zdjęć (JPG/PNG/WebP).
+
+Prompt (skróć/dostosuj):
+> W `VoucherFilePreview` (`src/app/cards/[id]/page.tsx`) dodaj możliwość otwarcia zdjęcia
+> vouchera na pełnym ekranie po kliknięciu w miniaturkę — prosty overlay/lightbox (nowy
+> komponent, np. `ImageLightbox.tsx`) pokazujący zdjęcie w pełnym rozmiarze na ciemnym tle,
+> zamykany kliknięciem poza obrazem, przyciskiem „X" i klawiszem Escape (ten sam wzorzec co
+> `ConfirmDialog.tsx`/`HelpDialog.tsx` — zamykanie klik-poza/Escape). Miniaturka dostaje
+> `role="button"`/`cursor-pointer` i czytelny `aria-label` sugerujący powiększenie. Plik PDF
+> zostaje bez zmian (już otwiera się w pełni w nowej karcie). Dodaj klucze i18n (PL/EN) na
+> `aria-label` miniaturki i przycisku zamknięcia. Sprawdź w przeglądarce na realnym pliku z
+> bucketa `voucher-files-dev`, w jasnym i ciemnym motywie, na mobile i desktopie.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Kliknięcie w zdjęcie vouchera otwiera pełnoekranowy podgląd, zamykany klik-poza/Escape/X
+- [ ] Sprawdzone na realnym pliku, mobile + desktop, jasny/ciemny motyw
+- [ ] lint/test + commit
+
+### Sesja V6.13 (punkty 5+17) — Logo: powiększenie i spójna obecność w nagłówku każdej zakładki
+
+Kontekst: `Logo.tsx` renderuje nazwę marki poprawnie (`KARNET` wersalikami + `.asist`), ale
+w kilku miejscach nazwa jest wpisana wprost jako tekst i to niekonsekwentnie: `Karnet.asist`
+(małe „a" w "Karnet") występuje w `messages/pl.json`/`en.json` (treść pomocy, FAQ, podpowiedź
+instalacji na iOS), `prisma/schema.prisma` (komentarz nagłówkowy), `README.md`,
+`public/sw.js` (komentarz), `src/server/push-sender.ts` (**tytuł prawdziwego powiadomienia
+push**, więc to realnie widoczne dla użytkownika), `src/app/manifest.ts` (`name`/`short_name`
+PWA — widoczne przy instalacji na ekran główny) i `src/server/ai-recommendations.ts`
+(fragment promptu do Groq, niewidoczny dla użytkownika, ale warto ujednolicić przy okazji).
+
+Prompt (skróć/dostosuj):
+> Znajdź wszystkie wystąpienia zapisu „Karnet.asist" (małe „a") w repo i zamień na
+> „KARNET.asist" (wersaliki w części „KARNET"), zgodnie z `Logo.tsx` i tytułem w
+> `layout.tsx` (`metadata.title`), które już mają poprawny zapis. Obejmij co najmniej:
+> `messages/pl.json`, `messages/en.json`, `src/server/push-sender.ts` (tytuł powiadomienia
+> push — realnie widoczny użytkownikowi), `src/app/manifest.ts` (`name`/`short_name` PWA),
+> `public/sw.js`, `prisma/schema.prisma`, `README.md`, `src/server/ai-recommendations.ts`.
+> Nie zmieniaj samego adresu e-mail/domeny, jeśli gdzieś występuje jako `karnet.asist...`
+> (adresy/URL-e zwykle są małymi literami z innych powodów — sprawdź kontekst przed zmianą).
+> Najpierw krótki plan (lista plików), poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Wszystkie wystąpienia poprawione, w tym tytuł powiadomienia push i manifest PWA
+- [ ] lint/test + commit
+
+### Sesja V6.14 (punkt 16) — „Miejsca": filtr po kategoriach na mobile
+
+Kontekst: filtr po kategorii na `/companies` **już istnieje, ale tylko na desktopie**
+(`<select>` w bloku `hidden ... md:flex`, `src/app/companies/page.tsx`). Wersja mobilna
+(`md:hidden`) ma dziś tylko pole szukania po nazwie i pigułkę „Najbliżej mnie" — bez filtra
+kategorii. To głównie brakujący element mobilnego UI, nie nowa logika (`filterCategoryId` i
+`categoryOptions` już są policzone i używane przez desktop).
+
+Prompt (skróć/dostosuj):
+> Dodaj na mobilnej wersji `/companies` (`src/app/companies/page.tsx`, blok `md:hidden`)
+> filtr po kategorii — wzorem poziomo przewijalnych pigułek kategorii z `/recommendations`
+> (`selectCategory`/pigułki w tym pliku), korzystając z istniejącego stanu `filterCategoryId`
+> i policzonych `categoryOptions`. Wybranie pigułki filtruje listę tak samo jak dzisiejszy
+> select na desktopie — bez zmian w logice filtrowania/sortowania, tylko nowy element UI.
+> Zweryfikuj w przeglądarce z emulacją mobilną (~375px) w jasnym i ciemnym motywie.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Filtr kategorii dostępny na mobile, działa tak samo jak dzisiejszy select desktopowy
+- [ ] Sprawdzone w jasnym/ciemnym motywie na wąskim ekranie
+- [ ] lint/test + commit
+
+### Sesja V6.15 (punkty 8+9) — Data ważności zawsze opcjonalna + kolor karnetu bez limitu wg kategorii
+
+Kontekst: dziś reguła biznesowa (`src/server/card-rules.ts`, `getCardInputErrors`,
+`docs/DATABASE.md`) wymusza datę ważności dla typu `unlimited` (`expiryDateRequiredForUnlimited`)
+— karnet bez limitu wejść bez daty ważności nigdy by się automatycznie nie zarchiwizował, stąd
+ten wymóg. Właścicielka chce, żeby data ważności była zawsze opcjonalna, dla obu typów —
+świadomie akceptując, że karnet `unlimited` bez daty po prostu nigdy się sam nie
+zarchiwizuje (to nie błąd, tylko konsekwencja tej zmiany). Powiązane: `VisitDots.tsx`
+renderuje dla karnetu bez limitu ikonę nieskończoności na **stałe w kolorze
+`text-status-urgent` (czerwony)**, niezależnie od realnego statusu karnetu — to osobny
+kolor niż `StatusBadge` obok nazwy (który już poprawnie liczy status z `getCardWarningStatus`).
+Właścicielka chce, żeby ta ikona/etykieta używała koloru kategorii (`CATEGORY_COLOR_CLASS`,
+tak jak kropki `VisitDots` dla karnetów z limitem), a nie czerwieni. (Nie mylić z Sesją V6.6 —
+tam chodzi o kolor poszczególnych kropek wg daty wejścia u karnetów **z** limitem; tu chodzi
+o ikonę nieskończoności u karnetów **bez** limitu).
+
+Prompt (skróć/dostosuj):
+> 1) W `src/server/card-rules.ts` usuń warunek `expiryDateRequiredForUnlimited` z
+> `getCardInputErrors` (data ważności opcjonalna dla `limit` i `unlimited`). Usuń błąd
+> `expiryDateRequiredForUnlimited` z `CardInputErrorCode` i wszystkich miejsc, które go
+> używają (`CardForm.tsx` — `FIELD_FOR_ERROR`, hint pod polem daty (`expiryDateHintRequired`
+> już niepotrzebny, zostaje tylko `expiryDateHintOptional` dla obu typów), `CardWizard/index.tsx`
+> — `validateStep2`, i18n klucz błędu). W `src/server/card-status.ts`, `getExpiryStatus` —
+> dla `expiryDate == null` zwróć `"brak terminu"` niezależnie od `type` (dziś tylko dla
+> `limit`; ścieżka dla `unlimited` była martwa, bo reguła i tak wymuszała datę). Zaktualizuj
+> `docs/DATABASE.md` (reguła `unlimited ⇒ expiryDate wymagane` → `zawsze opcjonalna`) i
+> `docs/API.md`, jeśli opisuje ten sam wymóg. Zaktualizuj/dodaj testy w
+> `src/server/card-rules.test.ts` i `src/server/card-status.test.ts` (jeśli istnieje) pod
+> nowe zachowanie.
+>
+> 2) W `src/components/VisitDots.tsx` — dla `unlimited`/`total == null` zamień na stałe
+> `text-status-urgent` na klasę koloru kategorii (`CATEGORY_COLOR_CLASS[color]`, ten sam
+> mechanizm co przy kropkach karnetu z limitem), żeby ikona nieskończoności i etykieta
+> „Bez limitu" miały kolor kategorii firmy/miejsca, nie czerwony. `StatusBadge` obok nazwy
+> zostaje bez zmian — to on nadal odpowiada za realny status (ok/soon/urgent/wygasł/brak
+> terminu).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Data ważności opcjonalna dla obu typów karnetu (backend + UI + walidacja klienta)
+- [ ] `docs/DATABASE.md`/`docs/API.md` zaktualizowane
+- [ ] Ikona/etykieta „Bez limitu" w kolorze kategorii, nie czerwonym
+- [ ] Testy zaktualizowane, lint/test + commit
+
+### Sesja V6.16 (punkt 4) — Ukryj zakładki „Aktywne"/„Archiwum" podczas dodawania/edycji karnetu
+
+Kontekst: na desktopie `src/app/cards/page.tsx` renderuje przełącznik pigułek
+„Aktywne"/„Archiwum" (linie ok. 375–390) i **pod nim**, na tej samej stronie, otwiera
+formularz `CardForm` po kliknięciu „Dodaj karnet"/edycji/odnowienia (`formOpen`). Pigułki
+zostają wtedy widoczne nad formularzem, mimo że nie mają znaczenia w trakcie wypełniania —
+to o to chodzi w prośbie „usuń z ekranu Nowy karnet przyciski Aktywne/Archiwum". Na mobile
+problem nie występuje — tam dodawanie karnetu to osobna trasa `/cards/new` (`CardWizard`,
+bez pigułek).
+
+Prompt (skróć/dostosuj):
+> W `src/app/cards/page.tsx` ukryj wiersz z przełącznikiem pigułek „Aktywne"/„Archiwum",
+> gdy `formOpen` jest `true` (formularz dodawania/edycji/odnowienia karnetu jest otwarty).
+> Po zamknięciu formularza (`closeForm`) pigułki wracają. Nie zmieniaj samego zachowania
+> zakładek ani stanu `tab` — to wyłącznie kwestia widoczności podczas edycji.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Pigułki niewidoczne, gdy formularz otwarty; wracają po zamknięciu
+- [ ] lint/test + commit
+
+### Sesja V6.17 (punkt 6) — Skróć tekst stopki — wymaga ustalenia treści przed startem
+
+Kontekst: dzisiejsza stopka (`Footer.tsx` i analogiczny blok w `src/app/account/page.tsx`,
+klucze `footer.*` w i18n) to: „Aplikację stworzyła Joanna Dropia, z pomocą AI (Claude
+Sonnet 5)." + „Kontakt: [e-mail]" + „Wersja [numer]". Zanim odpalisz tę sesję, ustal
+docelową treść (żeby Claude Code nie skracało na wyczucie) — np.:
+- Zostaje tylko „Joanna Dropia" bez wzmianki o AI?
+- Kontakt zostaje w pełnej formie, czy skrócony (sama ikona/link „mailto" bez widocznego
+  adresu)?
+- Wersja zostaje w obecnym formacie?
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Skróć treść stopki (`footer.authorLine` i sąsiednie klucze w `messages/pl.json`/`en.json`)
+> do: [ustalona treść]. Zastosuj zmianę w obu miejscach, które dziś renderują tę treść:
+> `Footer.tsx` (desktop/wspólna stopka) i stopka w `src/app/account/page.tsx` (mobile) — to
+> ten sam zestaw kluczy i18n, więc zmiana w słowniku wystarczy dla obu, ale zweryfikuj
+> wizualnie oba miejsca po zmianie.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Docelowa treść stopki ustalona
+- [ ] Plan zaakceptowany
+- [ ] Stopka skrócona w obu miejscach (`Footer.tsx`, `/account`), i18n PL/EN
+- [ ] lint/test + commit
+
+### Sesja V6.18 (punkt 11) — Ujednolicenie pisowni „KARNET.asist"
+
+Kontekst: `Logo.tsx` renderuje nazwę marki poprawnie (`KARNET` wersalikami + `.asist`), ale
+w kilku miejscach nazwa jest wpisana wprost jako tekst i to niekonsekwentnie: `Karnet.asist`
+(małe „a" w "Karnet") występuje w `messages/pl.json`/`en.json` (treść pomocy, FAQ, podpowiedź
+instalacji na iOS), `prisma/schema.prisma` (komentarz nagłówkowy), `README.md`,
+`public/sw.js` (komentarz), `src/server/push-sender.ts` (**tytuł prawdziwego powiadomienia
+push**, więc to realnie widoczne dla użytkownika), `src/app/manifest.ts` (`name`/`short_name`
+PWA — widoczne przy instalacji na ekran główny) i `src/server/ai-recommendations.ts`
+(fragment promptu do Groq, niewidoczny dla użytkownika, ale warto ujednolicić przy okazji).
+
+Prompt (skróć/dostosuj):
+> Znajdź wszystkie wystąpienia zapisu „Karnet.asist" (małe „a") w repo i zamień na
+> „KARNET.asist" (wersaliki w części „KARNET"), zgodnie z `Logo.tsx` i tytułem w
+> `layout.tsx` (`metadata.title`), które już mają poprawny zapis. Obejmij co najmniej:
+> `messages/pl.json`, `messages/en.json`, `src/server/push-sender.ts` (tytuł powiadomienia
+> push — realnie widoczny użytkownikowi), `src/app/manifest.ts` (`name`/`short_name` PWA),
+> `public/sw.js`, `prisma/schema.prisma`, `README.md`, `src/server/ai-recommendations.ts`.
+> Nie zmieniaj samego adresu e-mail/domeny, jeśli gdzieś występuje jako `karnet.asist...`
+> (adresy/URL-e zwykle są małymi literami z innych powodów — sprawdź kontekst przed zmianą).
+> Najpierw krótki plan (lista plików), poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Wszystkie wystąpienia poprawione, w tym tytuł powiadomienia push i manifest PWA
+- [ ] lint/test + commit
+
+### Sesja V6.19 (punkt 12) — Numer wersji `V6_260817`
+
+Kontekst: **odpalana jako ostatnia sesja całej Fazy V6b**, po wszystkich powyższych — numer
+wersji ma sens dopiero, gdy oznacza faktyczny stan po zakończeniu tego zestawu zmian. Stała
+`APP_VERSION` jest dziś duplikowana w dwóch miejscach (`src/components/Footer.tsx` i
+`src/app/account/page.tsx`, obie `"v5_260809"`) — przy okazji warto to scalić w jedno źródło,
+żeby kolejna aktualizacja numeru nie wymagała pamiętania o dwóch plikach.
+
+Prompt (skróć/dostosuj):
+> Przenieś stałą `APP_VERSION` do jednego wspólnego miejsca (np. `src/lib/app-version.ts`),
+> importowanego przez `Footer.tsx` i `src/app/account/page.tsx` zamiast dwóch osobnych
+> lokalnych stałych. Ustaw wartość na `"V6_260817"`. Zweryfikuj, że numer wersji wyświetla
+> się poprawnie w obu miejscach (stopka desktopowa i `/account` na mobile).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Wszystkie sesje V6.2–V6.18 ukończone (ten numer wersji ma sens dopiero po nich)
+- [ ] Plan zaakceptowany
+- [ ] `APP_VERSION` w jednym wspólnym miejscu, wartość `V6_260817`
+- [ ] Zweryfikowane w obu miejscach wyświetlania
+- [ ] lint/test + commit
+
+---
+
+### Podsumowanie Fazy V6b — wszystkie sesje od najbardziej do najmniej pracochłonnej
+
+Dla orientacji przed rozpoczęciem — pełna lista w kolejności szacowanej pracochłonności
+(Sesja V6.1 jest fizycznie opisana wyżej, pod „Faza V6 — logowanie", ale w tym rankingu
+należy do najcięższej grupy):
+
+**Bardzo duże:**
+1. **Sesja V6.1 — Dodatkowa metoda logowania.** Hasło i/lub magic link obok Google OAuth,
+   nowe ekrany rejestracji/logowania, rozszerzenie `User` w Prisma.
+2. **Sesja V6.2 — Wiele plików/zdjęć vouchera na karnet.** Nowy model `CardVoucherFile`,
+   migracja, wielokrotny upload/usuwanie, siatka miniaturek w formularzu.
+3. **Sesja V6.3 — Archiwizacja: wejścia z datą przyszłą.** Karnet trafia do archiwum
+   dopiero, gdy minie data ostatniego (nawet zaplanowanego) wejścia, nie od razu po
+   osiągnięciu limitu.
+4. **Sesja V6.5 — Miejsca: dodawanie nowych miejsc.** Nowe pole adresu w bazie, formularz
+   „Dodaj miejsce" z wyszukiwarką Google Places lub ręcznie, wybór/tworzenie kategorii.
+
+**Duże:**
+5. **Sesja V6.6 — Kolorowanie kropek: zrealizowane vs zaplanowane wejścia.** Kropki wejść na
+   szczegółach karnetu w innym odcieniu dla wejść z przyszłą datą.
+6. **Sesja V6.7 — Statystyki: raporty tygodniowe/miesięczne.** Nowy endpoint agregujący
+   wejścia + strona `/stats` z podsumowaniem, link z `/account`.
+7. **Sesja V6.8 — Dokończenie designu „Miejsca" i „Doradca".** Nagłówki, karty list i
+   szkielety ładowania ujednolicone z `/cards`.
+
+**Średnie:**
+8. **Sesja V6.9 — Węższy układ na desktopie.** Header/Footer/treść ograniczone do wspólnej
+   szerokości, żeby całość wyglądała jak wąskie okno telefonu.
+9. **Sesja V6.10 — Wyczyszczenie danych karnetów w ustawieniach.** Nowy endpoint kasujący
+   wszystkie karnety bieżącej tożsamości, z silnym potwierdzeniem.
+10. **Sesja V6.11 — Usuń pole „Sposób pokazywania vouchera".** Migracja usuwająca
+    nieużywany enum `voucherMode` z `CardForm`, API i bazy.
+11. **Sesja V6.4 — „Firmy" → „Miejsca".** Zmiana tekstu w i18n (PL/EN) w wielu miejscach,
+    bez zmian nazw kodowych.
+12. **Sesja V6.12 — Otwieranie pliku/zdjęcia vouchera na pełen ekran.** Nowy lightbox po
+    kliknięciu w miniaturkę zdjęcia na szczegółach karnetu.
+
+**Małe:**
+13. **Sesja V6.13 — Logo: powiększenie i spójna obecność w nagłówku każdej zakładki.**
+14. **Sesja V6.14 — Miejsca: filtr po kategoriach na mobile.**
+15. **Sesja V6.15 — Data ważności zawsze opcjonalna + kolor karnetu bez limitu wg kategorii.**
+
+**Bardzo małe:**
+16. **Sesja V6.16 — Ukryj zakładki „Aktywne"/„Archiwum" podczas dodawania/edycji karnetu.**
+17. **Sesja V6.17 — Skróć tekst stopki.**
+18. **Sesja V6.18 — Ujednolicenie pisowni „KARNET.asist".**
+19. **Sesja V6.19 — Numer wersji `V6_260817`.** Zawsze ostatnia — niezależnie od
+    pracochłonności, ma sens dopiero po wszystkich pozostałych.
+
+---
 
 ## Rzeczy, o które trzeba pytać, a nie zgadywać
 
