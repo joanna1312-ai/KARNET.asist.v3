@@ -11,6 +11,10 @@
 // manipulując requestem. Stałe tutaj służą tylko do szybkiej walidacji/feedbacku w UI.
 export const VOUCHER_FILE_MAX_BYTES = 10 * 1024 * 1024;
 
+// Limit liczby plików/zdjęć vouchera na karnet (Sesja V6.2) — egzekwowany w API
+// (sign-upload + confirm), nie ma odpowiednika na poziomie bazy.
+export const VOUCHER_FILE_MAX_COUNT = 5;
+
 export const VOUCHER_FILE_EXTENSION_BY_CONTENT_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",

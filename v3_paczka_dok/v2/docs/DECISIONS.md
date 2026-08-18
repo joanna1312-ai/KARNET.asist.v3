@@ -250,6 +250,32 @@ zarchiwizowanym karnecie źródłowym.
   przez naszą warstwę (`findOwnedCard`), nie przez reguły RLS Supabase (ten projekt nie
   używa Supabase Auth, tylko Prisma + NextAuth/token urządzenia, `ADR-003`/`ADR-007`).
 
+**Rozszerzenie: wiele plików na karnet (Sesja V6.2, 2026-08-18).** Powyższy opis
+(kroki 1–3, klucz service-role, sprzątanie osieroconych plików) dotyczy historycznie
+pojedynczego pliku w `voucher_file_url` — od tej sesji karnet może mieć **do 5 plików
+naraz** (`VOUCHER_FILE_MAX_COUNT`), każdy jako osobny wiersz w nowej tabeli
+`card_voucher_files` (`ON DELETE CASCADE`, patrz `DATABASE.md`), nie jako pojedyncza
+kolumna. Endpointy przeniesione z `/api/cards/:id/voucher-file/*` (liczba pojedyncza) na
+`/api/cards/:id/voucher-files/*` (liczba mnoga) + nowy `DELETE .../voucher-files/:fileId`
+— patrz `API.md`. Trójkrokowy flow (sign-upload → PUT bezpośrednio do Supabase → confirm)
+i bucket prywatny + podpisane URL-e zostają bez zmian, tylko `confirm` teraz **dodaje**
+wiersz zamiast nadpisywać kolumnę, więc dawne sprzątanie "poprzedniego pliku" nie ma już
+zastosowania (usuwanie idzie wyłącznie przez `DELETE .../voucher-files/:fileId`, na
+wyraźne działanie użytkownika).
+
+Ustalone przy tej sesji (zasada „nie zgaduj” z `CLAUDE.md`):
+- **Tekst/link (Sesja 11) zostaje jako osobna, niezależna opcja** obok listy plików —
+  można ustawić jedno, drugie albo oba naraz; to była wprost rekomendowana opcja jako
+  najmniejsza zmiana względem dotychczasowego UX.
+- **„Odnów” z archiwum nie kopiuje plików** źródłowego karnetu — nowy karnet zaczyna bez
+  nich (inaczej niż tekst/link, który nadal jest dziedziczony) — świadoma zmiana względem
+  dotychczasowego zachowania pojedynczego pliku, żeby uniknąć wieloetapowego dziedziczenia
+  ścieżek między kolejnymi odnowieniami tego samego karnetu.
+- Migracja `20260817220804_add_card_voucher_files` przenosi istniejące `storage:`-owe
+  wartości `voucher_file_url` (dawny tryb "plik") jako pierwszy wiersz nowej tabeli i
+  czyści `voucher_file_url`, żeby nie zostawić osieroconej wartości w kolumnie, która od
+  teraz jest wyłącznie trybem tekstowym.
+
 ## RODO — dane osobowe przetwarzane przez aplikację
 
 **Status:** proponowane, do potwierdzenia przed pierwszym wdrożeniem produkcyjnym.
@@ -261,7 +287,7 @@ szczególnie zakres klauzuli informacyjnej i ewentualną potrzebę DPIA.
 | Dana | Gdzie (tabela) | Charakter |
 |---|---|---|
 | E-mail | `users.email` | dane osobowe, tylko przy założeniu konta (opcjonalne) |
-| Zdjęcie/plik vouchera lub QR | `cards.voucher_file_url` | może pośrednio zawierać dane osobowe (np. imię i nazwisko na voucherze, numer karty klubowej) |
+| Zdjęcie/plik vouchera lub QR | `cards.voucher_file_url` (tekst/link) i `card_voucher_files` (do 5 plików na karnet, Sesja V6.2) | może pośrednio zawierać dane osobowe (np. imię i nazwisko na voucherze, numer karty klubowej) |
 | Notatka do wejścia | `visits.note` | tekst dowolny wpisywany przez użytkownika — **potencjalnie wrażliwa**, jeśli użytkownik wpisze tam informację o stanie zdrowia (np. przy wejściu na fizjoterapię/masaż) |
 | Lokalizacja firmy (`lat`/`lng`) | `companies` | dane firmy/partnera, nie dane osobowe użytkownika |
 | `device_id` | `cards.device_id` | identyfikator urządzenia, dana osobowa pośrednia (podobnie jak IP) |

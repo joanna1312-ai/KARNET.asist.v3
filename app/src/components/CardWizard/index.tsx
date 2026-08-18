@@ -86,11 +86,16 @@ export function CardWizard({
 
   function validateStep3(): Partial<Record<keyof CardFormValues, string>> {
     const errors: Partial<Record<keyof CardFormValues, string>> = {};
-    if (values.voucherInputMode === "file" && values.voucherFile) {
-      if (!isAllowedVoucherContentType(values.voucherFile.type)) {
-        errors.voucherFile = t("errors.voucherFileTypeUnsupported");
-      } else if (values.voucherFile.size > VOUCHER_FILE_MAX_BYTES) {
-        errors.voucherFile = t("errors.voucherFileTooLarge");
+    if (values.voucherInputMode === "file") {
+      for (const file of values.voucherNewFiles) {
+        if (!isAllowedVoucherContentType(file.type)) {
+          errors.voucherNewFiles = t("errors.voucherFileTypeUnsupported");
+          break;
+        }
+        if (file.size > VOUCHER_FILE_MAX_BYTES) {
+          errors.voucherNewFiles = t("errors.voucherFileTooLarge");
+          break;
+        }
       }
     }
     return errors;

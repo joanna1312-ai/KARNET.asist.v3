@@ -5,22 +5,21 @@ import { signDeviceToken } from "@/server/device-token";
 const prismaMock = {
   card: {
     findFirst: vi.fn(),
-    update: vi.fn(),
+  },
+  cardVoucherFile: {
+    count: vi.fn(),
+    create: vi.fn(),
   },
 };
 
 const getServerSessionMock = vi.fn().mockResolvedValue(null);
-const removeVoucherObjectMock = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
 vi.mock("next-auth/next", () => ({ getServerSession: getServerSessionMock }));
-vi.mock("@/server/storage", () => ({
-  removeVoucherObject: removeVoucherObjectMock,
-}));
 
 const { POST } = await import("./route");
 
-const url = (id: string) => `http://localhost/api/cards/${id}/voucher-file/confirm`;
+const url = (id: string) => `http://localhost/api/cards/${id}/voucher-files/confirm`;
 const routeParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
 beforeAll(() => {
@@ -30,14 +29,14 @@ beforeAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   getServerSessionMock.mockResolvedValue(null);
+  prismaMock.cardVoucherFile.count.mockResolvedValue(0);
 });
 
 async function authHeaders(deviceId = "device-1") {
-  const token = await signDeviceToken(deviceId);
-  return { Authorization: `Device ${token}`, "Content-Type": "application/json" };
+  return { Authorization: `Device ${await signDeviceToken(deviceId)}`, "Content-Type": "application/json" };
 }
 
-const cardWithoutFile = {
+const existingCard = {
   id: "card-1",
   deviceId: "device-1",
   companyId: "co1",
@@ -46,11 +45,10 @@ const cardWithoutFile = {
   usedVisits: 2,
   expiryDate: null,
   voucherMode: VoucherMode.single,
-  voucherFileUrl: null,
   deletedAt: null,
 };
 
-describe("POST /api/cards/:id/voucher-file/confirm", () => {
+describe("POST /api/cards/:id/voucher-files/confirm", () => {
   it("returns 404 when the card does not belong to the caller", async () => {
     prismaMock.card.findFirst.mockResolvedValue(null);
 
@@ -67,7 +65,7 @@ describe("POST /api/cards/:id/voucher-file/confirm", () => {
   });
 
   it("rejects a path that doesn't belong to this card", async () => {
-    prismaMock.card.findFirst.mockResolvedValue(cardWithoutFile);
+    prismaMock.card.findFirst.mockResolvedValue(existingCard);
 
     const response = await POST(
       new Request(url("card-1"), {
@@ -81,15 +79,12 @@ describe("POST /api/cards/:id/voucher-file/confirm", () => {
 
     expect(response.status).toBe(400);
     expect(body.error).toBe("invalid_path");
-    expect(prismaMock.card.update).not.toHaveBeenCalled();
+    expect(prismaMock.cardVoucherFile.create).not.toHaveBeenCalled();
   });
 
-  it("saves the storage-prefixed voucherFileUrl on first upload (no previous file to clean up)", async () => {
-    prismaMock.card.findFirst.mockResolvedValue(cardWithoutFile);
-    prismaMock.card.update.mockResolvedValue({
-      id: "card-1",
-      voucherFileUrl: "storage:cards/card-1/new.jpg",
-    });
+  it("rejects once the card already has 5 files (race with sign-upload)", async () => {
+    prismaMock.card.findFirst.mockResolvedValue(existingCard);
+    prismaMock.cardVoucherFile.count.mockResolvedValue(5);
 
     const response = await POST(
       new Request(url("card-1"), {
@@ -99,56 +94,31 @@ describe("POST /api/cards/:id/voucher-file/confirm", () => {
       }),
       routeParams("card-1")
     );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("limit_reached");
+    expect(prismaMock.cardVoucherFile.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a new CardVoucherFile row instead of overwriting a single URL", async () => {
+    prismaMock.card.findFirst.mockResolvedValue(existingCard);
+    prismaMock.cardVoucherFile.create.mockResolvedValue({ id: "file-1" });
+
+    const response = await POST(
+      new Request(url("card-1"), {
+        method: "POST",
+        headers: await authHeaders(),
+        body: JSON.stringify({ path: "cards/card-1/new.jpg" }),
+      }),
+      routeParams("card-1")
+    );
+    const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(prismaMock.card.update).toHaveBeenCalledWith({
-      where: { id: "card-1" },
-      data: { voucherFileUrl: "storage:cards/card-1/new.jpg" },
+    expect(body.file).toEqual({ id: "file-1" });
+    expect(prismaMock.cardVoucherFile.create).toHaveBeenCalledWith({
+      data: { cardId: "card-1", storagePath: "cards/card-1/new.jpg" },
     });
-    expect(removeVoucherObjectMock).not.toHaveBeenCalled();
-  });
-
-  it("cleans up the previous file when replacing one owned by this card", async () => {
-    prismaMock.card.findFirst.mockResolvedValue({
-      ...cardWithoutFile,
-      voucherFileUrl: "storage:cards/card-1/old.jpg",
-    });
-    prismaMock.card.update.mockResolvedValue({
-      id: "card-1",
-      voucherFileUrl: "storage:cards/card-1/new.jpg",
-    });
-
-    await POST(
-      new Request(url("card-1"), {
-        method: "POST",
-        headers: await authHeaders(),
-        body: JSON.stringify({ path: "cards/card-1/new.jpg" }),
-      }),
-      routeParams("card-1")
-    );
-
-    expect(removeVoucherObjectMock).toHaveBeenCalledWith("cards/card-1/old.jpg");
-  });
-
-  it("does NOT clean up a previous file inherited from a different card (renew)", async () => {
-    prismaMock.card.findFirst.mockResolvedValue({
-      ...cardWithoutFile,
-      voucherFileUrl: "storage:cards/source-card/old.jpg",
-    });
-    prismaMock.card.update.mockResolvedValue({
-      id: "card-1",
-      voucherFileUrl: "storage:cards/card-1/new.jpg",
-    });
-
-    await POST(
-      new Request(url("card-1"), {
-        method: "POST",
-        headers: await authHeaders(),
-        body: JSON.stringify({ path: "cards/card-1/new.jpg" }),
-      }),
-      routeParams("card-1")
-    );
-
-    expect(removeVoucherObjectMock).not.toHaveBeenCalled();
   });
 });

@@ -13,13 +13,9 @@ const prismaMock = {
 };
 
 const getServerSessionMock = vi.fn().mockResolvedValue(null);
-const removeVoucherObjectMock = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
 vi.mock("next-auth/next", () => ({ getServerSession: getServerSessionMock }));
-vi.mock("@/server/storage", () => ({
-  removeVoucherObject: removeVoucherObjectMock,
-}));
 
 const { GET, PATCH, DELETE } = await import("./route");
 
@@ -187,65 +183,28 @@ describe("PATCH /api/cards/:id — reguła limit/unlimited na scalonym stanie", 
     );
   });
 
-  it("cleans up the storage file (Sesja V4.3) when voucherFileUrl is cleared and it belonged to this card", async () => {
-    prismaMock.card.findFirst.mockResolvedValue({
-      ...existingLimitCard,
-      voucherFileUrl: "storage:cards/card-1/old.jpg",
+  it("saves a plain voucherFileUrl (text/link, Sesja 11) without touching storage", async () => {
+    prismaMock.card.findFirst.mockResolvedValue(existingLimitCard);
+    prismaMock.card.update.mockResolvedValue({
+      id: "card-1",
+      voucherFileUrl: "10% zniżki - kod ABC123",
     });
-    prismaMock.card.update.mockResolvedValue({ id: "card-1", voucherFileUrl: null });
 
     const response = await PATCH(
       new Request(cardUrl("card-1"), {
         method: "PATCH",
         headers: { ...(await authHeaders()), "Content-Type": "application/json" },
-        body: JSON.stringify({ voucherFileUrl: null }),
+        body: JSON.stringify({ voucherFileUrl: "10% zniżki - kod ABC123" }),
       }),
       routeParams("card-1")
     );
 
     expect(response.status).toBe(200);
-    expect(removeVoucherObjectMock).toHaveBeenCalledWith("cards/card-1/old.jpg");
-  });
-
-  it("does NOT clean up a storage file inherited from a different card (renew)", async () => {
-    prismaMock.card.findFirst.mockResolvedValue({
-      ...existingLimitCard,
-      voucherFileUrl: "storage:cards/source-card/old.jpg",
-    });
-    prismaMock.card.update.mockResolvedValue({ id: "card-1", voucherFileUrl: null });
-
-    await PATCH(
-      new Request(cardUrl("card-1"), {
-        method: "PATCH",
-        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
-        body: JSON.stringify({ voucherFileUrl: null }),
-      }),
-      routeParams("card-1")
+    expect(prismaMock.card.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ voucherFileUrl: "10% zniżki - kod ABC123" }),
+      })
     );
-
-    expect(removeVoucherObjectMock).not.toHaveBeenCalled();
-  });
-
-  it("does not touch storage when voucherFileUrl is left unchanged", async () => {
-    prismaMock.card.findFirst.mockResolvedValue({
-      ...existingLimitCard,
-      voucherFileUrl: "storage:cards/card-1/same.jpg",
-    });
-    prismaMock.card.update.mockResolvedValue({
-      id: "card-1",
-      voucherFileUrl: "storage:cards/card-1/same.jpg",
-    });
-
-    await PATCH(
-      new Request(cardUrl("card-1"), {
-        method: "PATCH",
-        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
-        body: JSON.stringify({ totalVisits: 20 }),
-      }),
-      routeParams("card-1")
-    );
-
-    expect(removeVoucherObjectMock).not.toHaveBeenCalled();
   });
 });
 

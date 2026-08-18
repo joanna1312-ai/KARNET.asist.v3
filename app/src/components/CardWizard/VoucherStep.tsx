@@ -3,8 +3,9 @@
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { VoucherFilesGrid } from "@/components/VoucherFilesGrid";
 import { VoucherMode } from "@/generated/prisma/enums";
-import { isStorageVoucherFileUrl, VOUCHER_FILE_ACCEPT } from "@/server/voucher-file";
+import { VOUCHER_FILE_ACCEPT, VOUCHER_FILE_MAX_COUNT } from "@/server/voucher-file";
 import type { StepProps } from "./types";
 
 export function VoucherStep({ values, setValues, submitting, fieldErrors }: StepProps) {
@@ -48,42 +49,27 @@ export function VoucherStep({ values, setValues, submitting, fieldErrors }: Step
           />
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {isStorageVoucherFileUrl(values.voucherFileUrl) &&
-            !values.voucherFile &&
-            !values.voucherRemoveFile && (
-              <p className="text-sm text-foreground/70">
-                {t("voucherCurrentFileLabel")}{" "}
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => setValues((prev) => ({ ...prev, voucherRemoveFile: true }))}
-                  className="font-medium text-status-urgent hover:underline"
-                >
-                  {t("voucherRemoveButton")}
-                </button>
-              </p>
-            )}
-          <label className="text-sm font-semibold">{t("voucherFileLabel")}</label>
-          {/* capture="environment" — na telefonie otwiera od razu aparat tylny (README, PWA scope) */}
-          <input
-            type="file"
-            accept={VOUCHER_FILE_ACCEPT}
-            capture="environment"
-            disabled={submitting}
-            onChange={(event) => {
-              const file = event.target.files?.[0] ?? null;
-              setValues((prev) => ({ ...prev, voucherFile: file, voucherRemoveFile: false }));
-            }}
-            className="text-sm"
-          />
-          {values.voucherFile && (
-            <p className="text-sm text-foreground/50">{values.voucherFile.name}</p>
-          )}
-          {fieldErrors.voucherFile && (
-            <p className="text-sm text-status-urgent">{fieldErrors.voucherFile}</p>
-          )}
-        </div>
+        // W kreatorze karnet jeszcze nie istnieje — voucherExistingFiles jest zawsze puste,
+        // wszystkie wybrane pliki czekają w voucherNewFiles na wgranie po zapisaniu.
+        <VoucherFilesGrid
+          existingFiles={values.voucherExistingFiles}
+          filesToRemove={values.voucherFilesToRemove}
+          newFiles={values.voucherNewFiles}
+          onToggleRemoveExisting={() => {}}
+          onAddFile={(file) =>
+            setValues((prev) => ({ ...prev, voucherNewFiles: [...prev.voucherNewFiles, file] }))
+          }
+          onRemoveNewFile={(index) =>
+            setValues((prev) => ({
+              ...prev,
+              voucherNewFiles: prev.voucherNewFiles.filter((_, i) => i !== index),
+            }))
+          }
+          disabled={submitting}
+          maxCount={VOUCHER_FILE_MAX_COUNT}
+          accept={VOUCHER_FILE_ACCEPT}
+          error={fieldErrors.voucherNewFiles}
+        />
       )}
 
       <div className="flex flex-col gap-1.5">

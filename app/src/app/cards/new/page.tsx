@@ -11,7 +11,7 @@ import {
 } from "@/components/CardForm";
 import { CardWizard } from "@/components/CardWizard";
 import { deviceFetch } from "@/lib/device-client";
-import { uploadVoucherFile } from "@/lib/voucher-upload";
+import { uploadVoucherFiles } from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
 
 export default function NewCardPage() {
@@ -119,8 +119,8 @@ export default function NewCardPage() {
 
     const savedBody: { card: { id: string } } = await response.json();
 
-    if (values.voucherInputMode === "file" && values.voucherFile) {
-      await uploadVoucherFile(savedBody.card.id, values.voucherFile);
+    if (values.voucherNewFiles.length > 0) {
+      await uploadVoucherFiles(savedBody.card.id, values.voucherNewFiles);
     }
 
     setSubmitting(false);

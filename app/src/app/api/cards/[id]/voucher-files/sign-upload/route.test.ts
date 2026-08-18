@@ -6,6 +6,9 @@ const prismaMock = {
   card: {
     findFirst: vi.fn(),
   },
+  cardVoucherFile: {
+    count: vi.fn(),
+  },
 };
 
 const getServerSessionMock = vi.fn().mockResolvedValue(null);
@@ -19,7 +22,7 @@ vi.mock("@/server/storage", () => ({
 
 const { POST } = await import("./route");
 
-const url = (id: string) => `http://localhost/api/cards/${id}/voucher-file/sign-upload`;
+const url = (id: string) => `http://localhost/api/cards/${id}/voucher-files/sign-upload`;
 const routeParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
 beforeAll(() => {
@@ -29,11 +32,11 @@ beforeAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   getServerSessionMock.mockResolvedValue(null);
+  prismaMock.cardVoucherFile.count.mockResolvedValue(0);
 });
 
 async function authHeaders(deviceId = "device-1") {
-  const token = await signDeviceToken(deviceId);
-  return { Authorization: `Device ${token}`, "Content-Type": "application/json" };
+  return { Authorization: `Device ${await signDeviceToken(deviceId)}`, "Content-Type": "application/json" };
 }
 
 const existingCard = {
@@ -45,11 +48,10 @@ const existingCard = {
   usedVisits: 2,
   expiryDate: null,
   voucherMode: VoucherMode.single,
-  voucherFileUrl: null,
   deletedAt: null,
 };
 
-describe("POST /api/cards/:id/voucher-file/sign-upload", () => {
+describe("POST /api/cards/:id/voucher-files/sign-upload", () => {
   it("rejects requests without a verified device token", async () => {
     const response = await POST(
       new Request(url("card-1"), { method: "POST", body: "{}" }),
@@ -73,6 +75,25 @@ describe("POST /api/cards/:id/voucher-file/sign-upload", () => {
     expect(response.status).toBe(404);
   });
 
+  it("rejects once the card already has 5 files", async () => {
+    prismaMock.card.findFirst.mockResolvedValue(existingCard);
+    prismaMock.cardVoucherFile.count.mockResolvedValue(5);
+
+    const response = await POST(
+      new Request(url("card-1"), {
+        method: "POST",
+        headers: await authHeaders(),
+        body: JSON.stringify({ contentType: "image/jpeg" }),
+      }),
+      routeParams("card-1")
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("limit_reached");
+    expect(createVoucherUploadUrlMock).not.toHaveBeenCalled();
+  });
+
   it("rejects an unsupported content type", async () => {
     prismaMock.card.findFirst.mockResolvedValue(existingCard);
 
@@ -91,8 +112,9 @@ describe("POST /api/cards/:id/voucher-file/sign-upload", () => {
     expect(createVoucherUploadUrlMock).not.toHaveBeenCalled();
   });
 
-  it("returns a signed upload URL scoped to this card's folder", async () => {
+  it("returns a signed upload URL scoped to this card's folder when under the limit", async () => {
     prismaMock.card.findFirst.mockResolvedValue(existingCard);
+    prismaMock.cardVoucherFile.count.mockResolvedValue(4);
     createVoucherUploadUrlMock.mockResolvedValue("https://storage.example/signed-upload");
 
     const response = await POST(

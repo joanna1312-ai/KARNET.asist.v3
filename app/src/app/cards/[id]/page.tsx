@@ -26,13 +26,13 @@ import { deviceFetch } from "@/lib/device-client";
 import { formatDate, formatDayMonthShort, formatTime, formatWeekday } from "@/lib/format";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus, isCardArchived } from "@/server/card-status";
-import { uploadVoucherFile } from "@/lib/voucher-upload";
-import type { CategoryColor } from "@/server/system-categories";
 import {
-  isStorageVoucherFileUrl,
-  voucherFileKindFromPath,
-  voucherStoragePath,
-} from "@/server/voucher-file";
+  deleteVoucherFile,
+  fetchVoucherFiles,
+  uploadVoucherFiles,
+  type VoucherFile,
+} from "@/lib/voucher-upload";
+import type { CategoryColor } from "@/server/system-categories";
 import { VisitInputErrorCode } from "@/server/visit-rules";
 
 interface ApiVisit {
@@ -62,7 +62,7 @@ interface ApiCard {
   visits: ApiVisit[];
 }
 
-function cardToFormValues(card: ApiCard): CardFormValues {
+function cardToFormValues(card: ApiCard, existingFiles: VoucherFile[]): CardFormValues {
   return {
     companyMode: "existing",
     companyId: card.company.id,
@@ -78,9 +78,10 @@ function cardToFormValues(card: ApiCard): CardFormValues {
     expiryDate: card.expiryDate ? card.expiryDate.slice(0, 10) : "",
     voucherMode: card.voucherMode,
     voucherFileUrl: card.voucherFileUrl ?? "",
-    voucherInputMode: isStorageVoucherFileUrl(card.voucherFileUrl) ? "file" : "text",
-    voucherFile: null,
-    voucherRemoveFile: false,
+    voucherInputMode: existingFiles.length > 0 ? "file" : "text",
+    voucherExistingFiles: existingFiles,
+    voucherFilesToRemove: [],
+    voucherNewFiles: [],
   };
 }
 
@@ -92,62 +93,36 @@ function visitToFormValues(visit: ApiVisit): VisitFormValues {
   };
 }
 
-// Podgląd pliku vouchera wgranego do Supabase Storage (Sesja V4.3, ADR-009) — bucket jest
-// prywatny, więc zamiast trwałego linku pobieramy świeży podpisany URL przy każdym
-// wejściu na stronę (endpoint sam sprawdza własność karnetu, jak reszta /api/cards/*).
-function VoucherFilePreview({ cardId, voucherFileUrl }: { cardId: string; voucherFileUrl: string }) {
+// Podgląd plików vouchera wgranych do Supabase Storage (Sesja V4.3/ADR-009, wiele plików
+// od Sesji V6.2) — tylko do odczytu, bucket jest prywatny więc `files` (świeże podpisane
+// URL-e) pochodzą z GET /api/cards/:id/voucher-files, pobieranego na poziomie strony razem
+// z kartą.
+function VoucherFilesPreview({ files }: { files: VoucherFile[] }) {
   const t = useTranslations("cardDetailsPage");
-  const [url, setUrl] = useState<string | null>(null);
-  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let ignore = false;
-    setUrl(null);
-    setError(false);
-
-    deviceFetch(`/api/cards/${cardId}/voucher-file`)
-      .then((response) => {
-        if (!response.ok) throw new Error();
-        return response.json();
-      })
-      .then((body: { url: string }) => {
-        if (!ignore) setUrl(body.url);
-      })
-      .catch(() => {
-        if (!ignore) setError(true);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [cardId, voucherFileUrl]);
-
-  if (error) {
-    return <p className="mt-1 text-sm text-status-urgent">{t("voucherLoadError")}</p>;
-  }
-
-  if (!url) {
-    return <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("voucherLoading")}</p>;
-  }
-
-  if (voucherFileKindFromPath(voucherStoragePath(voucherFileUrl)) === "pdf") {
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-1 inline-block text-sm font-medium hover:underline"
-      >
-        {t("voucherOpenPdf")}
-      </a>
-    );
-  }
-
-  // Podpisany URL Supabase (wygasa po kilku minutach) nie jest znaną domeną na
-  // build-time — next/image wymagałby remotePatterns dla efemerycznego hosta i tak nie
-  // dałoby żadnej korzyści.
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={url} alt="" className="mt-2 max-h-64 rounded-lg" />;
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {files.map((file) =>
+        file.kind === "pdf" ? (
+          <a
+            key={file.id}
+            href={file.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex size-24 shrink-0 flex-col items-center justify-center gap-1 rounded-lg bg-black/5 text-sm font-medium hover:underline dark:bg-white/5"
+          >
+            {t("voucherOpenPdf")}
+          </a>
+        ) : (
+          // Podpisany URL Supabase (wygasa po kilku minutach) nie jest znaną domeną na
+          // build-time — next/image wymagałby remotePatterns dla efemerycznego hosta i tak
+          // nie dałoby żadnej korzyści.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={file.id} src={file.url} alt="" className="size-24 rounded-lg object-cover" />
+        )
+      )}
+    </div>
+  );
 }
 
 type FetchCardResult =
@@ -227,6 +202,7 @@ export default function CardDetailsPage() {
   const cardId = params.id;
 
   const [card, setCard] = useState<ApiCard | null>(null);
+  const [voucherFiles, setVoucherFiles] = useState<VoucherFile[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
@@ -258,6 +234,7 @@ export default function CardDetailsPage() {
       setCard(result.card);
       setLoadError(false);
       setNotFound(false);
+      setVoucherFiles(await fetchVoucherFiles(cardId));
     } else if (result.status === "not_found") {
       setNotFound(true);
     } else {
@@ -268,12 +245,14 @@ export default function CardDetailsPage() {
   useEffect(() => {
     let ignore = false;
 
-    fetchCard(cardId).then((result) => {
+    fetchCard(cardId).then(async (result) => {
       if (ignore) return;
       if (result.status === "ok") {
         setCard(result.card);
         setLoadError(false);
         setNotFound(false);
+        const files = await fetchVoucherFiles(cardId);
+        if (!ignore) setVoucherFiles(files);
       } else if (result.status === "not_found") {
         setNotFound(true);
       } else {
@@ -406,10 +385,18 @@ export default function CardDetailsPage() {
       return;
     }
 
-    if (values.voucherInputMode === "file" && values.voucherFile) {
-      const uploaded = await uploadVoucherFile(cardId, values.voucherFile);
-      if (!uploaded) setVoucherUploadError(true);
+    // Niezależne od voucherInputMode (steruje tylko widoczną kartą) — patrz analogiczny
+    // komentarz w cards/page.tsx.
+    let voucherFilesFailed = false;
+    for (const fileId of values.voucherFilesToRemove) {
+      const removed = await deleteVoucherFile(cardId, fileId);
+      if (!removed) voucherFilesFailed = true;
     }
+    if (values.voucherNewFiles.length > 0) {
+      const failedCount = await uploadVoucherFiles(cardId, values.voucherNewFiles);
+      if (failedCount > 0) voucherFilesFailed = true;
+    }
+    if (voucherFilesFailed) setVoucherUploadError(true);
 
     setCardSubmitting(false);
     setCardFormOpen(false);
@@ -484,9 +471,13 @@ export default function CardDetailsPage() {
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 setCardServerErrors([]);
                 setVoucherUploadError(false);
+                // Odśwież listę plików tuż przed otwarciem (CardForm czyta initialValues
+                // tylko przy montowaniu) — na wypadek, gdyby coś zmieniło się od
+                // pierwszego załadowania strony.
+                setVoucherFiles(await fetchVoucherFiles(cardId));
                 setCardFormOpen(true);
               }}
               aria-label={t("editCardAria")}
@@ -530,7 +521,7 @@ export default function CardDetailsPage() {
                 mode="edit"
                 companies={companies}
                 categories={categories}
-                initialValues={cardToFormValues(card)}
+                initialValues={cardToFormValues(card, voucherFiles)}
                 submitting={cardSubmitting}
                 serverErrors={cardServerErrors}
                 onSubmit={handleCardFormSubmit}
@@ -582,7 +573,7 @@ export default function CardDetailsPage() {
             )}
           </div>
 
-          {card.voucherFileUrl && (
+          {(card.voucherFileUrl || voucherFiles.length > 0) && (
             <div className={`p-4 ${CARD_SURFACE_CLASS}`}>
               <div className="flex items-center gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-coral/25 text-coral-ink">
@@ -590,22 +581,24 @@ export default function CardDetailsPage() {
                 </span>
                 <h2 className="text-sm font-semibold">{t("voucherLabel")}</h2>
               </div>
-              {isStorageVoucherFileUrl(card.voucherFileUrl) ? (
-                <VoucherFilePreview cardId={card.id} voucherFileUrl={card.voucherFileUrl} />
-              ) : /^https?:\/\//.test(card.voucherFileUrl) ? (
-                <a
-                  href={card.voucherFileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 block break-all text-sm font-medium hover:underline"
-                >
-                  {card.voucherFileUrl}
-                </a>
-              ) : (
-                <p className="mt-2 break-words text-sm text-zinc-600 dark:text-zinc-300">
-                  {card.voucherFileUrl}
-                </p>
-              )}
+              {/* Tekst/link (Sesja 11) i lista plików (Sesja V6.2) są niezależne — oba mogą
+                  być ustawione naraz, patrz komentarz przy CardFormValues.voucherFileUrl. */}
+              {card.voucherFileUrl &&
+                (/^https?:\/\//.test(card.voucherFileUrl) ? (
+                  <a
+                    href={card.voucherFileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 block break-all text-sm font-medium hover:underline"
+                  >
+                    {card.voucherFileUrl}
+                  </a>
+                ) : (
+                  <p className="mt-2 break-words text-sm text-zinc-600 dark:text-zinc-300">
+                    {card.voucherFileUrl}
+                  </p>
+                ))}
+              {voucherFiles.length > 0 && <VoucherFilesPreview files={voucherFiles} />}
             </div>
           )}
 

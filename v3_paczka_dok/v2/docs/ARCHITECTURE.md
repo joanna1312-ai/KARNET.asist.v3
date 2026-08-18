@@ -62,17 +62,19 @@ zawsze odpowiada `200`, strona pokazuje wtedy łagodny komunikat "brak rekomenda
 rozróżnienia dla użytkownika między "nic w okolicy" a "błąd integracji" (błędy widoczne
 tylko w logach serwera).
 
-**Upload vouchera (Sesja V4.3, ADR-009):** plik/zdjęcie vouchera **nie** przechodzi przez
-`API` — trafia bezpośrednio z przeglądarki do Supabase Storage. Powód: limit ciała
-requestu na Vercel Serverless Functions (~4.5 MB) jest mniejszy niż dopuszczalny rozmiar
-pliku (10 MB). Flow trójkrokowy: (1) `POST .../voucher-file/sign-upload` — serwer
-weryfikuje właściciela karnetu i zwraca podpisany URL do zapisu; (2) przeglądarka wysyła
-plik zwykłym `PUT` prosto do Supabase Storage tym URL-em; (3)
-`POST .../voucher-file/confirm` — serwer zapisuje ścieżkę (prefiks `storage:`) w
-`voucherFileUrl` dopiero po potwierdzeniu udanego uploadu. Bucket jest **prywatny** —
-odczyt (`GET .../voucher-file`) generuje świeży podpisany URL (ważny 5 minut) przy każdym
-wejściu na szczegóły karnetu, nigdy trwały link. Szczegóły: [DECISIONS.md](DECISIONS.md),
-ADR-009.
+**Upload vouchera (Sesja V4.3, ADR-009; wiele plików od Sesji V6.2):** pliki/zdjęcia
+vouchera (do 5 na karnet) **nie** przechodzą przez `API` — trafiają bezpośrednio z
+przeglądarki do Supabase Storage. Powód: limit ciała requestu na Vercel Serverless
+Functions (~4.5 MB) jest mniejszy niż dopuszczalny rozmiar pliku (10 MB). Flow
+trójkrokowy, powtarzany dla każdego pliku: (1) `POST .../voucher-files/sign-upload` —
+serwer weryfikuje właściciela karnetu i limit plików, zwraca podpisany URL do zapisu; (2)
+przeglądarka wysyła plik zwykłym `PUT` prosto do Supabase Storage tym URL-em; (3)
+`POST .../voucher-files/confirm` — serwer dodaje nowy wiersz `CardVoucherFile` dopiero po
+potwierdzeniu udanego uploadu. Bucket jest **prywatny** — odczyt
+(`GET .../voucher-files`) generuje świeże podpisane URL-e (ważne 5 minut) dla wszystkich
+plików karnetu przy każdym wejściu na szczegóły/edycję, nigdy trwały link. Tekst/link
+(Sesja 11, `voucherFileUrl`) jest niezależny od tej listy plików. Szczegóły:
+[DECISIONS.md](DECISIONS.md), ADR-009.
 
 **PWA i Web Push (Faza V5b):** aplikacja instaluje się na ekran główny telefonu
 (`manifest.ts`, ikony 192/512 generowane dynamicznie z tych samych proporcji co

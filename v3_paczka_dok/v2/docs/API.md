@@ -58,40 +58,52 @@ Przykład odpowiedzi `GET /api/cards/:id`:
 }
 ```
 
-`voucherFileUrl` przyjmowane w `POST`/`PATCH /api/cards` jako zwykły string: treść/link
-(Sesja 11) **albo** ścieżka pliku w Supabase Storage z prefiksem `storage:` (Sesja V4.3,
-`ADR-009`) — ten drugi format nie jest ustawiany bezpośrednio przez `POST`/`PATCH`, tylko
-przez `.../voucher-file/confirm` niżej, po udanym uploadzie.
+`voucherFileUrl` przyjmowane w `POST`/`PATCH /api/cards` jako zwykły string: **wyłącznie**
+treść/link wpisany ręcznie (Sesja 11), niezależny od plików niżej (Sesja V6.2) — można
+ustawić jedno, drugie albo oba naraz.
 
-### Upload pliku/zdjęcia vouchera (Sesja V4.3, `ADR-009`)
+### Pliki/zdjęcia vouchera (Sesja V4.3 `ADR-009`, wiele plików od Sesji V6.2)
 
 | Metoda | Ścieżka | Opis |
 |---|---|---|
-| `POST` | `/api/cards/:id/voucher-file/sign-upload` | krok 1: zwraca podpisany URL do zapisu w Supabase Storage + docelową ścieżkę |
-| `POST` | `/api/cards/:id/voucher-file/confirm` | krok 3: potwierdza udany upload, zapisuje ścieżkę w `voucherFileUrl` |
-| `GET` | `/api/cards/:id/voucher-file` | świeży podpisany URL do odczytu (bucket prywatny — nigdy trwały link) |
+| `POST` | `/api/cards/:id/voucher-files/sign-upload` | krok 1: zwraca podpisany URL do zapisu w Supabase Storage + docelową ścieżkę |
+| `POST` | `/api/cards/:id/voucher-files/confirm` | krok 3: potwierdza udany upload, dodaje nowy wiersz `CardVoucherFile` |
+| `GET` | `/api/cards/:id/voucher-files` | świeże podpisane URL-e wszystkich plików karnetu (bucket prywatny — nigdy trwały link) |
+| `DELETE` | `/api/cards/:id/voucher-files/:fileId` | usuwa jeden plik (obiekt z bucketa + wiersz z bazy) |
 
 Krok 2 (sam upload pliku) idzie **bezpośrednio do Supabase Storage**, z pominięciem naszego
 backendu — patrz `ADR-009` (limit ciała requestu na Vercel).
+
+Karnet może mieć maksymalnie **5 plików** (`VOUCHER_FILE_MAX_COUNT`,
+`src/server/voucher-file.ts`) — egzekwowane zarówno w `sign-upload`, jak i ponownie w
+`confirm` (zabezpieczenie przed wyścigiem dwóch równoległych uploadów).
 
 `POST .../sign-upload` — body `{ "contentType": "image/jpeg" }` (dozwolone:
 `image/jpeg`, `image/png`, `image/webp`, `application/pdf`). Odpowiedź:
 ```json
 { "uploadUrl": "https://...supabase.co/storage/v1/object/upload/sign/...", "path": "cards/c1/6f1b...-uuid.jpg" }
 ```
-`400 { "error": "unsupported_content_type" }` dla niedozwolonego typu.
+`400 { "error": "unsupported_content_type" }` dla niedozwolonego typu, `400 { "error":
+"limit_reached" }` przy już istniejących 5 plikach.
 
 `POST .../confirm` — body `{ "path": "cards/c1/6f1b...-uuid.jpg" }` (ścieżka zwrócona przez
-`sign-upload`). Zapisuje `voucherFileUrl = "storage:" + path`; sprząta poprzedni plik
-karnetu, jeśli jakiś miał. `400 { "error": "invalid_path" }`, gdy ścieżka nie leży pod
-`cards/:id/` tego karnetu.
+`sign-upload`). Tworzy nowy wiersz `CardVoucherFile` (nie nadpisuje żadnego istniejącego).
+`400 { "error": "invalid_path" }`, gdy ścieżka nie leży pod `cards/:id/` tego karnetu;
+`400 { "error": "limit_reached" }` jak wyżej.
 
-`GET .../voucher-file` — `200 { "url": "https://...signed..." }` (ważny 5 minut).
-`404 { "error": "not_a_file" }`, gdy `voucherFileUrl` karnetu nie jest plikiem (pusty albo
-zwykły tekst/link).
+`GET .../voucher-files` — `200 { "files": [{ "id": "...", "url": "https://...signed...", "kind": "image" | "pdf" }] }`
+(URL-e ważne 5 minut, w kolejności dodania).
 
-Wszystkie trzy endpointy autoryzowane identycznie jak reszta `/api/cards/*`
+`DELETE .../voucher-files/:fileId` — `200 { "ok": true }`; `404`, gdy plik nie należy do
+tego karnetu. Usuwanie obiektu z bucketa jest best-effort (nie blokuje usunięcia wiersza z
+bazy, jeśli storage akurat zawiedzie).
+
+Wszystkie cztery endpointy autoryzowane identycznie jak reszta `/api/cards/*`
 (`findOwnedCard`/`ownerFilter`) — `401`/`404` na tych samych zasadach.
+
+„Odnów” z archiwum (`POST /api/cards`) świadomie **nie** kopiuje plików źródłowego
+karnetu — nowy karnet zaczyna bez nich (inaczej niż tekst/link, który nadal jest
+dziedziczony, patrz `renewFormValues` w `cards/page.tsx`).
 
 ## Wejścia (visits)
 

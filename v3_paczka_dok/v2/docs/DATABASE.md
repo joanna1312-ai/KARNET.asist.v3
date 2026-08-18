@@ -76,7 +76,7 @@ zawsze + kategorie, gdzie `created_by_device_id` = zweryfikowany `deviceId` wywo
 | `used_visits` | int, default 0 | |
 | `expiry_date` | date, **nullable** | **opcjonalna dla `limit`, wymagana dla `unlimited`** — reguła z v5/v6 |
 | `voucher_mode` | enum: `single`, `per_visit` | |
-| `voucher_file_url` | text, nullable | treść/link (Sesja 11) **albo** plik w Supabase Storage (Sesja V4.3, `ADR-009`) — plik rozpoznawany po prefiksie `storage:` przed ścieżką w buckecie (np. `storage:cards/{cardId}/{uuid}.jpg`); bez prefiksu to zwykły tekst/link. Nigdy trwały publiczny URL — bucket jest prywatny, odczyt/zapis idzie przez podpisane URL-e z `/api/cards/:id/voucher-file*` |
+| `voucher_file_url` | text, nullable | wyłącznie treść/link wpisany ręcznie (Sesja 11). Do Sesji V6.2 przyjmował też ścieżkę pliku w Supabase Storage (prefiks `storage:`) — od Sesji V6.2 pliki żyją w osobnej tabeli `card_voucher_files` niżej, niezależnie od tej kolumny (można ustawić jedno, drugie albo oba naraz) |
 | `deleted_at` | timestamptz, nullable | miękkie usuwanie (rekomendacja) |
 | `created_at`, `updated_at` | timestamptz | |
 
@@ -95,6 +95,24 @@ Status „aktywny / w archiwum” **nie jest** osobną kolumną w MVP — liczon
 `archived = used_visits >= total_visits (dla limit) OR (expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE)`.
 Jeśli lista rośnie i przeliczanie w locie zacznie boleć wydajnościowo, dodać generowaną
 kolumnę / materializowany widok.
+
+### `card_voucher_files` (pliki/zdjęcia vouchera — Sesja V6.2)
+
+| Kolumna | Typ | Uwagi |
+|---|---|---|
+| `id` | uuid PK | |
+| `card_id` | uuid FK → cards, `ON DELETE CASCADE` | |
+| `storage_path` | text | ścieżka w buckecie Supabase Storage (np. `cards/{cardId}/{uuid}.jpg`), ten sam prywatny bucket co dawny pojedynczy plik (`ADR-009`) — odczyt/zapis idzie przez podpisane URL-e z `/api/cards/:id/voucher-files*`, nigdy trwały publiczny URL |
+| `created_at` | timestamptz | |
+
+Zastępuje pojedynczy plik z Sesji V4.3 (dawny `storage:`-prefiksowany `voucher_file_url`) —
+karnet może mieć ich kilka naraz, do limitu `VOUCHER_FILE_MAX_COUNT = 5`
+(`src/server/voucher-file.ts`), egzekwowanego w API, nie w bazie. Przy migracji na Sesję
+V6.2 istniejące `storage:`-owe wartości `voucher_file_url` zostały przeniesione tu jako
+pierwszy wiersz, a kolumna `voucher_file_url` wyczyszczona (patrz migracja
+`20260817220804_add_card_voucher_files`). "Odnów" z archiwum (`cards/page.tsx`) świadomie
+**nie** kopiuje wierszy tej tabeli do nowego karnetu — nowy karnet zaczyna bez plików
+(inaczej niż `voucher_file_url` tekstowy, który nadal jest dziedziczony).
 
 ### `visits` (wejścia)
 
@@ -137,6 +155,7 @@ zadania porządkującego.
 ```
 users 1───N cards N───1 companies N───1 categories
 cards 1───N visits
+cards 1───N card_voucher_files
 users/device N───N companies  (favorites)
 users/device 1───N push_subscriptions
 device 1───N categories  (własne kategorie, prywatne per urządzenie)
@@ -185,6 +204,8 @@ powinny mieć różną skalę pilności.
 - `push_subscriptions(user_id)`, `push_subscriptions(device_id)` — wyszukiwanie
   subskrypcji właściciela karnetu przy wysyłce przypomnień; `endpoint` ma unikalny
   indeks przez samo `@unique` w Prisma
+- `card_voucher_files(card_id)` — lista plików danego karnetu (`GET
+  /api/cards/:id/voucher-files`)
 
 ## Dostęp do danych i RLS (jeśli Supabase)
 
@@ -195,7 +216,7 @@ Jeśli baza danych lub storage voucherów zostaną uruchomione na Supabase (jedn
   z frontendu przez klienta Supabase.** Klucz `service_role` (pełny dostęp, omija RLS)
   używany jest wyłącznie po stronie serwera i nigdy nie trafia do kodu klienckiego.
 - Mimo to **RLS (Row Level Security) musi być włączone na wszystkich tabelach** zawierających
-  dane użytkownika (`cards`, `visits`, `favorites`, `push_subscriptions`) — jako druga warstwa zabezpieczenia,
+  dane użytkownika (`cards`, `visits`, `favorites`, `push_subscriptions`, `card_voucher_files`) — jako druga warstwa zabezpieczenia,
   na wypadek błędu w API, przyszłej zmiany architektury (np. bezpośredni dostęp z
   frontendu) lub pomyłkowego użycia klucza `anon` zamiast `service_role`.
 - Minimalna polityka RLS na start: wiersz widoczny/edytowalny tylko wtedy, gdy

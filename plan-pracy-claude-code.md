@@ -1070,13 +1070,19 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > `docs/DECISIONS.md` (nowa nota przy `ADR-009` o wielu plikach) i i18n (PL/EN).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Limit plików, los pola tekstowego i reguła dziedziczenia przy „Odnów" ustalone
-- [ ] Plan zaakceptowany
-- [ ] Migracja `CardVoucherFile` na bazie lokalnej
-- [ ] Upload/usuwanie wielu plików działa end-to-end (zweryfikowane w przeglądarce na
-      realnym buckecie `voucher-files-dev`, nie tylko testami jednostkowymi)
-- [ ] `docs/` i i18n zaktualizowane
-- [ ] lint/test + commit
+- [x] Limit plików, los pola tekstowego i reguła dziedziczenia przy „Odnów" ustalone
+      (limit **5**; tekst/link zostaje jako osobna, niezależna opcja; „Odnów" zaczyna bez
+      plików, tekst/link nadal dziedziczony)
+- [x] Plan zaakceptowany
+- [x] Migracja `CardVoucherFile` na bazie lokalnej (`20260817220804_add_card_voucher_files`,
+      z krokiem przenoszącym istniejące `storage:`-owe `voucherFileUrl` do nowej tabeli)
+- [x] Upload/usuwanie wielu plików działa end-to-end (zweryfikowane w przeglądarce na
+      realnym buckecie `voucher-files-dev`, nie tylko testami jednostkowymi — limit 5,
+      usuwanie plików oczekujących i już zapisanych, niezależność tekst/pliki, „Odnów" bez
+      dziedziczenia plików)
+- [x] `docs/` i i18n zaktualizowane (`DATABASE.md`, `API.md`, `ARCHITECTURE.md`,
+      `DECISIONS.md`, `messages/pl.json`, `messages/en.json`)
+- [x] lint/test (195/195) — do potwierdzenia z użytkowniczką, potem commit
 
 ### Sesja V6.3 (dopisek 1) — Archiwizacja: wejścia z datą przyszłą — wymaga decyzji przed startem
 

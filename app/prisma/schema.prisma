@@ -180,11 +180,28 @@ model Card {
   user    User?   @relation(fields: [userId], references: [id])
   company Company @relation(fields: [companyId], references: [id])
   visits  Visit[]
+  voucherFiles CardVoucherFile[]
 
   @@index([userId])
   @@index([deviceId])
   @@index([companyId])
   @@map("cards")
+}
+
+// Wiele plików/zdjęć vouchera na karnet (Sesja V6.2) — zastępuje dawny pojedynczy plik w
+// `cards.voucher_file_url` (prefiks `storage:`, Sesja V4.3/ADR-009). Tryb tekstowy/link w
+// `voucher_file_url` zostaje bez zmian, niezależny od tej tabeli. Limit liczby wierszy na
+// karnet (5) egzekwowany w API, nie w bazie — patrz `VOUCHER_FILE_MAX_COUNT`.
+model CardVoucherFile {
+  id          String   @id @default(uuid()) @db.Uuid
+  cardId      String   @map("card_id") @db.Uuid
+  storagePath String   @map("storage_path")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@map("card_voucher_files")
 }
 
 /// Pojedyncze wejście na karnecie.

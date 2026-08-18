@@ -22,10 +22,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { categoryDisplayName } from "@/lib/category-display";
-import { uploadVoucherFile } from "@/lib/voucher-upload";
+import {
+  deleteVoucherFile,
+  fetchVoucherFiles,
+  uploadVoucherFiles,
+  type VoucherFile,
+} from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
 import type { CategoryColor } from "@/server/system-categories";
-import { isStorageVoucherFileUrl } from "@/server/voucher-file";
 
 interface ApiCategory {
   id: string;
@@ -46,7 +50,10 @@ interface ApiCard {
   company: { id: string; name: string; category: ApiCategory };
 }
 
-function cardToFormValues(card: ApiCard): CardFormValues {
+// `existingFiles` puste dla "Odnów" (Sesja V6.2: nowy karnet zaczyna bez plików —
+// świadoma decyzja, patrz DECISIONS.md) i dla świeżo otwartej edycji przed dociągnięciem
+// listy z GET /api/cards/:id/voucher-files.
+function cardToFormValues(card: ApiCard, existingFiles: VoucherFile[]): CardFormValues {
   return {
     companyMode: "existing",
     companyId: card.company.id,
@@ -62,17 +69,19 @@ function cardToFormValues(card: ApiCard): CardFormValues {
     expiryDate: card.expiryDate ? card.expiryDate.slice(0, 10) : "",
     voucherMode: card.voucherMode,
     voucherFileUrl: card.voucherFileUrl ?? "",
-    voucherInputMode: isStorageVoucherFileUrl(card.voucherFileUrl) ? "file" : "text",
-    voucherFile: null,
-    voucherRemoveFile: false,
+    voucherInputMode: existingFiles.length > 0 ? "file" : "text",
+    voucherExistingFiles: existingFiles,
+    voucherFilesToRemove: [],
+    voucherNewFiles: [],
   };
 }
 
-// Do "Odnów" z archiwum: ta sama firma/typ/liczba wejść/voucher co karnet źródłowy, ale
-// bez daty ważności — karnet trafił do archiwum właśnie przez upłynięcie starej daty (lub
-// wyczerpanie limitu), więc nowa musi zostać świadomie podana od nowa.
+// Do "Odnów" z archiwum: ta sama firma/typ/liczba wejść/tekst vouchera co karnet
+// źródłowy, ale bez daty ważności — karnet trafił do archiwum właśnie przez upłynięcie
+// starej daty (lub wyczerpanie limitu), więc nowa musi zostać świadomie podana od nowa.
+// Pliki vouchera (Sesja V6.2) świadomie NIE są dziedziczone — nowy karnet zaczyna bez nich.
 function renewFormValues(card: ApiCard): CardFormValues {
-  return { ...cardToFormValues(card), expiryDate: "" };
+  return { ...cardToFormValues(card, []), expiryDate: "" };
 }
 
 type CardsTab = "active" | "archived";
@@ -107,6 +116,7 @@ export default function CardsPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<ApiCard | null>(null);
+  const [editingVoucherFiles, setEditingVoucherFiles] = useState<VoucherFile[]>([]);
   const [renewSource, setRenewSource] = useState<ApiCard | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverErrors, setServerErrors] = useState<CardInputErrorCode[]>([]);
@@ -164,22 +174,29 @@ export default function CardsPage() {
 
   const openAddForm = useCallback(() => {
     setEditingCard(null);
+    setEditingVoucherFiles([]);
     setRenewSource(null);
     setServerErrors([]);
     setVoucherUploadError(false);
     setFormOpen(true);
   }, []);
 
-  function openEditForm(card: ApiCard) {
-    setEditingCard(card);
-    setRenewSource(null);
+  // Async: pliki karnetu (Sesja V6.2) muszą być pobrane PRZED otwarciem formularza — jego
+  // wewnętrzny stan startowy (useState(initialValues)) czyta initialValues tylko raz, przy
+  // montowaniu, więc dociągnięcie ich po fakcie by ich nie pokazało.
+  async function openEditForm(card: ApiCard) {
     setServerErrors([]);
     setVoucherUploadError(false);
+    const files = await fetchVoucherFiles(card.id);
+    setEditingCard(card);
+    setEditingVoucherFiles(files);
+    setRenewSource(null);
     setFormOpen(true);
   }
 
   function openRenewForm(card: ApiCard) {
     setEditingCard(null);
+    setEditingVoucherFiles([]);
     setRenewSource(card);
     setServerErrors([]);
     setVoucherUploadError(false);
@@ -189,6 +206,7 @@ export default function CardsPage() {
   function closeForm() {
     setFormOpen(false);
     setEditingCard(null);
+    setEditingVoucherFiles([]);
     setRenewSource(null);
     setServerErrors([]);
   }
@@ -287,13 +305,23 @@ export default function CardsPage() {
 
     const savedBody: { card: { id: string } } = await response.json();
 
-    // Upload pliku vouchera (Sesja V4.3) — osobne wywołanie PO zapisaniu karnetu, bo
-    // endpoint uploadu potrzebuje już istniejącego id karnetu. Niepowodzenie tu nie cofa
-    // zapisu karnetu — pokazujemy nieblokujący komunikat, plik da się dograć w edycji.
-    if (values.voucherInputMode === "file" && values.voucherFile) {
-      const uploaded = await uploadVoucherFile(savedBody.card.id, values.voucherFile);
-      if (!uploaded) setVoucherUploadError(true);
+    // Usuwanie/upload plików vouchera (Sesja V4.3, rozszerzone o wiele plików w Sesji
+    // V6.2) — osobne wywołania PO zapisaniu karnetu, bo endpointy potrzebują już
+    // istniejącego id karnetu. Niepowodzenie tu nie cofa zapisu karnetu — pokazujemy
+    // nieblokujący komunikat, pliki da się poprawić w edycji. Niezależne od
+    // voucherInputMode (który steruje tylko tym, która karta jest widoczna) — usunięcia/
+    // dodania z listy plików zapisują się niezależnie od tego, czy w danej chwili widać
+    // kartę "tekst" czy "pliki".
+    let voucherFilesFailed = false;
+    for (const fileId of values.voucherFilesToRemove) {
+      const removed = await deleteVoucherFile(savedBody.card.id, fileId);
+      if (!removed) voucherFilesFailed = true;
     }
+    if (values.voucherNewFiles.length > 0) {
+      const failedCount = await uploadVoucherFiles(savedBody.card.id, values.voucherNewFiles);
+      if (failedCount > 0) voucherFilesFailed = true;
+    }
+    if (voucherFilesFailed) setVoucherUploadError(true);
 
     setSubmitting(false);
 
@@ -397,7 +425,7 @@ export default function CardsPage() {
             categories={categories}
             initialValues={
               editingCard
-                ? cardToFormValues(editingCard)
+                ? cardToFormValues(editingCard, editingVoucherFiles)
                 : renewSource
                   ? renewFormValues(renewSource)
                   : emptyCardFormValues

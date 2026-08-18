@@ -6,6 +6,9 @@ const prismaMock = {
   card: {
     findFirst: vi.fn(),
   },
+  cardVoucherFile: {
+    findMany: vi.fn(),
+  },
 };
 
 const getServerSessionMock = vi.fn().mockResolvedValue(null);
@@ -19,7 +22,7 @@ vi.mock("@/server/storage", () => ({
 
 const { GET } = await import("./route");
 
-const url = (id: string) => `http://localhost/api/cards/${id}/voucher-file`;
+const url = (id: string) => `http://localhost/api/cards/${id}/voucher-files`;
 const routeParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
 beforeAll(() => {
@@ -32,8 +35,7 @@ beforeEach(() => {
 });
 
 async function authHeaders(deviceId = "device-1") {
-  const token = await signDeviceToken(deviceId);
-  return { Authorization: `Device ${token}` };
+  return { Authorization: `Device ${await signDeviceToken(deviceId)}` };
 }
 
 const baseCard = {
@@ -48,7 +50,7 @@ const baseCard = {
   deletedAt: null,
 };
 
-describe("GET /api/cards/:id/voucher-file", () => {
+describe("GET /api/cards/:id/voucher-files", () => {
   it("returns 404 when the card does not belong to the caller", async () => {
     prismaMock.card.findFirst.mockResolvedValue(null);
 
@@ -60,29 +62,9 @@ describe("GET /api/cards/:id/voucher-file", () => {
     expect(response.status).toBe(404);
   });
 
-  it("returns 404 when the card's voucher is plain text, not a storage file", async () => {
-    prismaMock.card.findFirst.mockResolvedValue({
-      ...baseCard,
-      voucherFileUrl: "10% zniżki - kod ABC123",
-    });
-
-    const response = await GET(
-      new Request(url("card-1"), { headers: await authHeaders() }),
-      routeParams("card-1")
-    );
-    const body = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(body.error).toBe("not_a_file");
-    expect(createVoucherReadUrlMock).not.toHaveBeenCalled();
-  });
-
-  it("returns a fresh signed URL for a storage-backed voucher", async () => {
-    prismaMock.card.findFirst.mockResolvedValue({
-      ...baseCard,
-      voucherFileUrl: "storage:cards/card-1/voucher.jpg",
-    });
-    createVoucherReadUrlMock.mockResolvedValue("https://storage.example/signed-read");
+  it("returns an empty list when the card has no files", async () => {
+    prismaMock.card.findFirst.mockResolvedValue(baseCard);
+    prismaMock.cardVoucherFile.findMany.mockResolvedValue([]);
 
     const response = await GET(
       new Request(url("card-1"), { headers: await authHeaders() }),
@@ -91,7 +73,44 @@ describe("GET /api/cards/:id/voucher-file", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.url).toBe("https://storage.example/signed-read");
-    expect(createVoucherReadUrlMock).toHaveBeenCalledWith("cards/card-1/voucher.jpg");
+    expect(body.files).toEqual([]);
+  });
+
+  it("returns fresh signed URLs for all files of the card", async () => {
+    prismaMock.card.findFirst.mockResolvedValue(baseCard);
+    prismaMock.cardVoucherFile.findMany.mockResolvedValue([
+      { id: "file-1", storagePath: "cards/card-1/a.jpg" },
+      { id: "file-2", storagePath: "cards/card-1/b.pdf" },
+    ]);
+    createVoucherReadUrlMock.mockImplementation(async (path: string) => `https://signed/${path}`);
+
+    const response = await GET(
+      new Request(url("card-1"), { headers: await authHeaders() }),
+      routeParams("card-1")
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.files).toEqual([
+      { id: "file-1", url: "https://signed/cards/card-1/a.jpg", kind: "image" },
+      { id: "file-2", url: "https://signed/cards/card-1/b.pdf", kind: "pdf" },
+    ]);
+  });
+
+  it("skips a file whose signed URL fails to generate, without failing the whole request", async () => {
+    prismaMock.card.findFirst.mockResolvedValue(baseCard);
+    prismaMock.cardVoucherFile.findMany.mockResolvedValue([
+      { id: "file-1", storagePath: "cards/card-1/a.jpg" },
+    ]);
+    createVoucherReadUrlMock.mockRejectedValue(new Error("sign_read_failed"));
+
+    const response = await GET(
+      new Request(url("card-1"), { headers: await authHeaders() }),
+      routeParams("card-1")
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.files).toEqual([]);
   });
 });

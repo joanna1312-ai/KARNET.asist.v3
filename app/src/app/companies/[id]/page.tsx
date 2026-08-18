@@ -21,7 +21,7 @@ import { CardType, VoucherMode } from "@/generated/prisma/enums";
 import { categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
-import { uploadVoucherFile } from "@/lib/voucher-upload";
+import { uploadVoucherFiles } from "@/lib/voucher-upload";
 import { CardInputErrorCode } from "@/server/card-rules";
 import { getCardWarningStatus } from "@/server/card-status";
 
@@ -163,10 +163,11 @@ export default function CompanyDetailsPage() {
 
     const savedBody: { card: { id: string } } = await response.json();
 
-    // Upload pliku vouchera (Sesja V4.3) — patrz analogiczny komentarz w cards/page.tsx.
-    if (values.voucherInputMode === "file" && values.voucherFile) {
-      const uploaded = await uploadVoucherFile(savedBody.card.id, values.voucherFile);
-      if (!uploaded) setVoucherUploadError(true);
+    // Upload plików vouchera (Sesja V4.3, wiele plików w Sesji V6.2) — patrz analogiczny
+    // komentarz w cards/page.tsx.
+    if (values.voucherNewFiles.length > 0) {
+      const failedCount = await uploadVoucherFiles(savedBody.card.id, values.voucherNewFiles);
+      if (failedCount > 0) setVoucherUploadError(true);
     }
 
     setSubmitting(false);
