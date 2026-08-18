@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 export async function openCardsPage(page: Page): Promise<void> {
   await page.goto("/cards");
@@ -44,6 +44,23 @@ export async function fillCardForm(page: Page, options: NewCardOptions): Promise
 
 export async function submitCardForm(page: Page): Promise<void> {
   await page.locator("form").getByRole("button", { name: "Zapisz" }).click();
+}
+
+// Licznik wejść (kropki `VisitDots`, redesign mobilny Faza v5b/Sesja 13) — widoczny tekst
+// to samo "X/Y" bez słowa "wejść" (to jest tylko w aria-label, dla czytników ekranu).
+// Testy celują w aria-label, bo to jedyny sposób trafić dokładnie w jeden element: goły
+// tekst "X/Y" pasowałby równocześnie do zewnętrznego <span> (całość) i wewnętrznego
+// (sam licznik), co Playwright zgłosiłby jako niejednoznaczne dopasowanie.
+export function visitCounter(scope: Page | Locator, used: number, total: number): Locator {
+  return scope.locator(`[aria-label="${used}/${total} wejść"]`);
+}
+
+// Wiersz karnetu w zakładce "Archiwum" (`ArchivedCardItem.tsx`) — w odróżnieniu od wiersza
+// na liście aktywnych (`CardListItem.tsx`, `<Link>`), archiwalny wiersz to zwykłe `<li>`
+// bez nawigacji (karnetu zarchiwizowanego nie da się już otworzyć/edytować) — stąd
+// `getByRole("listitem")`, nie `getByRole("link")`.
+export function archivedCardRow(page: Page, companyName: string): Locator {
+  return page.getByRole("listitem").filter({ hasText: companyName });
 }
 
 // Pełen przepływ kreatora (Sesja 13, punkt 1 z docs/TESTING.md) — używany też jako

@@ -22,6 +22,14 @@ export default defineConfig({
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
+  // `next dev` (nie `next build`) kompiluje trasę na żądanie przy pierwszej nawigacji po
+  // niej (kilka cykli Fast Refresh) — obserwowane do ~20s przy zupełnie "zimnym" starcie
+  // serwera, mimo że funkcja pod testem działa poprawnie (płaci to głównie pierwszy test w
+  // przebiegu). Domyślne 5s dla `expect()` i 30s na cały test było za krótkie.
+  timeout: 60_000,
+  expect: {
+    timeout: 30_000,
+  },
   use: {
     baseURL,
     trace: "on-first-retry",
