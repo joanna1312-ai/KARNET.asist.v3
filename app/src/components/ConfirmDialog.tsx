@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { CARD_SURFACE_CLASS } from "@/components/ui/Card";
 
@@ -13,6 +13,9 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   confirmDisabled?: boolean;
+  // Slot dodatkowej treści między opisem a przyciskami — np. checkbox przy
+  // silniejszych potwierdzeniach (Sesja V6.10, wyczyszczenie danych karnetów).
+  children?: ReactNode;
 }
 
 // Generyczny dialog potwierdzenia. Używany do usuwania karnetu — usuwanie nigdy nie
@@ -26,6 +29,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   confirmDisabled,
+  children,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -58,6 +62,7 @@ export function ConfirmDialog({
         {title}
       </h2>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{body}</p>
+      {children}
       <div className="mt-6 flex flex-wrap justify-end gap-3">
         <Button type="button" variant="ghost" onClick={onCancel}>
           {cancelLabel}

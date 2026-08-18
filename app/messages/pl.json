@@ -126,7 +126,17 @@
     "appearanceDark": "Ciemny",
     "appearanceAuto": "Auto",
     "statsRow": "Statystyki",
-    "helpRow": "Jak korzystać z Karnet.asist"
+    "helpRow": "Jak korzystać z Karnet.asist",
+    "resetCardsRow": "Wyczyść dane karnetów",
+    "resetCardsHint": "Usuwa wszystkie Twoje karnety (aktywne i archiwalne), łącznie z plikami voucherów. Nie dotyka zapisanych miejsc, kategorii ani ulubionych.",
+    "resetCardsButton": "Wyczyść wszystkie karnety",
+    "resetCardsSuccess": "Dane karnetów zostały wyczyszczone.",
+    "resetCardsDialogTitle": "Wyczyścić wszystkie dane karnetów?",
+    "resetCardsDialogBody": "Tej operacji nie da się cofnąć — wszystkie Twoje karnety (aktywne i archiwalne), ich historia wejść i pliki voucherów znikną z aplikacji. Miejsca, kategorie i ulubione zostają nietknięte.",
+    "resetCardsDialogFailed": "Coś poszło nie tak i dane karnetów nie zostały wyczyszczone. Spróbuj ponownie.",
+    "resetCardsDialogCheckboxLabel": "Rozumiem, że tej operacji nie da się cofnąć.",
+    "resetCardsDialogConfirm": "Wyczyść karnety",
+    "resetCardsDialogCancel": "Anuluj"
   },
   "statsPage": {
     "title": "Statystyki",

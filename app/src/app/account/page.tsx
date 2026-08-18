@@ -1,17 +1,19 @@
 "use client";
 
-import { BarChart3, Bell, ChevronRight, CircleHelp, Languages, LogIn, Smartphone, Sun } from "lucide-react";
+import { BarChart3, Bell, ChevronRight, CircleHelp, Languages, LogIn, Smartphone, Sun, Trash2 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AppearanceControl } from "@/components/AppearanceControl";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { HelpDialog } from "@/components/HelpDialog";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { Logo } from "@/components/Logo";
 import { Button, buttonClassName } from "@/components/ui/Button";
 import { CARD_SURFACE_CLASS } from "@/components/ui/Card";
 import { Switch } from "@/components/ui/Switch";
+import { deviceFetch } from "@/lib/device-client";
 import {
   getExistingPushSubscription,
   getPushSupport,
@@ -32,6 +34,12 @@ export default function AccountPage() {
   const [remindersPending, setRemindersPending] = useState(false);
   const [iosHintNeeded, setIosHintNeeded] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetChecked, setResetChecked] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetError, setResetError] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
 
   const isAuthenticated = status === "authenticated";
   const name = session?.user?.name ?? session?.user?.email ?? "";
@@ -58,6 +66,36 @@ export default function AccountPage() {
       setRemindersEnabled(false);
     }
     setRemindersPending(false);
+  }
+
+  function openResetDialog() {
+    setResetChecked(false);
+    setResetError(false);
+    setResetDialogOpen(true);
+  }
+
+  function closeResetDialog() {
+    setResetDialogOpen(false);
+    setResetChecked(false);
+    setResetError(false);
+  }
+
+  async function handleConfirmReset() {
+    setResetting(true);
+    setResetError(false);
+
+    const response = await deviceFetch("/api/account/reset-cards", { method: "POST" });
+
+    setResetting(false);
+
+    if (!response.ok) {
+      setResetError(true);
+      return;
+    }
+
+    setResetDialogOpen(false);
+    setResetChecked(false);
+    setResetDone(true);
   }
 
   return (
@@ -153,6 +191,29 @@ export default function AccountPage() {
         </button>
       </section>
 
+      <section className={`mt-4 ${CARD_SURFACE_CLASS} border-status-urgent/30 p-4`}>
+        <div className="flex items-start gap-3">
+          <Trash2 className="size-5 shrink-0 text-status-urgent" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">{t("resetCardsRow")}</p>
+            <p className="mt-0.5 text-xs text-foreground/60">{t("resetCardsHint")}</p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="danger"
+          onClick={openResetDialog}
+          className="mt-3 w-full"
+        >
+          {t("resetCardsButton")}
+        </Button>
+        {resetDone && (
+          <p className="mt-2 text-xs text-status-ok" role="status">
+            {t("resetCardsSuccess")}
+          </p>
+        )}
+      </section>
+
       <footer className="mt-6 flex flex-col items-center gap-2 text-center text-sm text-foreground/70">
         <Logo size="sm" />
         <p>{tFooter("authorLine")}</p>
@@ -166,6 +227,27 @@ export default function AccountPage() {
       </footer>
 
       <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      <ConfirmDialog
+        open={resetDialogOpen}
+        title={t("resetCardsDialogTitle")}
+        body={resetError ? t("resetCardsDialogFailed") : t("resetCardsDialogBody")}
+        confirmLabel={t("resetCardsDialogConfirm")}
+        cancelLabel={t("resetCardsDialogCancel")}
+        confirmDisabled={!resetChecked || resetting}
+        onConfirm={handleConfirmReset}
+        onCancel={closeResetDialog}
+      >
+        <label className="mt-4 flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={resetChecked}
+            onChange={(event) => setResetChecked(event.target.checked)}
+            className="mt-0.5 size-4 shrink-0 accent-status-urgent"
+          />
+          {t("resetCardsDialogCheckboxLabel")}
+        </label>
+      </ConfirmDialog>
     </div>
   );
 }

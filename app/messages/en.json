@@ -126,7 +126,17 @@
     "appearanceDark": "Dark",
     "appearanceAuto": "Auto",
     "statsRow": "Statistics",
-    "helpRow": "How to use Karnet.asist"
+    "helpRow": "How to use Karnet.asist",
+    "resetCardsRow": "Clear card data",
+    "resetCardsHint": "Deletes all your cards (active and archived), including their voucher files. Places, categories and favorites are not affected.",
+    "resetCardsButton": "Clear all cards",
+    "resetCardsSuccess": "Your card data has been cleared.",
+    "resetCardsDialogTitle": "Clear all card data?",
+    "resetCardsDialogBody": "This can't be undone — every card you have (active and archived), their visit history and voucher files will disappear from the app. Places, categories and favorites stay untouched.",
+    "resetCardsDialogFailed": "Something went wrong and your cards were not cleared. Please try again.",
+    "resetCardsDialogCheckboxLabel": "I understand this cannot be undone.",
+    "resetCardsDialogConfirm": "Clear cards",
+    "resetCardsDialogCancel": "Cancel"
   },
   "statsPage": {
     "title": "Statistics",

@@ -238,6 +238,32 @@ zaplanowane (inaczej niż `realizedVisits` z Sesji V6.3) — pokazuje wszystko z
 datą w danym okresie. `byCategory` posortowane malejąco po `count`; `topCompany` to
 firma z największą liczbą wejść w okresie, `null` gdy `totalVisits` wynosi `0`.
 
+## Konto (Sesja V6.10)
+
+| Metoda | Ścieżka | Opis |
+|---|---|---|
+| `POST` | `/api/account/reset-cards` | wyczyszczenie danych karnetów bieżącej tożsamości (ustawienia → „Wyczyść dane karnetów") |
+
+Wymaga `Authorization: Device <token>` albo zalogowanej sesji (jak `/api/cards`) — inaczej
+`401 { "error": "unauthorized" }`. Miękko usuwa (`deletedAt`, ten sam mechanizm co
+`DELETE /api/cards/:id`) **wszystkie** karnety wywołującego — aktywne i archiwalne, filtr
+własności identyczny jak reszta `/api/cards/*` (`userId`/`deviceId`). Dodatkowo, w
+odróżnieniu od usunięcia pojedynczego karnetu, kasuje też powiązane pliki voucherów: wiersze
+`CardVoucherFile` z bazy i odpowiadające im obiekty w Supabase Storage (best-effort, tak jak
+`DELETE .../voucher-files/:fileId` — błąd usunięcia z bucketa nie blokuje odpowiedzi). **Nie**
+kasuje `Visit` (zostają w bazie, ale nieosiągalne przez API, bo nadrzędny karnet jest
+odfiltrowany wszędzie po `deletedAt: null`) ani `Company`/kategorii/ulubionych — te mogą być
+współdzielone z innymi urządzeniami/kontem. Odpowiedź zawsze `200`:
+
+```json
+{ "ok": true, "count": 3 }
+```
+
+`count` — liczba skasowanych karnetów (`0`, gdy wywołujący nie miał żadnego). UI wymaga
+silniejszego potwierdzenia niż zwykłe usuwanie pojedynczego karnetu (checkbox „rozumiem, że
+tej operacji nie da się cofnąć" w dialogu, patrz `ConfirmDialog.tsx`) — sama operacja jest
+nieodwracalna z poziomu aplikacji.
+
 ## Urządzenie (tryb bez konta)
 
 | Metoda | Ścieżka | Opis |
