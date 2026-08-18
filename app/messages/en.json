@@ -137,6 +137,8 @@
     "filterNamePlaceholder": "Search by place name",
     "filterCategoryLabel": "Filter by category",
     "filterCategoryAll": "All categories",
+    "filterCityLabel": "Filter by city",
+    "filterCityAll": "All cities",
     "sortByLabel": "Sort",
     "sortByName": "Sort: name",
     "sortByCategory": "Sort: category",

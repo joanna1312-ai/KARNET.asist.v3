@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
 import { categoryDisplayName } from "@/lib/category-display";
+import { extractCity } from "@/lib/address";
 import { haversineDistanceKm, type LatLng } from "@/lib/distance";
 import type { CategoryColor } from "@/server/system-categories";
 
@@ -40,6 +41,7 @@ export default function CompaniesPage() {
   const [loadError, setLoadError] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [filterCategoryId, setFilterCategoryId] = useState("all");
+  const [filterCity, setFilterCity] = useState("all");
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle");
@@ -177,6 +179,16 @@ export default function CompaniesPage() {
     return [...byId.values()].sort((a, b) => a.label.localeCompare(b.label));
   }, [companies, tCategory]);
 
+  const cityOptions = useMemo(() => {
+    if (!companies) return [];
+    const cities = new Set<string>();
+    for (const company of companies) {
+      const city = extractCity(company.address);
+      if (city) cities.add(city);
+    }
+    return [...cities].sort((a, b) => a.localeCompare(b));
+  }, [companies]);
+
   const visibleCompanies = useMemo(() => {
     if (!companies) return [];
     const normalizedFilter = filterText.trim().toLowerCase();
@@ -186,7 +198,9 @@ export default function CompaniesPage() {
         normalizedFilter === "" || company.name.toLowerCase().includes(normalizedFilter);
       const matchesCategory =
         filterCategoryId === "all" || company.category.id === filterCategoryId;
-      return matchesText && matchesCategory;
+      const matchesCity =
+        filterCity === "all" || extractCity(company.address) === filterCity;
+      return matchesText && matchesCategory && matchesCity;
     });
 
     const distanceKm = (company: ApiCompany): number | null =>
@@ -214,7 +228,7 @@ export default function CompaniesPage() {
       }
       return a.name.localeCompare(b.name);
     });
-  }, [companies, filterText, filterCategoryId, sortBy, tCategory, userLocation]);
+  }, [companies, filterText, filterCategoryId, filterCity, sortBy, tCategory, userLocation]);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
@@ -312,6 +326,21 @@ export default function CompaniesPage() {
                 </option>
               ))}
             </select>
+            {cityOptions.length > 0 && (
+              <select
+                value={filterCity}
+                onChange={(event) => setFilterCity(event.target.value)}
+                aria-label={t("filterCityLabel")}
+                className="min-h-11 rounded-xl border border-black/10 bg-transparent px-3 text-sm dark:border-white/10"
+              >
+                <option value="all">{t("filterCityAll")}</option>
+                {cityOptions.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            )}
             <select
               value={sortBy}
               onChange={(event) => {
