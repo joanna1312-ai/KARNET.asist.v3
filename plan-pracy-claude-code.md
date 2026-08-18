@@ -1186,10 +1186,10 @@ Prompt (skróć/dostosuj):
 > UI (do potwierdzenia, czy dokumentacja użytkownika też ma się zmienić w tej sesji).
 > Najpierw krótki plan (lista kluczy do zmiany), poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] `messages/pl.json`/`en.json` zaktualizowane, nazwy kodowe (model/trasy/API) nietknięte
-- [ ] Zweryfikowane wizualnie na `/companies`, `CardForm`, pomocy/FAQ — brak śladu „firma/company"
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] `messages/pl.json`/`en.json` zaktualizowane, nazwy kodowe (model/trasy/API) nietknięte
+- [x] Zweryfikowane wizualnie na `/companies`, `CardForm`, pomocy/FAQ — brak śladu „firma/company"
+- [x] lint/test + commit
 
 ### Sesja V6.5 (punkt 15) — „Miejsca": dodawanie nowych miejsc z tej zakładki — wymaga decyzji przed startem, zależna od V6.4
 
@@ -1229,14 +1229,19 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > (PL/EN, z terminologią „miejsce" z Sesji V6.4).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Sesja V6.4 ukończona (wymagana zależność — nazewnictwo „Miejsca")
-- [ ] Decyzje (pole adresu, wymagana kategoria) podjęte
-- [ ] Plan zaakceptowany
-- [ ] Migracja `address` na bazie lokalnej (jeśli dotyczy)
-- [ ] Formularz „Dodaj miejsce" (wyszukiwarka + ręcznie) na `/companies`
-- [ ] Adres widoczny w szczegółach miejsca, jeśli ustawiony
-- [ ] `docs/` i i18n zaktualizowane
-- [ ] lint/test + commit
+- [x] Sesja V6.4 ukończona (wymagana zależność — nazewnictwo „Miejsca") — zrobiona w tej
+      samej sesji, przed V6.5
+- [x] Decyzje (pole adresu, wymagana kategoria) podjęte — adres: tak (kolumna `address`);
+      kategoria: wymagana, ten sam UI co `CardForm`
+- [x] Plan zaakceptowany
+- [x] Migracja `address` na bazie lokalnej (jeśli dotyczy)
+- [x] Formularz „Dodaj miejsce" (wyszukiwarka + ręcznie) na `/companies`
+- [x] Adres widoczny w szczegółach miejsca, jeśli ustawiony
+- [x] `docs/` i i18n zaktualizowane
+- [x] lint/test + commit — `npm run test:e2e` ma 6 wcześniej istniejących niepowodzeń
+      niezwiązanych z tą sesją (rozjazd testów z Sesji 13 z redesignem mobilnym Fazy v5b,
+      `CardListItem.tsx` pokazuje dziś `VisitDots` zamiast tekstu „X/Y wejść") — zgłoszone
+      jako osobne zadanie do naprawy
 
 ### Sesja V6.6 (dopisek 2) — Kolorowanie kropek: zrealizowane vs zaplanowane wejścia — wymaga decyzji przed startem, zależna od V6.3
 
