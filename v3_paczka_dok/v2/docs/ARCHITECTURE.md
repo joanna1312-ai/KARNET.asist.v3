@@ -76,6 +76,13 @@ plików karnetu przy każdym wejściu na szczegóły/edycję, nigdy trwały link
 (Sesja 11, `voucherFileUrl`) jest niezależny od tej listy plików. Szczegóły:
 [DECISIONS.md](DECISIONS.md), ADR-009.
 
+**Statystyki (Sesja V6.7):** `/stats` woła `GET /api/stats?period=week|month`, który
+agreguje `Visit` wywołującego (przez `Card`, filtr własności jak `/api/cards`) w
+kalendarzowym tygodniu/miesiącu — bez nowej zewnętrznej zależności, sama baza własna.
+Ekran dostępny z wiersza „Statystyki” na `/account` (wzorem istniejącego wiersza
+„Pomoc”), nie z `BottomTabBar` — pasek zostaje przy dzisiejszych 4 zakładkach + FAB.
+Szczegóły odpowiedzi: [API.md](API.md).
+
 **PWA i Web Push (Faza V5b):** aplikacja instaluje się na ekran główny telefonu
 (`manifest.ts`, ikony 192/512 generowane dynamicznie z tych samych proporcji co
 `icon.tsx`) i rejestruje service worker (`public/sw.js`) — **świadomie tylko pod kątem

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronRight, CircleHelp, Languages, LogIn, Smartphone, Sun } from "lucide-react";
+import { BarChart3, Bell, ChevronRight, CircleHelp, Languages, LogIn, Smartphone, Sun } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -132,6 +132,15 @@ export default function AccountPage() {
           <p className="flex-1 font-semibold">{t("appearanceLabel")}</p>
           <AppearanceControl />
         </div>
+
+        <Link
+          href="/stats"
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+        >
+          <BarChart3 className="size-5 shrink-0 text-foreground/60" aria-hidden />
+          <span className="flex-1 font-semibold">{t("statsRow")}</span>
+          <ChevronRight className="size-4 shrink-0 text-foreground/40" aria-hidden />
+        </Link>
 
         <button
           type="button"

@@ -1334,12 +1334,23 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > `docs/API.md` i `docs/ARCHITECTURE.md` (nowy ekran).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Zakres funkcji (metryki, granice okresu, miejsce w nawigacji) potwierdzony
-- [ ] Plan zaakceptowany
-- [ ] `GET /api/stats` z agregacją tygodniową/miesięczną
-- [ ] Strona `/stats`, link z `/account`
-- [ ] i18n uzupełnione, `docs/` zaktualizowane
-- [ ] lint/test + commit
+- [x] Zakres funkcji (metryki, granice okresu, miejsce w nawigacji) potwierdzony —
+      rekomendowany zakres MVP przyjęty (łączna liczba wejść + rozbicie po kategoriach +
+      najczęściej odwiedzane miejsce, bez wykresów); okresy kalendarzowo (pon–niedz,
+      1.–ostatni dzień miesiąca), nie "ostatnie N dni"; wiersz „Statystyki" w `/account`
+      prowadzący do `/stats`
+- [x] Plan zaakceptowany
+- [x] `GET /api/stats?period=week|month` z agregacją — uwzględnia wejścia ze wszystkich
+      karnetów wywołującego (aktywnych i archiwalnych), filtr własności jak `/api/cards`
+      (`ownerFilter`); bez rozróżnienia zrealizowane/zaplanowane (inaczej niż
+      `realizedVisits` z Sesji V6.3) — pokazuje wszystko zapisane z datą w okresie
+- [x] Strona `/stats` (przełącznik Tydzień/Miesiąc, karty w stylu `/account`), link z
+      `/account` (wiersz nad „Pomoc")
+- [x] i18n uzupełnione (PL/EN), `docs/API.md` i `docs/ARCHITECTURE.md` zaktualizowane
+- [x] Zweryfikowane end-to-end w przeglądarce 2026-08-18: pusty stan na `/stats` (zakresy
+      dat poprawne), potem testowy karnet + wejście pokazały poprawną agregację
+      („Siłownia — 1", „FitZone Siłownia · 1 wejście") — testowe dane usunięte po weryfikacji
+- [x] lint/test (221/221) + commit
 
 ### Sesja V6.8 (punkt 18) — Dokończenie designu „Miejsca" i „Doradca" analogicznie do „Karnety" — zależna od V6.4, V6.5, V6.13, V6.14
 

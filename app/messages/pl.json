@@ -125,7 +125,19 @@
     "appearanceLight": "Jasny",
     "appearanceDark": "Ciemny",
     "appearanceAuto": "Auto",
+    "statsRow": "Statystyki",
     "helpRow": "Jak korzystać z Karnet.asist"
+  },
+  "statsPage": {
+    "title": "Statystyki",
+    "periodWeek": "Tydzień",
+    "periodMonth": "Miesiąc",
+    "totalVisitsLabel": "wejść w tym okresie",
+    "byCategoryTitle": "Wejścia po kategoriach",
+    "topCompanyTitle": "Najczęściej odwiedzane miejsce",
+    "visitsCount": "{count, plural, one {# wejście} few {# wejścia} other {# wejść}}",
+    "emptyState": "W tym okresie nie masz jeszcze żadnych zapisanych wejść.",
+    "loadError": "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę."
   },
   "companiesPage": {
     "title": "Miejsca",

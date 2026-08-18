@@ -125,7 +125,19 @@
     "appearanceLight": "Light",
     "appearanceDark": "Dark",
     "appearanceAuto": "Auto",
+    "statsRow": "Statistics",
     "helpRow": "How to use Karnet.asist"
+  },
+  "statsPage": {
+    "title": "Statistics",
+    "periodWeek": "Week",
+    "periodMonth": "Month",
+    "totalVisitsLabel": "visits in this period",
+    "byCategoryTitle": "Visits by category",
+    "topCompanyTitle": "Most visited place",
+    "visitsCount": "{count, plural, one {# visit} other {# visits}}",
+    "emptyState": "You don't have any visits recorded in this period yet.",
+    "loadError": "Couldn't load statistics. Try refreshing the page."
   },
   "companiesPage": {
     "title": "Places",
