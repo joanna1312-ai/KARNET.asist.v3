@@ -560,6 +560,7 @@ export default function CardDetailsPage() {
                 color={card.company.category.color}
                 size="lg"
                 highlightLast
+                futureCount={card.usedVisits - card.realizedVisits}
               />
             </div>
 

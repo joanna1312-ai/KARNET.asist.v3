@@ -1282,12 +1282,21 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > wyjaśnienie w `docs/user/faq.md`/`getting-started.md`, jeśli już opisują znaczenie kropek.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Sesja V6.3 ukończona (wymagana zależność — rozróżnienie zrealizowane/zaplanowane)
-- [ ] Zakres (szczegóły karnetu vs też lista) i styl koloru dla zaplanowanych wejść ustalone
-- [ ] Plan zaakceptowany
-- [ ] Kropki rozróżniają zrealizowane/zaplanowane wejścia w ustalonym zakresie
-- [ ] Sprawdzone w jasnym/ciemnym motywie
-- [ ] lint/test + commit
+- [x] Sesja V6.3 ukończona (wymagana zależność — rozróżnienie zrealizowane/zaplanowane)
+- [x] Zakres (szczegóły karnetu vs też lista) i styl koloru dla zaplanowanych wejść ustalone —
+      obie rekomendacje przyjęte: tylko `cards/[id]/page.tsx` (`size="lg"`), opacity `.45`
+- [x] Plan zaakceptowany
+- [x] Kropki rozróżniają zrealizowane/zaplanowane wejścia w ustalonym zakresie —
+      `VisitDots.tsx` dostał nowy opcjonalny prop `futureCount` (domyślnie `0`, więc
+      `CardListItem.tsx`/`ArchivedCardItem.tsx` bez zmian zachowania); `cards/[id]/page.tsx`
+      przekazuje `futureCount={card.usedVisits - card.realizedVisits}` — wykorzystuje już
+      istniejące pole `realizedVisits` z Sesji V6.3 (COUNT wejść z `visitDate <= dziś`),
+      zamiast liczyć daty ręcznie po stronie klienta
+- [x] Sprawdzone w jasnym/ciemnym motywie — zweryfikowane end-to-end w przeglądarce
+      2026-08-18: karnet z 1 wejściem zrealizowanym + 1 zaplanowanym pokazuje pierwszą kropkę
+      pełną (`opacity: 1`), drugą przyciemnioną (`opacity: 0.45`), ten sam kolor kategorii w
+      obu motywach
+- [x] lint/test (206/206) + commit
 
 ### Sesja V6.7 (punkt 13) — Statystyki: raporty tygodniowe/miesięczne — wymaga decyzji przed startem
 
