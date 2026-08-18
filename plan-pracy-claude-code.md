@@ -1378,12 +1378,19 @@ Prompt (skróć/dostosuj):
 > motyw) na wszystkich trzech ekranach obok siebie.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Sesje V6.4, V6.5, V6.13, V6.14 ukończone (wymagane zależności)
-- [ ] Plan zaakceptowany
-- [ ] Nagłówki, karty list i szkielety ładowania spójne z `/cards` na `/companies` i
-      `/recommendations`
-- [ ] Zweryfikowane wizualnie (mobile + desktop, jasny + ciemny motyw)
-- [ ] lint/test + commit
+- [x] Sesje V6.4, V6.5 ukończone; V6.13 i V6.14 **nieukończone w momencie startu tej
+      sesji** — zakres świadomie zawężony (patrz niżej), żeby nie blokować się na nich
+- [x] Plan zaakceptowany (zawężony: bez punktu 1 — nagłówek z logo, zależny od V6.13;
+      mobilny filtr kategorii na `/companies` zostaje osobno w V6.14)
+- [x] Karty list i szkielety ładowania spójne z `/cards` na `/companies` i
+      `/recommendations` (punkty 2 i 3 z pierwotnego promptu). Nagłówki stron **bez
+      zmian** (`text-2xl font-semibold`, bez logo) — dorobić przy V6.13, żeby nie
+      stylować dwa razy
+- [x] Zweryfikowane wizualnie (mobile 375px + desktop, jasny + ciemny motyw) —
+      `/companies` z realnymi danymi, `/recommendations` z zamockowaną geolokalizacją
+      (lokalnie brak klucza Groq, więc realny wynik AI niedostępny — sam styl karty i
+      szkielet zweryfikowane niezależnie od treści)
+- [x] lint (czysty) / test (221/221) + commit — do potwierdzenia z użytkowniczką
 
 ### Sesja V6.9 (punkt 10) — Węższy układ na desktopie (wrażenie ekranu telefonu) — wymaga decyzji przed startem
 
