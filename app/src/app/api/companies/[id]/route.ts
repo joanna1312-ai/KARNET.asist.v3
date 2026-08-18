@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
 import { ownerFilter } from "@/server/card-owner";
+import { startOfToday } from "@/server/card-status";
 
 const categorySelect = {
   id: true,
@@ -42,10 +43,20 @@ export async function GET(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const cards = await prisma.card.findMany({
+  const cardsRaw = await prisma.card.findMany({
     where: { companyId: id, deletedAt: null, ...ownerFilter(identity) },
     orderBy: { createdAt: "desc" },
+    // Sesja V6.3: realizedVisits zasila status ostrzegawczy pokazywany tu (StatusBadge),
+    // patrz cards/route.ts.
+    include: {
+      _count: { select: { visits: { where: { visitDate: { lte: startOfToday() } } } } },
+    },
   });
+
+  const cards = cardsRaw.map(({ _count, ...card }) => ({
+    ...card,
+    realizedVisits: _count.visits,
+  }));
 
   return NextResponse.json({ company, cards });
 }

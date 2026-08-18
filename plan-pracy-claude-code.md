@@ -1132,12 +1132,29 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > zarchiwizowany).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Decyzje (zakres zmiany statusu ostrzegawczego, źródło „zrealizowanych" wejść) podjęte
-- [ ] Plan zaakceptowany
-- [ ] Archiwizacja odroczona do momentu, aż ostatnie zaplanowane wejście ma datę w przeszłości
-- [ ] `docs/DATABASE.md` zaktualizowane
-- [ ] Testy zaktualizowane (w tym scenariusz: limit osiągnięty przyszłymi wejściami ≠ archiwizacja)
-- [ ] lint/test + commit
+- [x] Decyzje (zakres zmiany statusu ostrzegawczego, źródło „zrealizowanych" wejść) podjęte
+      (obie rekomendacje z opisu sesji przyjęte: licznik „X/Y" bez zmian, status ostrzegawczy
+      też liczony na bazie realizedVisits)
+- [x] Plan zaakceptowany
+- [x] Archiwizacja odroczona do momentu, aż ostatnie zaplanowane wejście ma datę w przeszłości
+      (zweryfikowane end-to-end w przeglądarce 2026-08-18: wejście z datą 2099 nie
+      archiwizuje karnetu z wyczerpanym limitem, zmiana tej daty na przeszłą — archiwizuje)
+- [x] `docs/DATABASE.md` zaktualizowane (też `docs/API.md` — nowe pole `realizedVisits`)
+- [x] Testy zaktualizowane (w tym scenariusz: limit osiągnięty przyszłymi wejściami ≠ archiwizacja)
+      — `card-status.test.ts`, `cards/route.test.ts`, `cards/[id]/route.test.ts`,
+      `visits/route.test.ts`, `companies/[id]/route.test.ts`
+- [x] lint/test (200/200) + commit
+
+Uwaga (2026-08-18): przy okazji weryfikacji `npm run test:e2e` odkryto 5 nieprzechodzących
+testów (`archive.spec.ts` ×2, `card-crud.spec.ts`, `visits.spec.ts` ×2), niezwiązanych z tą
+sesją — potwierdzone przez `git stash` na stanie sprzed Sesji V6.3 (identyczne błędy).
+Dwie przyczyny, obie z wcześniejszych sesji: (1) przycisk na `cards/[id]/page.tsx` nazywa
+się dziś „Zapisz wejście" (`saveVisitButton`), testy oczekują „Dodaj wejście"
+(`addVisitButton` — martwy klucz i18n, nigdzie nieużywany w kodzie); (2) `VisitDots.tsx`
+(Faza V5b) pokazuje „wejść" tylko w `aria-label`, nie w widocznym tekście DOM, więc
+`getByText("X/Y wejść")` nigdy się nie dopasuje. Świadomie odłożone do osobnej sesji
+(decyzja właścicielki) — nowy test w `archive.spec.ts` dodany w tej sesji jest tym samym
+problemem zablokowany do czasu tamtej poprawki.
 
 ### Sesja V6.4 (punkt 14) — „Firmy" → „Miejsca" (zmiana nazewnictwa widocznego dla użytkownika)
 

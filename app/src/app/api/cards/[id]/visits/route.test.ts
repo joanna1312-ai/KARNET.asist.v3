@@ -9,6 +9,7 @@ const prismaMock = {
   },
   visit: {
     create: vi.fn(),
+    count: vi.fn(),
   },
   $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
 };
@@ -75,6 +76,7 @@ describe("POST /api/cards/:id/visits — dodawanie wejścia", () => {
       usedVisits: 10,
       totalVisits: 10,
     });
+    prismaMock.visit.count.mockResolvedValue(10);
 
     const response = await POST(
       new Request(visitsUrl("card-1"), { method: "POST", headers: await authHeaders() }),
@@ -90,6 +92,7 @@ describe("POST /api/cards/:id/visits — dodawanie wejścia", () => {
       ...activeLimitCard,
       expiryDate: new Date("2000-01-01"),
     });
+    prismaMock.visit.count.mockResolvedValue(2);
 
     const response = await POST(
       new Request(visitsUrl("card-1"), { method: "POST", headers: await authHeaders() }),
@@ -99,8 +102,34 @@ describe("POST /api/cards/:id/visits — dodawanie wejścia", () => {
     expect(response.status).toBe(409);
   });
 
+  // Sesja V6.3: usedVisits (surowy licznik) już osiągnął limit, ale wejścia zrealizowane
+  // (visitDate <= dziś, `prisma.visit.count`) jest mniej — dodanie kolejnego wejścia nadal
+  // dozwolone, karnet nie jest jeszcze zarchiwizowany.
+  it("allows adding a visit when the limit is reached only by future-dated (not yet realized) visits", async () => {
+    prismaMock.card.findFirst.mockResolvedValue({
+      ...activeLimitCard,
+      usedVisits: 10,
+      totalVisits: 10,
+    });
+    prismaMock.visit.count.mockResolvedValue(7);
+    prismaMock.visit.create.mockResolvedValue({ id: "visit-2", cardId: "card-1" });
+    prismaMock.card.update.mockResolvedValue({ ...activeLimitCard, usedVisits: 11 });
+
+    const response = await POST(
+      new Request(visitsUrl("card-1"), {
+        method: "POST",
+        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      }),
+      routeParams("card-1")
+    );
+
+    expect(response.status).toBe(201);
+  });
+
   it("rejects a note longer than 80 characters", async () => {
     prismaMock.card.findFirst.mockResolvedValue(activeLimitCard);
+    prismaMock.visit.count.mockResolvedValue(2);
 
     const response = await POST(
       new Request(visitsUrl("card-1"), {
@@ -119,6 +148,7 @@ describe("POST /api/cards/:id/visits — dodawanie wejścia", () => {
 
   it("creates a visit and increments usedVisits in the same transaction", async () => {
     prismaMock.card.findFirst.mockResolvedValue(activeLimitCard);
+    prismaMock.visit.count.mockResolvedValue(2);
     prismaMock.visit.create.mockResolvedValue({ id: "visit-1", cardId: "card-1" });
     prismaMock.card.update.mockResolvedValue({ ...activeLimitCard, usedVisits: 3 });
 

@@ -7,6 +7,7 @@ import {
   parseCardPatch,
 } from "@/server/card-rules";
 import { findOwnedCard, ownerFilter } from "@/server/card-owner";
+import { startOfToday } from "@/server/card-status";
 
 const categorySelect = {
   id: true,
@@ -34,6 +35,9 @@ export async function GET(request: Request, { params }: RouteParams) {
     include: {
       company: { select: companySelect },
       visits: { orderBy: { visitDate: "desc" } },
+      // Sesja V6.3: patrz cards/route.ts — realizedVisits, nie usedVisits, decyduje o
+      // archiwizacji/statusie ostrzegawczym.
+      _count: { select: { visits: { where: { visitDate: { lte: startOfToday() } } } } },
     },
   });
 
@@ -41,7 +45,9 @@ export async function GET(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  return NextResponse.json({ card });
+  const { _count, ...cardFields } = card;
+
+  return NextResponse.json({ card: { ...cardFields, realizedVisits: _count.visits } });
 }
 
 // PATCH /api/cards/:id — edycja (m.in. expiryDate, w tym ustawienie na null).

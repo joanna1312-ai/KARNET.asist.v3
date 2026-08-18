@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
 import { findOwnedCard } from "@/server/card-owner";
-import { isCardArchived } from "@/server/card-status";
+import { isCardArchived, startOfToday } from "@/server/card-status";
 import { getVisitInputErrors, parseVisitInput } from "@/server/visit-rules";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -24,7 +24,13 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  if (isCardArchived(card)) {
+  // Sesja V6.3: realizedVisits (wejścia z datą <= dziś), nie surowy usedVisits — karnet z
+  // limitem osiągniętym wyłącznie przyszłymi wejściami nie jest jeszcze zarchiwizowany.
+  const realizedVisits = await prisma.visit.count({
+    where: { cardId: card.id, visitDate: { lte: startOfToday() } },
+  });
+
+  if (isCardArchived({ ...card, realizedVisits })) {
     return NextResponse.json({ error: "card_archived" }, { status: 409 });
   }
 

@@ -70,6 +70,7 @@ describe("GET /api/cards/:id", () => {
       ...existingLimitCard,
       company: { id: "co1", name: "FitZone", category: "gym" },
       visits: [],
+      _count: { visits: 0 },
     });
 
     const response = await GET(
@@ -89,6 +90,7 @@ describe("GET /api/cards/:id", () => {
       deviceId: null,
       company: { id: "co1", name: "FitZone", category: "gym" },
       visits: [],
+      _count: { visits: 0 },
     });
 
     const response = await GET(new Request(cardUrl("card-1")), routeParams("card-1"));
@@ -101,6 +103,28 @@ describe("GET /api/cards/:id", () => {
     );
     expect(response.status).toBe(200);
     expect(body.card.id).toBe("card-1");
+  });
+
+  // Sesja V6.3: `_count.visits` (filtrowana relacja Prisma, visitDate <= dziś) trafia do
+  // odpowiedzi jako `realizedVisits`, oddzielnie od surowego `usedVisits`.
+  it("exposes realizedVisits computed from visits with visitDate <= today, separately from the raw usedVisits counter", async () => {
+    prismaMock.card.findFirst.mockResolvedValue({
+      ...existingLimitCard,
+      usedVisits: 5,
+      company: { id: "co1", name: "FitZone", category: "gym" },
+      visits: [],
+      _count: { visits: 3 },
+    });
+
+    const response = await GET(
+      new Request(cardUrl("card-1"), { headers: await authHeaders() }),
+      routeParams("card-1")
+    );
+    const body = await response.json();
+
+    expect(body.card.usedVisits).toBe(5);
+    expect(body.card.realizedVisits).toBe(3);
+    expect(body.card._count).toBeUndefined();
   });
 });
 

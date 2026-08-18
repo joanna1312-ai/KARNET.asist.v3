@@ -38,6 +38,8 @@ interface ApiCard {
   type: CardType;
   totalVisits: number | null;
   usedVisits: number;
+  // Sesja V6.3 — patrz CardListItem.tsx.
+  realizedVisits: number;
   expiryDate: string | null;
   voucherMode: VoucherMode;
 }
@@ -265,7 +267,7 @@ export default function CompanyDetailsPage() {
                           status={getCardWarningStatus({
                             type: card.type,
                             totalVisits: card.totalVisits,
-                            usedVisits: card.usedVisits,
+                            realizedVisits: card.realizedVisits,
                             expiryDate: card.expiryDate ? new Date(card.expiryDate) : null,
                           })}
                         />

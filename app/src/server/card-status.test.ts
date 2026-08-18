@@ -12,7 +12,7 @@ describe("getCardWarningStatus — wymiar 1: data ważności (docs/DATABASE.md)"
   const baseUnlimited = {
     type: CardType.unlimited,
     totalVisits: null,
-    usedVisits: 0,
+    realizedVisits: 0,
   };
 
   it("ok — więcej niż 7 dni do wygaśnięcia", () => {
@@ -54,7 +54,7 @@ describe("getCardWarningStatus — wymiar 1: data ważności (docs/DATABASE.md)"
   it("brak terminu — limit bez ustawionej daty ważności i bez limitu wejść", () => {
     expect(
       getCardWarningStatus(
-        { type: CardType.limit, totalVisits: null, usedVisits: 0, expiryDate: null },
+        { type: CardType.limit, totalVisits: null, realizedVisits: 0, expiryDate: null },
         TODAY
       )
     ).toBe("brak terminu");
@@ -66,26 +66,32 @@ describe("getCardWarningStatus — wymiar 2: pozostałe wejścia, tylko `limit` 
 
   it("ok — pozostało więcej niż 2 wejścia", () => {
     expect(
-      getCardWarningStatus({ ...baseLimit, totalVisits: 10, usedVisits: 6 }, TODAY)
+      getCardWarningStatus({ ...baseLimit, totalVisits: 10, realizedVisits: 6 }, TODAY)
     ).toBe("ok");
   });
 
   it("soon — pozostały dokładnie 2 wejścia", () => {
     expect(
-      getCardWarningStatus({ ...baseLimit, totalVisits: 10, usedVisits: 8 }, TODAY)
+      getCardWarningStatus({ ...baseLimit, totalVisits: 10, realizedVisits: 8 }, TODAY)
     ).toBe("soon");
   });
 
   it("urgent — pozostało dokładnie 1 wejście", () => {
     expect(
-      getCardWarningStatus({ ...baseLimit, totalVisits: 10, usedVisits: 9 }, TODAY)
+      getCardWarningStatus({ ...baseLimit, totalVisits: 10, realizedVisits: 9 }, TODAY)
     ).toBe("urgent");
   });
 
-  it("wygasł — used_visits >= total_visits", () => {
+  it("wygasł — realized_visits >= total_visits", () => {
     expect(
-      getCardWarningStatus({ ...baseLimit, totalVisits: 10, usedVisits: 10 }, TODAY)
+      getCardWarningStatus({ ...baseLimit, totalVisits: 10, realizedVisits: 10 }, TODAY)
     ).toBe("wygasł");
+  });
+
+  it("Sesja V6.3 — nie 'wygasł', gdy limit osiągnięty tylko przyszłymi (niezrealizowanymi) wejściami", () => {
+    expect(
+      getCardWarningStatus({ ...baseLimit, totalVisits: 10, realizedVisits: 8 }, TODAY)
+    ).not.toBe("wygasł");
   });
 });
 
@@ -96,7 +102,7 @@ describe("getCardWarningStatus — reguła łączenia: gorszy z dwóch wymiarów
         {
           type: CardType.limit,
           totalVisits: 10,
-          usedVisits: 9, // urgent
+          realizedVisits: 9, // urgent
           expiryDate: daysFromToday(30), // ok
         },
         TODAY
@@ -110,7 +116,7 @@ describe("getCardWarningStatus — reguła łączenia: gorszy z dwóch wymiarów
         {
           type: CardType.limit,
           totalVisits: 10,
-          usedVisits: 1, // ok
+          realizedVisits: 1, // ok
           expiryDate: daysFromToday(-1), // wygasł
         },
         TODAY
@@ -124,7 +130,7 @@ describe("getCardWarningStatus — reguła łączenia: gorszy z dwóch wymiarów
         {
           type: CardType.limit,
           totalVisits: 10,
-          usedVisits: 8, // soon
+          realizedVisits: 8, // soon
           expiryDate: daysFromToday(5), // soon
         },
         TODAY
@@ -133,13 +139,13 @@ describe("getCardWarningStatus — reguła łączenia: gorszy z dwóch wymiarów
   });
 });
 
-describe("isCardArchived — bez zmian, formuła z docs/DATABASE.md", () => {
-  it("archiwizuje karnet limit z wyczerpanym limitem wejść", () => {
+describe("isCardArchived — formuła z docs/DATABASE.md (Sesja V6.3: realized_visits, nie used_visits)", () => {
+  it("archiwizuje karnet limit z wyczerpanym limitem zrealizowanych wejść", () => {
     expect(
       isCardArchived({
         type: CardType.limit,
         totalVisits: 5,
-        usedVisits: 5,
+        realizedVisits: 5,
         expiryDate: null,
       })
     ).toBe(true);
@@ -150,9 +156,22 @@ describe("isCardArchived — bez zmian, formuła z docs/DATABASE.md", () => {
       isCardArchived({
         type: CardType.unlimited,
         totalVisits: null,
-        usedVisits: 0,
+        realizedVisits: 0,
         expiryDate: daysFromToday(-1),
       })
     ).toBe(true);
+  });
+
+  it("Sesja V6.3 — NIE archiwizuje, gdy limit wejść byłby osiągnięty tylko licząc przyszłe (jeszcze niezrealizowane) wejścia", () => {
+    // Odpowiednik: totalVisits=5, usedVisits (surowy licznik) już 5, ale tylko 3 wejścia
+    // mają datę <= dziś — pozostałe 2 są zaplanowane na przyszłość.
+    expect(
+      isCardArchived({
+        type: CardType.limit,
+        totalVisits: 5,
+        realizedVisits: 3,
+        expiryDate: null,
+      })
+    ).toBe(false);
   });
 });

@@ -71,6 +71,7 @@ describe("GET /api/companies/:id", () => {
         usedVisits: 2,
         expiryDate: null,
         voucherMode: VoucherMode.single,
+        _count: { visits: 2 },
       },
     ]);
 
@@ -80,14 +81,19 @@ describe("GET /api/companies/:id", () => {
     );
     const body = await response.json();
 
-    expect(prismaMock.card.findMany).toHaveBeenCalledWith({
-      where: { companyId: "co1", deletedAt: null, deviceId: "device-1" },
-      orderBy: { createdAt: "desc" },
-    });
+    expect(prismaMock.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { companyId: "co1", deletedAt: null, deviceId: "device-1" },
+        orderBy: { createdAt: "desc" },
+      })
+    );
     expect(response.status).toBe(200);
     expect(body.company).toEqual({ id: "co1", name: "FitZone", category: GYM_CATEGORY });
     expect(body.cards).toHaveLength(1);
     expect(body.cards[0].id).toBe("card-1");
+    // Sesja V6.3 — realizedVisits w odpowiedzi, osobno od surowego usedVisits.
+    expect(body.cards[0].realizedVisits).toBe(2);
+    expect(body.cards[0]._count).toBeUndefined();
   });
 
   // Regresja: ta ścieżka wcześniej filtrowała karnety WYŁĄCZNIE po deviceId, więc karnety
@@ -109,16 +115,19 @@ describe("GET /api/companies/:id", () => {
         usedVisits: 0,
         expiryDate: "2027-01-01",
         voucherMode: VoucherMode.single,
+        _count: { visits: 0 },
       },
     ]);
 
     const response = await GET(new Request(companyUrl("co1")), routeParams("co1"));
     const body = await response.json();
 
-    expect(prismaMock.card.findMany).toHaveBeenCalledWith({
-      where: { companyId: "co1", deletedAt: null, userId: "user-1" },
-      orderBy: { createdAt: "desc" },
-    });
+    expect(prismaMock.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { companyId: "co1", deletedAt: null, userId: "user-1" },
+        orderBy: { createdAt: "desc" },
+      })
+    );
     expect(response.status).toBe(200);
     expect(body.cards).toHaveLength(1);
     expect(body.cards[0].id).toBe("card-2");
@@ -138,9 +147,11 @@ describe("GET /api/companies/:id", () => {
       routeParams("co1")
     );
 
-    expect(prismaMock.card.findMany).toHaveBeenCalledWith({
-      where: { companyId: "co1", deletedAt: null, userId: "user-1" },
-      orderBy: { createdAt: "desc" },
-    });
+    expect(prismaMock.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { companyId: "co1", deletedAt: null, userId: "user-1" },
+        orderBy: { createdAt: "desc" },
+      })
+    );
   });
 });

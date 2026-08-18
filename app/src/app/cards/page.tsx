@@ -44,6 +44,8 @@ interface ApiCard {
   type: CardType;
   totalVisits: number | null;
   usedVisits: number;
+  // Sesja V6.3 — patrz CardListItem.tsx.
+  realizedVisits: number;
   expiryDate: string | null;
   voucherMode: VoucherMode;
   voucherFileUrl: string | null;

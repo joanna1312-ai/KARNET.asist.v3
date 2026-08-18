@@ -92,7 +92,14 @@ Reguła biznesowa (constraint aplikacyjny, najlepiej też CHECK w DB):
 `type = 'unlimited' ⇒ expiry_date IS NOT NULL`.
 
 Status „aktywny / w archiwum” **nie jest** osobną kolumną w MVP — liczony w locie:
-`archived = used_visits >= total_visits (dla limit) OR (expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE)`.
+`archived = realized_visits >= total_visits (dla limit) OR (expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE)`,
+gdzie `realized_visits = COUNT(visits WHERE card_id = ... AND visit_date <= CURRENT_DATE)`
+— **nie** surowy licznik `used_visits` (Sesja V6.3). `used_visits` rośnie natychmiast po
+zapisaniu wejścia, niezależnie od tego, czy `visit_date` jest w przeszłości czy w
+przyszłości (`VisitForm.tsx` nie ogranicza daty), więc samo osiągnięcie limitu przez
+zaplanowane, jeszcze nieodbyte wejścia nie archiwizuje karnetu — dopiero gdy data
+ostatniego (chronologicznie) z tych wejść faktycznie minie. `used_visits` nadal zasila
+wyłącznie widoczny w UI licznik „X/Y” (`VisitDots`) — ta wartość się nie zmieniła.
 Jeśli lista rośnie i przeliczanie w locie zacznie boleć wydajnościowo, dodać generowaną
 kolumnę / materializowany widok.
 
@@ -176,14 +183,15 @@ Do potwierdzenia przed implementacją — patrz zastrzeżenie niżej.
 | `wygasł` | data minęła |
 | `brak terminu` | `expiry_date IS NULL` (możliwe tylko dla `limit`) |
 
-**Wymiar 2 — pozostałe wejścia** (dotyczy tylko `limit`):
+**Wymiar 2 — pozostałe wejścia** (dotyczy tylko `limit`; „pozostało” liczone jak przy
+`archived` na bazie `realized_visits`, nie surowego `used_visits` — Sesja V6.3):
 
 | Status | Próg |
 |---|---|
 | `ok` | pozostało więcej niż 2 wejścia |
 | `soon` | pozostały 2 wejścia |
 | `urgent` | pozostało 1 wejście |
-| `wygasł` | `used_visits >= total_visits` |
+| `wygasł` | `realized_visits >= total_visits` |
 
 **Reguła łączenia:** gdy karnet `limit` ma ustawione oba wymiary, status końcowy to
 gorszy (bliższy `urgent`/`wygasł`) z dwóch wyliczonych statusów.

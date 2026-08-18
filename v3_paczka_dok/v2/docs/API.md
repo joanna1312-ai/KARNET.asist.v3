@@ -49,6 +49,7 @@ Przykład odpowiedzi `GET /api/cards/:id`:
   "type": "limit",
   "totalVisits": 12,
   "usedVisits": 8,
+  "realizedVisits": 6,
   "expiryDate": "2026-09-15",
   "voucherMode": "single",
   "voucherFileUrl": null,
@@ -57,6 +58,11 @@ Przykład odpowiedzi `GET /api/cards/:id`:
   ]
 }
 ```
+
+`realizedVisits` (Sesja V6.3, tylko w odpowiedzi — nie przyjmowane w `POST`/`PATCH`):
+liczba wejść z `visitDate` w przeszłości lub dziś, licząca się do archiwizacji i statusu
+ostrzegawczego (`DATABASE.md`). `usedVisits` to nadal surowy licznik wszystkich zapisanych
+wejść (w tym przyszłych) — zasila wyłącznie widoczny w UI licznik „X/Y”.
 
 `voucherFileUrl` przyjmowane w `POST`/`PATCH /api/cards` jako zwykły string: **wyłącznie**
 treść/link wpisany ręcznie (Sesja 11), niezależny od plików niżej (Sesja V6.2) — można
@@ -114,8 +120,11 @@ dziedziczony, patrz `renewFormValues` w `cards/page.tsx`).
 | `DELETE` | `/api/cards/:id/visits/:visitId` | usunięcie błędnie dodanego wejścia |
 
 `POST /api/cards/:id/visits` zwraca `409 { "error": "card_archived" }`, gdy karnet jest już
-zarchiwizowany (limit wejść wyczerpany lub minęła data ważności — formuła `archived` w
-`DATABASE.md`) — nie da się dodać wejścia do wykorzystanego/przeterminowanego karnetu.
+zarchiwizowany (limit **zrealizowanych** wejść wyczerpany lub minęła data ważności —
+formuła `archived` w `DATABASE.md`) — nie da się dodać wejścia do wykorzystanego/
+przeterminowanego karnetu. Wejście z przyszłą datą, które tylko osiąga limit surowego
+licznika `usedVisits`, jeszcze nie blokuje dodawania kolejnych (Sesja V6.3) — blokada
+zadziała dopiero, gdy te wejścia faktycznie się zrealizują.
 `PATCH`/`DELETE` na istniejącym wpisie **nie** mają tego ograniczenia — korektę lub
 usunięcie błędnie dodanego wejścia można wykonać także po archiwizacji karnetu.
 

@@ -3,7 +3,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { getCallerIdentity, hasIdentity } from "@/server/caller-identity";
 import { getCardInputErrors, parseCardInput } from "@/server/card-rules";
-import { isCardArchived } from "@/server/card-status";
+import { isCardArchived, startOfToday } from "@/server/card-status";
 import { ownerFilter } from "@/server/card-owner";
 
 const categorySelect = {
@@ -18,7 +18,10 @@ const companySelect = { id: true, name: true, category: { select: categorySelect
 // Adnotacja jawna, bo TS gubi się przy inferencji typu elementu tablicy w
 // `.filter(...)` na wyniku `findMany` z zagnieżdżonym `include`/`select` (Prisma).
 type CardWithCompany = Prisma.CardGetPayload<{
-  include: { company: { select: typeof companySelect } };
+  include: {
+    company: { select: typeof companySelect };
+    _count: { select: { visits: true } };
+  };
 }>;
 
 // GET /api/cards[?archived=true] — lista karnetów. Zalogowany widzi wyłącznie karnety
@@ -32,14 +35,27 @@ export async function GET(request: Request) {
   }
 
   const wantArchived = new URL(request.url).searchParams.get("archived") === "true";
+  const today = startOfToday();
 
   const cards: CardWithCompany[] = await prisma.card.findMany({
     where: { deletedAt: null, ...ownerFilter(identity) },
-    include: { company: { select: companySelect } },
+    include: {
+      company: { select: companySelect },
+      // Sesja V6.3: wejścia zrealizowane (data <= dziś) decydują o archiwizacji, nie
+      // surowy usedVisits (który rośnie natychmiast, także dla wejść z przyszłą datą).
+      _count: { select: { visits: { where: { visitDate: { lte: today } } } } },
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  const filtered = cards.filter((card) => isCardArchived(card) === wantArchived);
+  const withRealizedVisits = cards.map(({ _count, ...card }) => ({
+    ...card,
+    realizedVisits: _count.visits,
+  }));
+
+  const filtered = withRealizedVisits.filter(
+    (card) => isCardArchived(card) === wantArchived
+  );
 
   return NextResponse.json({ cards: filtered });
 }

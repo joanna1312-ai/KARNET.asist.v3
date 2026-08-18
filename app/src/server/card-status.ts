@@ -3,17 +3,20 @@ import { CardType } from "@/generated/prisma/enums";
 export interface ArchivableCard {
   type: CardType;
   totalVisits: number | null;
-  usedVisits: number;
+  // Liczba wejść ZREALIZOWANYCH (visitDate <= dziś), nie surowy licznik usedVisits —
+  // Sesja V6.3: zaplanowane wejście z przyszłą datą nie może przedwcześnie zarchiwizować
+  // karnetu, mimo że usedVisits rośnie natychmiast po zapisaniu wejścia (docs/API.md).
+  realizedVisits: number;
   expiryDate: Date | null;
 }
 
 // Formuła z docs/DATABASE.md — `archived` nie jest kolumną, liczona w locie:
-// used_visits >= total_visits (dla limit) OR (expiry_date IS NOT NULL AND expiry_date < dziś).
+// realized_visits >= total_visits (dla limit) OR (expiry_date IS NOT NULL AND expiry_date < dziś).
 export function isCardArchived(card: ArchivableCard): boolean {
   const limitExhausted =
     card.type === CardType.limit &&
     card.totalVisits != null &&
-    card.usedVisits >= card.totalVisits;
+    card.realizedVisits >= card.totalVisits;
 
   const expired = card.expiryDate != null && card.expiryDate.getTime() < startOfToday().getTime();
 
@@ -37,7 +40,8 @@ const STATUS_SEVERITY: Record<CardWarningStatus, number> = {
 export interface WarnableCard {
   type: CardType;
   totalVisits: number | null;
-  usedVisits: number;
+  // Jak w ArchivableCard — zrealizowane wejścia (visitDate <= dziś), nie surowy usedVisits.
+  realizedVisits: number;
   expiryDate: Date | null;
 }
 
@@ -63,7 +67,7 @@ function getExpiryStatus(card: WarnableCard, today: Date): CardWarningStatus | n
 function getRemainingVisitsStatus(card: WarnableCard): CardWarningStatus | null {
   if (card.type !== CardType.limit || card.totalVisits == null) return null;
 
-  const remaining = card.totalVisits - card.usedVisits;
+  const remaining = card.totalVisits - card.realizedVisits;
 
   if (remaining <= 0) return "wygasł";
   if (remaining === 1) return "urgent";
@@ -88,7 +92,9 @@ export function getCardWarningStatus(
   );
 }
 
-function startOfToday(): Date {
+// Eksportowane, żeby API (server-side) mogło budować ten sam filtr `visitDate <= dziś`
+// przy liczeniu realizedVisits (Prisma `_count`/`visit.count`), bez powielania definicji.
+export function startOfToday(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }

@@ -80,6 +80,7 @@ describe("GET /api/cards (ADR-007)", () => {
         usedVisits: 2,
         expiryDate: null,
         company: { id: "co1", name: "FitZone", category: "gym" },
+        _count: { visits: 2 },
       },
       {
         id: "exhausted",
@@ -88,6 +89,7 @@ describe("GET /api/cards (ADR-007)", () => {
         usedVisits: 10,
         expiryDate: null,
         company: { id: "co1", name: "FitZone", category: "gym" },
+        _count: { visits: 10 },
       },
     ]);
 
@@ -114,6 +116,7 @@ describe("GET /api/cards (ADR-007)", () => {
         usedVisits: 0,
         expiryDate: new Date("2000-01-01"),
         company: { id: "co1", name: "FitZone", category: "gym" },
+        _count: { visits: 0 },
       },
     ]);
 
@@ -126,6 +129,31 @@ describe("GET /api/cards (ADR-007)", () => {
 
     expect(body.cards).toHaveLength(1);
     expect(body.cards[0].id).toBe("expired");
+  });
+
+  // Sesja V6.3: usedVisits (surowy licznik) już osiągnął limit, ale tylko 2 z 5 wejść
+  // mają datę <= dziś (`_count.visits` liczony przez filtrowaną relację Prisma w
+  // route.ts) — karnet ma zostać aktywny, nie trafić do archiwum.
+  it("keeps a card active when the limit is reached only by future-dated (not yet realized) visits", async () => {
+    prismaMock.card.findMany.mockResolvedValue([
+      {
+        id: "future-limit",
+        type: CardType.limit,
+        totalVisits: 5,
+        usedVisits: 5,
+        expiryDate: null,
+        company: { id: "co1", name: "FitZone", category: "gym" },
+        _count: { visits: 2 },
+      },
+    ]);
+
+    const response = await GET(
+      new Request(endpoint, { headers: await authHeaders("device-1") })
+    );
+    const body = await response.json();
+
+    expect(body.cards.map((c: { id: string }) => c.id)).toEqual(["future-limit"]);
+    expect(body.cards[0].realizedVisits).toBe(2);
   });
 });
 

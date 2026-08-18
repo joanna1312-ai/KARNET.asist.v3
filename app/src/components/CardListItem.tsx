@@ -18,6 +18,9 @@ export type CardListItemCard = {
   type: CardType;
   totalVisits: number | null;
   usedVisits: number;
+  // Wejścia zrealizowane (visitDate <= dziś) — decydują o archiwizacji/statusie
+  // ostrzegawczym (Sesja V6.3), niezależnie od surowego usedVisits pokazywanego w liczniku.
+  realizedVisits: number;
   expiryDate: string | null;
   company: { id: string; name: string; category: { id: string; slug: string | null; color: CategoryColor } };
 };
@@ -56,7 +59,7 @@ export function CardListItem({
   const status = getCardWarningStatus({
     type: card.type,
     totalVisits: card.totalVisits,
-    usedVisits: card.usedVisits,
+    realizedVisits: card.realizedVisits,
     expiryDate: card.expiryDate ? new Date(card.expiryDate) : null,
   });
 

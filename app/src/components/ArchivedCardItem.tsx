@@ -8,8 +8,15 @@ import { CardType } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format";
 import type { CardListItemCard } from "@/components/CardListItem";
 
+// Zrealizowane wejścia (Sesja V6.3), nie surowy usedVisits — karnet wyświetlony tu jest
+// już zarchiwizowany, to rozróżnienie decyduje tylko, który podpis pokazać (wyczerpany
+// limit vs. minęła data ważności).
 function isExhausted(card: CardListItemCard): boolean {
-  return card.type === CardType.limit && card.totalVisits != null && card.usedVisits >= card.totalVisits;
+  return (
+    card.type === CardType.limit &&
+    card.totalVisits != null &&
+    card.realizedVisits >= card.totalVisits
+  );
 }
 
 type ArchivedCardItemProps = {

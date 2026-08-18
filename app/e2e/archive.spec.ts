@@ -37,3 +37,26 @@ test("karnet trafia do archiwum po minięciu daty ważności", async ({ page, co
   await openArchiveTab(page);
   await expect(page.getByRole("link", { name: new RegExp(company.name) })).toBeVisible();
 });
+
+// Sesja V6.3: usedVisits (surowy licznik pokazywany w "X/Y") osiąga limit natychmiast po
+// zapisaniu wejścia, niezależnie od daty — ale karnet ma zostać aktywny, dopóki to wejście
+// jest dopiero zaplanowane na przyszłość, nie zrealizowane.
+test("karnet NIE trafia do archiwum, gdy limit wejść jest osiągnięty tylko wejściem z przyszłą datą", async ({
+  page,
+  company,
+}) => {
+  await openCardsPage(page);
+  await addCardViaWizard(page, { companyName: company.name, totalVisits: 1 });
+
+  await page.getByRole("link", { name: new RegExp(company.name) }).click();
+  await page.getByRole("button", { name: "Dodaj wejście" }).click();
+  await page.getByLabel("Data", { exact: true }).fill("2099-01-01");
+  await page.locator("form").getByRole("button", { name: "Zapisz" }).click();
+  await expect(page.getByText("1/1 wejść")).toBeVisible();
+
+  await openCardsPage(page);
+  await expect(page.getByRole("link", { name: new RegExp(company.name) })).toBeVisible();
+
+  await openArchiveTab(page);
+  await expect(page.getByRole("link", { name: new RegExp(company.name) })).toHaveCount(0);
+});
