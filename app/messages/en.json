@@ -272,11 +272,6 @@
     "expiryDateLabel": "Expiry date",
     "expiryDateHintRequired": "Required for unlimited cards.",
     "expiryDateHintOptional": "Optional — you can leave it blank.",
-    "voucherModeLabel": "How the voucher is shown",
-    "voucherModeOptions": {
-      "single": "One-time (single code/file)",
-      "per_visit": "For every visit"
-    },
     "voucherSectionLabel": "Voucher",
     "voucherInputModeOptions": {
       "text": "Text / link",
@@ -306,7 +301,6 @@
       "expiryDateRequiredForUnlimited": "An unlimited card requires an expiry date.",
       "totalVisitsRequiredForLimit": "Enter the number of visits for a limited card.",
       "totalVisitsPositive": "The number of visits must be greater than zero.",
-      "voucherModeRequired": "Choose how the voucher is shown.",
       "voucherFileTooLarge": "The file is too large (max 10 MB).",
       "voucherFileTypeUnsupported": "Unsupported file type (allowed: JPG, PNG, WebP, PDF).",
       "newCompanyNameRequired": "Enter the place name.",

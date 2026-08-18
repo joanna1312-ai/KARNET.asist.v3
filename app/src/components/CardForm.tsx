@@ -5,7 +5,7 @@ import { type FormEvent, useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
 import type { CategoryColor } from "@/server/system-categories";
 import {
@@ -55,7 +55,6 @@ export interface CardFormValues {
   type: CardType;
   totalVisits: string;
   expiryDate: string;
-  voucherMode: VoucherMode;
   // Treść/link wpisany ręcznie (Sesja 11) — niezależne od listy plików niżej (Sesja V6.2):
   // ustawienie jednego nie wpływa na drugie, mimo że w UI pokazywane są jako dwie karty
   // przełącznika `voucherInputMode`.
@@ -85,7 +84,6 @@ export const emptyCardFormValues: CardFormValues = {
   type: CardType.limit,
   totalVisits: "",
   expiryDate: "",
-  voucherMode: VoucherMode.single,
   voucherFileUrl: "",
   voucherInputMode: "text",
   voucherExistingFiles: [],
@@ -125,7 +123,6 @@ const FIELD_FOR_ERROR: Record<FormErrorCode, keyof CardFormValues> = {
   expiryDateRequiredForUnlimited: "expiryDate",
   totalVisitsRequiredForLimit: "totalVisits",
   totalVisitsPositive: "totalVisits",
-  voucherModeRequired: "voucherMode",
   newCompanyNameRequired: "newCompanyName",
   newCompanyCategoryRequired: "newCompanyCategorySelection",
   newCategoryNameRequired: "newCategoryName",
@@ -153,7 +150,6 @@ function toCandidate(values: CardFormValues) {
     type: values.type,
     totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
     expiryDate: values.expiryDate === "" ? null : new Date(values.expiryDate),
-    voucherMode: values.voucherMode,
     voucherFileUrl: values.voucherFileUrl === "" ? null : values.voucherFileUrl,
   };
 }
@@ -439,34 +435,6 @@ export function CardForm({
         {errorFor("expiryDate") && (
           <p className="text-sm text-status-urgent">
             {t(`errors.${errorFor("expiryDate")}`)}
-          </p>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label htmlFor={`${formId}-voucher-mode`} className="text-sm font-medium">
-          {t("voucherModeLabel")}
-        </label>
-        <Select
-          id={`${formId}-voucher-mode`}
-          value={values.voucherMode}
-          disabled={submitting}
-          onChange={(event) =>
-            setValues((prev) => ({
-              ...prev,
-              voucherMode: event.target.value as VoucherMode,
-            }))
-          }
-        >
-          {(Object.values(VoucherMode) as VoucherMode[]).map((mode) => (
-            <option key={mode} value={mode}>
-              {t(`voucherModeOptions.${mode}`)}
-            </option>
-          ))}
-        </Select>
-        {errorFor("voucherMode") && (
-          <p className="text-sm text-status-urgent">
-            {t(`errors.${errorFor("voucherMode")}`)}
           </p>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 import { signDeviceToken } from "@/server/device-token";
 
 const prismaMock = {
@@ -177,7 +177,6 @@ describe("POST /api/cards — kreator karnetu", () => {
           companyId: "co1",
           type: CardType.limit,
           totalVisits: 5,
-          voucherMode: VoucherMode.single,
         }),
       })
     );
@@ -206,7 +205,6 @@ describe("POST /api/cards — kreator karnetu", () => {
           companyId: "co1",
           type: CardType.limit,
           totalVisits: 5,
-          voucherMode: VoucherMode.single,
         }),
       })
     );
@@ -229,7 +227,6 @@ describe("POST /api/cards — kreator karnetu", () => {
         body: JSON.stringify({
           companyId: "co1",
           type: CardType.unlimited,
-          voucherMode: VoucherMode.single,
         }),
       })
     );
@@ -254,7 +251,6 @@ describe("POST /api/cards — kreator karnetu", () => {
           companyId: "does-not-exist",
           type: CardType.limit,
           totalVisits: 10,
-          voucherMode: VoucherMode.single,
         }),
       })
     );
@@ -278,7 +274,6 @@ describe("POST /api/cards — kreator karnetu", () => {
           companyId: "co1",
           type: CardType.limit,
           totalVisits: 5,
-          voucherMode: VoucherMode.single,
           deviceId: "attacker-supplied-id",
         }),
       })
@@ -306,7 +301,6 @@ describe("POST /api/cards — kreator karnetu", () => {
           companyId: "co1",
           type: CardType.limit,
           totalVisits: 5,
-          voucherMode: VoucherMode.single,
         }),
       })
     );

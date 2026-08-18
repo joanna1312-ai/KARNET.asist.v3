@@ -76,7 +76,6 @@ zawsze + kategorie, gdzie `created_by_device_id` = zweryfikowany `deviceId` wywo
 | `total_visits` | int, nullable | wymagane, gdy `type = limit` |
 | `used_visits` | int, default 0 | |
 | `expiry_date` | date, **nullable** | **opcjonalna dla `limit`, wymagana dla `unlimited`** — reguła z v5/v6 |
-| `voucher_mode` | enum: `single`, `per_visit` | |
 | `voucher_file_url` | text, nullable | wyłącznie treść/link wpisany ręcznie (Sesja 11). Do Sesji V6.2 przyjmował też ścieżkę pliku w Supabase Storage (prefiks `storage:`) — od Sesji V6.2 pliki żyją w osobnej tabeli `card_voucher_files` niżej, niezależnie od tej kolumny (można ustawić jedno, drugie albo oba naraz) |
 | `deleted_at` | timestamptz, nullable | miękkie usuwanie (rekomendacja) |
 | `created_at`, `updated_at` | timestamptz | |

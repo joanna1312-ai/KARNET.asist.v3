@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 import { getCardInputErrors } from "./card-rules";
 
 const validLimitCard = {
@@ -7,7 +7,6 @@ const validLimitCard = {
   type: CardType.limit,
   totalVisits: 10,
   expiryDate: null,
-  voucherMode: VoucherMode.single,
 };
 
 const validUnlimitedCard = {
@@ -15,7 +14,6 @@ const validUnlimitedCard = {
   type: CardType.unlimited,
   totalVisits: null,
   expiryDate: new Date("2026-12-31"),
-  voucherMode: VoucherMode.per_visit,
 };
 
 describe("getCardInputErrors — reguła limit/unlimited (docs/DATABASE.md)", () => {
@@ -61,12 +59,6 @@ describe("getCardInputErrors — reguła limit/unlimited (docs/DATABASE.md)", ()
     expect(
       getCardInputErrors({ ...validLimitCard, type: null })
     ).toContain("typeRequired");
-  });
-
-  it("rejects a card without voucherMode", () => {
-    expect(
-      getCardInputErrors({ ...validLimitCard, voucherMode: null })
-    ).toContain("voucherModeRequired");
   });
 
   it("does not require totalVisits for an unlimited card", () => {

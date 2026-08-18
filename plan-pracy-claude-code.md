@@ -1495,10 +1495,10 @@ Prompt (skróć/dostosuj):
 > obecność `voucherMode` w payloadzie.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Migracja Prisma na bazie lokalnej (nie produkcyjnej)
-- [ ] Pole usunięte z formularza, walidacji, API, i18n, dokumentacji
-- [ ] Testy zaktualizowane, lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Migracja Prisma na bazie lokalnej (nie produkcyjnej)
+- [x] Pole usunięte z formularza, walidacji, API, i18n, dokumentacji
+- [x] Testy zaktualizowane, lint/test + commit
 
 ### Sesja V6.12 (dopisek 3) — Otwieranie pliku/zdjęcia vouchera na pełen ekran
 

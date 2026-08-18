@@ -1,19 +1,17 @@
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 
 export type CardInputErrorCode =
   | "companyRequired"
   | "typeRequired"
   | "expiryDateRequiredForUnlimited"
   | "totalVisitsRequiredForLimit"
-  | "totalVisitsPositive"
-  | "voucherModeRequired";
+  | "totalVisitsPositive";
 
 export interface CardInputCandidate {
   companyId: string | null | undefined;
   type: CardType | null | undefined;
   totalVisits: number | null | undefined;
   expiryDate: Date | null | undefined;
-  voucherMode: VoucherMode | null | undefined;
   // Pole tekstowe (treść/link vouchera) — świadomie bez uploadu pliku/object
   // storage na start (patrz CLAUDE.md), więc bez własnego kodu błędu walidacji.
   // Opcjonalny klucz (nie tylko opcjonalna wartość), żeby nie wymagać go w
@@ -31,7 +29,6 @@ export function getCardInputErrors(
 
   if (!candidate.companyId) errors.push("companyRequired");
   if (!candidate.type) errors.push("typeRequired");
-  if (!candidate.voucherMode) errors.push("voucherModeRequired");
 
   if (candidate.type === CardType.unlimited && !candidate.expiryDate) {
     errors.push("expiryDateRequiredForUnlimited");
@@ -50,12 +47,6 @@ export function getCardInputErrors(
 
 function readCardType(value: unknown): CardType | null {
   return value === CardType.limit || value === CardType.unlimited ? value : null;
-}
-
-function readVoucherMode(value: unknown): VoucherMode | null {
-  return value === VoucherMode.single || value === VoucherMode.per_visit
-    ? value
-    : null;
 }
 
 function readTotalVisits(value: unknown): number | null {
@@ -86,7 +77,6 @@ export function parseCardInput(body: unknown): CardInputCandidate {
     type: readCardType(record.type),
     totalVisits: readTotalVisits(record.totalVisits),
     expiryDate: readExpiryDate(record.expiryDate),
-    voucherMode: readVoucherMode(record.voucherMode),
     voucherFileUrl: readVoucherFileUrl(record.voucherFileUrl),
   };
 }
@@ -112,9 +102,6 @@ export function parseCardPatch(body: unknown): Partial<CardInputCandidate> {
   }
   if ("expiryDate" in record) {
     patch.expiryDate = record.expiryDate === null ? null : readExpiryDate(record.expiryDate);
-  }
-  if ("voucherMode" in record) {
-    patch.voucherMode = readVoucherMode(record.voucherMode);
   }
   if ("voucherFileUrl" in record) {
     patch.voucherFileUrl = readVoucherFileUrl(record.voucherFileUrl);

@@ -51,7 +51,6 @@ Przykład odpowiedzi `GET /api/cards/:id`:
   "usedVisits": 8,
   "realizedVisits": 6,
   "expiryDate": "2026-09-15",
-  "voucherMode": "single",
   "voucherFileUrl": null,
   "visits": [
     { "id": "v1", "date": "2026-07-26", "time": null, "note": null }

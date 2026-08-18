@@ -17,7 +17,7 @@ import { CompanyMap } from "@/components/CompanyMap";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 import { categoryDisplayName } from "@/lib/category-display";
 import { deviceFetch } from "@/lib/device-client";
 import { formatDate } from "@/lib/format";
@@ -42,7 +42,6 @@ interface ApiCard {
   // Sesja V6.3 — patrz CardListItem.tsx.
   realizedVisits: number;
   expiryDate: string | null;
-  voucherMode: VoucherMode;
 }
 
 type FetchResult =
@@ -145,7 +144,6 @@ export default function CompanyDetailsPage() {
       type: values.type,
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,
-      voucherMode: values.voucherMode,
       voucherFileUrl: voucherFileUrlForSave(values),
     };
 

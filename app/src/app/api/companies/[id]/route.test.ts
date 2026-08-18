@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 import { signDeviceToken } from "@/server/device-token";
 
 const GYM_CATEGORY = { id: "cat-gym", slug: "gym", name: "Siłownia", color: "mint", isSystem: true };
@@ -70,7 +70,6 @@ describe("GET /api/companies/:id", () => {
         totalVisits: 10,
         usedVisits: 2,
         expiryDate: null,
-        voucherMode: VoucherMode.single,
         _count: { visits: 2 },
       },
     ]);
@@ -114,7 +113,6 @@ describe("GET /api/companies/:id", () => {
         totalVisits: null,
         usedVisits: 0,
         expiryDate: "2027-01-01",
-        voucherMode: VoucherMode.single,
         _count: { visits: 0 },
       },
     ]);

@@ -101,7 +101,6 @@ export default function NewCardPage() {
       type: values.type,
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,
-      voucherMode: values.voucherMode,
       voucherFileUrl: voucherFileUrlForSave(values),
     };
 
