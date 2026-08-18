@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Ellipsis, History, Pencil, Plus, Ticket } from "lucide-react";
+import { ChevronLeft, Ellipsis, FileText, History, Pencil, Plus, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
@@ -112,9 +112,12 @@ function VoucherFilesPreview({ files }: { files: VoucherFile[] }) {
             href={file.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex size-24 shrink-0 flex-col items-center justify-center gap-1 rounded-lg bg-black/5 text-sm font-medium hover:underline dark:bg-white/5"
+            className="flex size-24 shrink-0 flex-col items-center justify-center gap-1.5 rounded-lg bg-coral/15 p-2 text-coral-ink transition-colors hover:bg-coral/25 dark:bg-coral/10 dark:hover:bg-coral/20"
           >
-            {t("voucherOpenPdf")}
+            <FileText className="size-7" aria-hidden />
+            <span className="text-center text-xs font-medium leading-tight">
+              {t("voucherOpenPdf")}
+            </span>
           </a>
         ) : (
           // Podpisany URL Supabase (wygasa po kilku minutach) nie jest znaną domeną na
