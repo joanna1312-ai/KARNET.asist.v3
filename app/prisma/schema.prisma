@@ -145,6 +145,7 @@ model Company {
   id              String   @id @default(uuid()) @db.Uuid
   name            String
   categoryId      String   @map("category_id") @db.Uuid
+  address         String?
   lat             Float?
   lng             Float?
   googlePlaceId   String?  @map("google_place_id")

@@ -2,15 +2,12 @@
 
 import { useTranslations } from "next-intl";
 import { type FormEvent, useId, useState } from "react";
-import { CategoryIcon } from "@/components/CategoryIcon";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { CardType, VoucherMode } from "@/generated/prisma/enums";
-import { CATEGORY_COLOR_CLASS, categoryDisplayName } from "@/lib/category-display";
-import { DEFAULT_CATEGORY_ICON } from "@/lib/category-icons";
 import { CardInputErrorCode, getCardInputErrors } from "@/server/card-rules";
-import { CATEGORY_COLOR_PALETTE, type CategoryColor } from "@/server/system-categories";
+import type { CategoryColor } from "@/server/system-categories";
 import {
   isAllowedVoucherContentType,
   VOUCHER_FILE_ACCEPT,
@@ -18,8 +15,11 @@ import {
   VOUCHER_FILE_MAX_COUNT,
 } from "@/server/voucher-file";
 import type { VoucherFile } from "@/lib/voucher-upload";
+import { CategoryPicker, NEW_CATEGORY_SENTINEL } from "./CategoryPicker";
 import { PlacesAutocomplete } from "./PlacesAutocomplete";
 import { VoucherFilesGrid } from "./VoucherFilesGrid";
+
+export { NEW_CATEGORY_SENTINEL };
 
 export interface CompanyOption {
   id: string;
@@ -41,10 +41,6 @@ export type CompanyMode = "existing" | "new";
 // Storage — nie oba naraz.
 export type VoucherInputMode = "text" | "file";
 
-// Sentinel w selekcie kategorii: "dodaj własną kategorię" zamiast wybrania istniejącej
-// (Sesja 16). Nie może kolidować z prawdziwym uuid kategorii.
-export const NEW_CATEGORY_SENTINEL = "__new__";
-
 export interface CardFormValues {
   companyMode: CompanyMode;
   companyId: string;
@@ -52,6 +48,7 @@ export interface CardFormValues {
   newCompanyLat: number | null;
   newCompanyLng: number | null;
   newCompanyGooglePlaceId: string | null;
+  newCompanyAddress: string | null;
   newCompanyCategorySelection: string;
   newCategoryName: string;
   newCategoryColor: CategoryColor | "";
@@ -81,6 +78,7 @@ export const emptyCardFormValues: CardFormValues = {
   newCompanyLat: null,
   newCompanyLng: null,
   newCompanyGooglePlaceId: null,
+  newCompanyAddress: null,
   newCompanyCategorySelection: "",
   newCategoryName: "",
   newCategoryColor: "",
@@ -182,9 +180,6 @@ export function CardForm({
   const errors: FormErrorCode[] = clientErrors.length > 0 ? clientErrors : serverErrors;
   const errorFor = (field: keyof CardFormValues) =>
     errors.find((code) => FIELD_FOR_ERROR[code] === field);
-  const selectedCategory = categories.find(
-    (category) => category.id === values.newCompanyCategorySelection
-  );
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -308,6 +303,7 @@ export function CardForm({
                     newCompanyLat: null,
                     newCompanyLng: null,
                     newCompanyGooglePlaceId: null,
+                    newCompanyAddress: null,
                   }))
                 }
                 onPlaceSelect={(place) =>
@@ -317,6 +313,7 @@ export function CardForm({
                     newCompanyLat: place.lat,
                     newCompanyLng: place.lng,
                     newCompanyGooglePlaceId: place.googlePlaceId,
+                    newCompanyAddress: place.address,
                   }))
                 }
               />
@@ -328,107 +325,44 @@ export function CardForm({
               )}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor={`${formId}-new-company-category`}
-                className="text-sm font-medium"
-              >
-                {t("categoryLabel")}
-              </label>
-              <div className="relative">
-                {selectedCategory && (
-                  <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2">
-                    <CategoryIcon slug={selectedCategory.slug} color={selectedCategory.color} />
-                  </span>
-                )}
-                <Select
-                  id={`${formId}-new-company-category`}
-                  value={values.newCompanyCategorySelection}
-                  disabled={submitting}
-                  onChange={(event) =>
-                    setValues((prev) => ({
-                      ...prev,
-                      newCompanyCategorySelection: event.target.value,
-                    }))
-                  }
-                  style={selectedCategory ? { paddingLeft: "2.5rem" } : undefined}
-                >
-                  <option value="" disabled>
-                    {t("categoryPlaceholder")}
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {categoryDisplayName(category, tCategory)}
-                    </option>
-                  ))}
-                  <option value={NEW_CATEGORY_SENTINEL}>{t("newCategoryOption")}</option>
-                </Select>
-              </div>
-              {errorFor("newCompanyCategorySelection") && (
-                <p className="text-sm text-status-urgent">
-                  {t(`errors.${errorFor("newCompanyCategorySelection")}`)}
-                </p>
-              )}
-            </div>
-
-            {values.newCompanyCategorySelection === NEW_CATEGORY_SENTINEL && (
-              <div className="flex flex-col gap-3 rounded-lg border border-black/10 p-3 dark:border-white/10">
-                <div className="flex flex-col gap-1">
-                  <label
-                    htmlFor={`${formId}-new-category-name`}
-                    className="text-sm font-medium"
-                  >
-                    {t("newCategoryNameLabel")}
-                  </label>
-                  <Input
-                    id={`${formId}-new-category-name`}
-                    type="text"
-                    value={values.newCategoryName}
-                    disabled={submitting}
-                    placeholder={t("newCategoryNamePlaceholder")}
-                    onChange={(event) =>
-                      setValues((prev) => ({ ...prev, newCategoryName: event.target.value }))
-                    }
-                  />
-                  {errorFor("newCategoryName") && (
-                    <p className="text-sm text-status-urgent">
-                      {t(`errors.${errorFor("newCategoryName")}`)}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium">{t("newCategoryColorLabel")}</span>
-                  <div className="flex flex-wrap gap-2">
-                    {CATEGORY_COLOR_PALETTE.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        disabled={submitting}
-                        aria-pressed={values.newCategoryColor === color}
-                        aria-label={t(`categoryColors.${color}`)}
-                        title={t(`categoryColors.${color}`)}
-                        onClick={() =>
-                          setValues((prev) => ({ ...prev, newCategoryColor: color }))
-                        }
-                        className={`flex size-11 items-center justify-center rounded-full text-white ${CATEGORY_COLOR_CLASS[color]} ${
-                          values.newCategoryColor === color
-                            ? "ring-2 ring-offset-2 ring-black/60 dark:ring-white/60 dark:ring-offset-black"
-                            : ""
-                        }`}
-                      >
-                        <DEFAULT_CATEGORY_ICON className="size-5" strokeWidth={2} />
-                      </button>
-                    ))}
-                  </div>
-                  {errorFor("newCategoryColor") && (
-                    <p className="text-sm text-status-urgent">
-                      {t(`errors.${errorFor("newCategoryColor")}`)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            <CategoryPicker
+              idPrefix={`${formId}-new-company`}
+              categories={categories}
+              disabled={submitting}
+              categorySelection={values.newCompanyCategorySelection}
+              onCategorySelectionChange={(newCompanyCategorySelection) =>
+                setValues((prev) => ({ ...prev, newCompanyCategorySelection }))
+              }
+              newCategoryName={values.newCategoryName}
+              onNewCategoryNameChange={(newCategoryName) =>
+                setValues((prev) => ({ ...prev, newCategoryName }))
+              }
+              newCategoryColor={values.newCategoryColor}
+              onNewCategoryColorChange={(newCategoryColor) =>
+                setValues((prev) => ({ ...prev, newCategoryColor }))
+              }
+              categoryLabel={t("categoryLabel")}
+              categoryPlaceholder={t("categoryPlaceholder")}
+              newCategoryOptionLabel={t("newCategoryOption")}
+              newCategoryNameLabel={t("newCategoryNameLabel")}
+              newCategoryNamePlaceholder={t("newCategoryNamePlaceholder")}
+              newCategoryColorLabel={t("newCategoryColorLabel")}
+              categoryColorName={(color) => t(`categoryColors.${color}`)}
+              categoryTranslation={tCategory}
+              categoryError={
+                errorFor("newCompanyCategorySelection")
+                  ? t(`errors.${errorFor("newCompanyCategorySelection")}`)
+                  : undefined
+              }
+              newCategoryNameError={
+                errorFor("newCategoryName") ? t(`errors.${errorFor("newCategoryName")}`) : undefined
+              }
+              newCategoryColorError={
+                errorFor("newCategoryColor")
+                  ? t(`errors.${errorFor("newCategoryColor")}`)
+                  : undefined
+              }
+            />
           </div>
         )}
       </div>

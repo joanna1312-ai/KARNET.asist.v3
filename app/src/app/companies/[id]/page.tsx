@@ -28,6 +28,7 @@ import { getCardWarningStatus } from "@/server/card-status";
 interface ApiCompany {
   id: string;
   name: string;
+  address: string | null;
   lat: number | null;
   lng: number | null;
   category: CategoryOption;
@@ -212,6 +213,9 @@ export default function CompanyDetailsPage() {
                 <CategoryIcon slug={company.category.slug} color={company.category.color} />
                 {categoryDisplayName(company.category, tCategory)}
               </p>
+              {company.address && (
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">{company.address}</p>
+              )}
             </div>
             {!formOpen && (
               <Button type="button" onClick={openAddForm} className="shrink-0">

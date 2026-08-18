@@ -5,7 +5,7 @@
 ## Dodawanie pierwszego karnetu
 
 1. Na ekranie „Karnety” dotknij pomarańczowego przycisku „+”.
-2. Wybierz firmę z listy, znajdź ją przez Google Maps albo wpisz nazwę ręcznie, i wybierz
+2. Wybierz miejsce z listy, znajdź je przez Google Maps albo wpisz nazwę ręcznie, i wybierz
    kategorię (siłownia, basen, zajęcia grupowe, masaż, kosmetyka).
 3. Wybierz typ karnetu:
    - **Limit wejść** — podaj liczbę wejść; data ważności jest opcjonalna.
@@ -34,10 +34,10 @@ mieć te same karnety na kilku urządzeniach.
 ## Archiwum
 
 Karnety, które wygasły lub zostały w pełni wykorzystane, trafiają automatycznie do
-zakładki „Archiwum”. Stamtąd jednym dotknięciem możesz dodać nowy karnet w tej samej
-firmie.
+zakładki „Archiwum”. Stamtąd jednym dotknięciem możesz dodać nowy karnet w tym samym
+miejscu.
 
 ## Partnerzy
 
-W zakładce „Partnerzy” przeglądasz firmy powiązane z Twoimi karnetami, oznaczasz
-ulubione i sprawdzasz, jakie karnety masz w danej firmie.
+W zakładce „Miejsca” przeglądasz miejsca powiązane z Twoimi karnetami, oznaczasz
+ulubione i sprawdzasz, jakie karnety masz w danym miejscu.

@@ -14,6 +14,7 @@ const categorySelect = {
 const companySelect = {
   id: true,
   name: true,
+  address: true,
   lat: true,
   lng: true,
   category: { select: categorySelect },

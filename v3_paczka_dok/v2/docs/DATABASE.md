@@ -36,6 +36,7 @@ podpisany token, nie wiersz w tabeli — patrz `ADR-003` w `DECISIONS.md`).
 | `id` | uuid PK | |
 | `name` | text | |
 | `category_id` | uuid FK → categories | Sesja 16: dawniej enum `gym, pool, group_classes, massage, beauty`, teraz FK do tabeli `categories` (patrz niżej) |
+| `address` | text, nullable | Sesja V6.5: tekstowy adres — wypełniany automatycznie z `formattedAddress` Google Places przy wyborze podpowiedzi, albo wpisywany ręcznie (opcjonalny, niezależny od `lat`/`lng`) |
 | `lat`, `lng` | double, nullable | z Google Places, `null` dopóki nie ustawione |
 | `google_place_id` | text, nullable | do integracji z realnym Google Maps |
 | `created_by_user_id` | uuid FK → users, nullable | kto dodał „nową firmę” ręcznie |

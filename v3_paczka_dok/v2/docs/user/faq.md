@@ -31,7 +31,7 @@ Usunięcie zawsze wymaga potwierdzenia w osobnym oknie — nie da się usunąć 
 przypadkowym dotknięciem.
 
 **Czy aplikacja rozpoznaje dane z karnetu ze zdjęcia?**
-Nie w tej wersji — dane karnetu (nazwa firmy, liczba wejść, data ważności) wpisujesz
+Nie w tej wersji — dane karnetu (nazwa miejsca, liczba wejść, data ważności) wpisujesz
 ręcznie, zdjęcie/kod QR możesz dołączyć jako załącznik.
 
 **Czy jest wersja na telefon (Android/iOS)?**

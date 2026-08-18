@@ -149,10 +149,16 @@ dodanych bez wyboru podpowiedzi. Wyszukiwanie/sortowanie po dystansie od użytko
 pobranej liście — nie ma osobnego parametru `near=lat,lng` ani serwerowego endpointu do
 tego celu.
 
+`GET /api/companies` i `GET /api/companies/:id` zwracają też `address` (`string | null`,
+Sesja V6.5) — tekstowy adres, niezależny od `lat`/`lng`.
+
 `POST /api/companies` przyjmuje opcjonalnie `lat`/`lng` (oba razem albo żadne — połówkowa
-para to `400 { "errors": ["locationIncomplete"] }`) i `googlePlaceId`. Wszystkie trzy pola
-puste = firma dodana ręcznie bez wyboru z podpowiedzi Google Places, dokładnie jak przed
-Sesją V4.1.
+para to `400 { "errors": ["locationIncomplete"] }`), `googlePlaceId` i `address` (Sesja
+V6.5, tekst, przycinany, puste → `null`). Wszystkie te pola puste = firma dodana ręcznie
+bez wyboru z podpowiedzi Google Places, dokładnie jak przed Sesją V4.1. UI wypełnia
+`address` automatycznie z `formattedAddress` zwróconego przez Google Places przy wyborze
+podpowiedzi (patrz `PlacesAutocomplete.tsx`), albo pozwala wpisać go ręcznie na formularzu
+„Dodaj miejsce" na `/companies` (Sesja V6.5) — endpoint sam nie woła Google Places.
 
 ## Kategorie firm (Sesja 16)
 

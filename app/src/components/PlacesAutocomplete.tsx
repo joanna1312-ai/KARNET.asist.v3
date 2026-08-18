@@ -9,6 +9,7 @@ export interface PlaceSelection {
   lat: number;
   lng: number;
   googlePlaceId: string;
+  address: string | null;
 }
 
 interface PlacesAutocompleteProps {
@@ -91,7 +92,9 @@ export function PlacesAutocomplete({
     setSuggestions([]);
 
     const place = prediction.toPlace();
-    await place.fetchFields({ fields: ["displayName", "location", "id"] });
+    await place.fetchFields({
+      fields: ["displayName", "location", "id", "formattedAddress"],
+    });
     sessionTokenRef.current = null;
 
     if (!place.location) return;
@@ -102,6 +105,7 @@ export function PlacesAutocomplete({
       lat: place.location.lat(),
       lng: place.location.lng(),
       googlePlaceId: place.id,
+      address: place.formattedAddress ?? null,
     });
   }
 

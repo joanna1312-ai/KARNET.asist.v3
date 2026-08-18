@@ -159,6 +159,14 @@ klucz obcy `Card.companyId`). Gdy firma ma zapisane `lat`/`lng` (Sesja V4.1), sz
 pokazują też mapę z jej lokalizacją; firmy dodane ręcznie bez wyboru z Google Places tej
 mapy nie mają.
 
+**Dodanie miejsca z `/companies` (Sesja V6.5)** — obok dodawania firmy przy okazji
+kreatora karnetu (wyżej), przycisk „Dodaj miejsce" na `/companies` otwiera samodzielny
+formularz (`AddCompanyForm.tsx`): nazwa przez tę samą wyszukiwarkę Google Places
+(`PlacesAutocomplete.tsx`, teraz też zwraca `formattedAddress`) albo wpisana ręcznie,
+opcjonalny tekstowy adres (auto-uzupełniany z wyniku wyszukiwania, edytowalny) i
+wybór/utworzenie kategorii — ten sam wspólny komponent `CategoryPicker.tsx`, wydzielony z
+`CardForm.tsx`, żeby nie duplikować logiki „dodaj własną kategorię" w dwóch miejscach.
+
 **Sortowanie „najbliżej mnie" (Sesja V4.1)** — na `/companies` użytkownik może wybrać
 sortowanie po dystansie od swojej bieżącej pozycji (`navigator.geolocation`, za zgodą
 przeglądarki). Dystans liczony w całości po stronie klienta (wzór haversine) na już

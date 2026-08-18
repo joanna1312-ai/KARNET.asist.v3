@@ -72,6 +72,7 @@ function cardToFormValues(card: ApiCard, existingFiles: VoucherFile[]): CardForm
     newCompanyLat: null,
     newCompanyLng: null,
     newCompanyGooglePlaceId: null,
+    newCompanyAddress: null,
     newCompanyCategorySelection: "",
     newCategoryName: "",
     newCategoryColor: "",

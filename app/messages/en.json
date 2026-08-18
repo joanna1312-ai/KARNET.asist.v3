@@ -3,7 +3,7 @@
     "homeAria": "Go to homepage",
     "themeAria": "Toggle dark mode",
     "localeToggleAria": "Language selection",
-    "companiesNav": "Companies",
+    "companiesNav": "Places",
     "recommendationsNav": "AI Advisor",
     "settingsAria": "Settings",
     "settingsLocaleSection": "Language",
@@ -17,7 +17,7 @@
     "sections": {
       "addingCard": {
         "title": "Adding a card",
-        "body": "On the \"Cards\" screen, tap \"Add card\". Choose a company from the list, or add a new one — start typing its name to see suggestions from Google Maps, or just type the name manually. Choose a category too, then a type: \"Visit limit\" (expiry date optional) or \"Unlimited\" (expiry date required). You can add a voucher or code right away or later."
+        "body": "On the \"Cards\" screen, tap \"Add card\". Choose a place from the list, or add a new one — start typing its name to see suggestions from Google Maps, or just type the name manually. Choose a category too, then a type: \"Visit limit\" (expiry date optional) or \"Unlimited\" (expiry date required). You can add a voucher or code right away or later."
       },
       "visits": {
         "title": "Logging visits",
@@ -25,15 +25,15 @@
       },
       "expiryArchive": {
         "title": "Expiry and archive",
-        "body": "A card's details show the number of visits used, the expiry date, and the full history. Cards that have expired or been fully used move automatically to \"Archive\" — from there, one tap adds a new card at the same company."
+        "body": "A card's details show the number of visits used, the expiry date, and the full history. Cards that have expired or been fully used move automatically to \"Archive\" — from there, one tap adds a new card at the same place."
       },
       "account": {
         "title": "Account",
         "body": "The app works fully without an account. Sign in only if you want the same cards on more than one device."
       },
       "companies": {
-        "title": "Companies",
-        "body": "The \"Companies\" tab lists the companies linked to your cards — mark favorites, sort the list (including \"nearest to me\", if you share your location), and check which cards you have at each one. If a company has a saved location, you'll also see a map on its details page."
+        "title": "Places",
+        "body": "The \"Places\" tab lists the places linked to your cards — mark favorites, sort the list (including \"nearest to me\", if you share your location), and check which cards you have at each one. You can also add a new place directly from this tab. If a place has a saved location, you'll also see a map on its details page."
       }
     },
     "faqHeading": "Frequently asked questions",
@@ -103,7 +103,7 @@
   "tabs": {
     "navAria": "Main navigation",
     "cards": "Cards",
-    "companies": "Companies",
+    "companies": "Places",
     "recommendations": "Advisor",
     "account": "Account",
     "addCardAria": "Add card"
@@ -128,12 +128,13 @@
     "helpRow": "How to use Karnet.asist"
   },
   "companiesPage": {
-    "title": "Companies",
-    "loadError": "Couldn't load the list of companies. Try refreshing the page.",
-    "emptyState": "There are no companies yet. Add your first one while creating a card.",
-    "noFilterResults": "No companies match this filter.",
+    "title": "Places",
+    "addCompanyButton": "Add place",
+    "loadError": "Couldn't load the list of places. Try refreshing the page.",
+    "emptyState": "There are no places yet. Add your first one while creating a card.",
+    "noFilterResults": "No places match this filter.",
     "filterNameLabel": "Filter by name",
-    "filterNamePlaceholder": "Search by company name",
+    "filterNamePlaceholder": "Search by place name",
     "filterCategoryLabel": "Filter by category",
     "filterCategoryAll": "All categories",
     "sortByLabel": "Sort",
@@ -164,13 +165,26 @@
     "nearbyHeading": "Recommended nearby",
     "relatedHeading": "You might also like"
   },
+  "addCompanyForm": {
+    "title": "Add a place",
+    "nameLabel": "Place name",
+    "namePlaceholder": "e.g. Pilates Studio Center",
+    "addressLabel": "Address",
+    "addressPlaceholder": "e.g. 5 Flower St, Warsaw",
+    "addressHint": "Optional. Filled in automatically when you pick a search result — you can edit it afterwards.",
+    "errors": {
+      "nameRequired": "Enter the place name.",
+      "categoryRequired": "Choose the place's category.",
+      "saveFailed": "Couldn't save the place. Try again."
+    }
+  },
   "companyDetailsPage": {
-    "backLink": "Back to companies",
-    "loadError": "Couldn't load this company. Try refreshing the page.",
+    "backLink": "Back to places",
+    "loadError": "Couldn't load this place. Try refreshing the page.",
     "voucherUploadFailed": "The card was saved, but the voucher file failed to upload. Try again from the card's edit form.",
-    "notFound": "This company wasn't found.",
+    "notFound": "This place wasn't found.",
     "cardsTitle": "Your cards here",
-    "emptyState": "You don't have a card at this company yet.",
+    "emptyState": "You don't have a card at this place yet.",
     "addCardButton": "Add a card here"
   },
   "cardsPage": {
@@ -201,15 +215,15 @@
     "addTitle": "New card",
     "editTitle": "Edit card",
     "renewTitle": "Renew card",
-    "companyLabel": "Company",
-    "companyPlaceholder": "Choose a company",
+    "companyLabel": "Place",
+    "companyPlaceholder": "Choose a place",
     "companyModeOptions": {
       "existing": "Choose from the list",
-      "new": "Add a new company"
+      "new": "Add a new place"
     },
     "mapsSearchHint": "Start typing a name to see suggestions from Google Maps — you can also just type the name manually without picking a suggestion.",
     "placesNoResults": "No suggestions for this name.",
-    "newCompanyNameLabel": "Company name",
+    "newCompanyNameLabel": "Place name",
     "newCompanyNamePlaceholder": "e.g. Pilates Studio Center",
     "categoryLabel": "Category",
     "categoryPlaceholder": "Choose a category",
@@ -256,14 +270,14 @@
     "stepLabel": "Step {step} of 3",
     "nextButton": "Next",
     "backAria": "Back",
-    "step1Title": "Which company?",
+    "step1Title": "Which place?",
     "step2Title": "What kind of card?",
     "step3Title": "Add a voucher",
     "expiryOptionalSuffix": "optional",
     "expiryRequiredSuffix": "required",
     "voucherSkipHint": "You can add a voucher later, from the card's details.",
     "errors": {
-      "companyRequired": "Choose a company.",
+      "companyRequired": "Choose a place.",
       "typeRequired": "Choose a card type.",
       "expiryDateRequiredForUnlimited": "An unlimited card requires an expiry date.",
       "totalVisitsRequiredForLimit": "Enter the number of visits for a limited card.",
@@ -271,8 +285,8 @@
       "voucherModeRequired": "Choose how the voucher is shown.",
       "voucherFileTooLarge": "The file is too large (max 10 MB).",
       "voucherFileTypeUnsupported": "Unsupported file type (allowed: JPG, PNG, WebP, PDF).",
-      "newCompanyNameRequired": "Enter the company name.",
-      "newCompanyCategoryRequired": "Choose the company category.",
+      "newCompanyNameRequired": "Enter the place name.",
+      "newCompanyCategoryRequired": "Choose the place's category.",
       "newCategoryNameRequired": "Enter the category name.",
       "newCategoryColorRequired": "Choose the category color.",
       "saveFailed": "Couldn't save the card. Try again."

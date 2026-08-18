@@ -13,6 +13,7 @@ const categorySelect = {
 const companySelect = {
   id: true,
   name: true,
+  address: true,
   lat: true,
   lng: true,
   category: { select: categorySelect },
@@ -96,6 +97,7 @@ export async function POST(request: Request) {
     data: {
       name: input.name!,
       categoryId: input.categoryId!,
+      address: input.address,
       lat: input.lat,
       lng: input.lng,
       googlePlaceId: input.googlePlaceId,

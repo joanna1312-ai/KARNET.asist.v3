@@ -1,11 +1,13 @@
 "use client";
 
-import { Building2, LocateFixed, Search, Star } from "lucide-react";
+import { Building2, LocateFixed, Plus, Search, Star } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { AddCompanyForm, type CreatedCompany } from "@/components/AddCompanyForm";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { CompaniesOverviewMap } from "@/components/CompaniesOverviewMap";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
 import { categoryDisplayName } from "@/lib/category-display";
@@ -26,6 +28,7 @@ interface ApiCategory {
 interface ApiCompany {
   id: string;
   name: string;
+  address: string | null;
   lat: number | null;
   lng: number | null;
   category: ApiCategory;
@@ -40,6 +43,25 @@ export default function CompaniesPage() {
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle");
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [addFormOpen, setAddFormOpen] = useState(false);
+  const [addSubmitting, setAddSubmitting] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+
+    deviceFetch("/api/categories")
+      .then(async (response) => {
+        if (!response.ok || ignore) return;
+        const body: { categories: ApiCategory[] } = await response.json();
+        if (!ignore) setCategories(body.categories);
+      })
+      .catch(() => {});
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -106,6 +128,26 @@ export default function CompaniesPage() {
           ) ?? current
       );
     }
+  }
+
+  function openAddForm() {
+    setAddFormOpen(true);
+  }
+
+  function closeAddForm() {
+    setAddFormOpen(false);
+  }
+
+  function handleCategoryCreated(category: ApiCategory) {
+    setCategories((prev) => [...prev, category]);
+  }
+
+  function handleCompanyCreated(company: CreatedCompany) {
+    setCompanies((current) => {
+      const withNew = [...(current ?? []), { ...company, isFavorite: false }];
+      return withNew.sort((a, b) => a.name.localeCompare(b.name));
+    });
+    setAddFormOpen(false);
   }
 
   const t = useTranslations("companiesPage");
@@ -176,7 +218,26 @@ export default function CompaniesPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">{t("title")}</h1>
+        {!addFormOpen && (
+          <Button type="button" onClick={openAddForm} className="shrink-0">
+            <Plus className="size-4" aria-hidden />
+            {t("addCompanyButton")}
+          </Button>
+        )}
+      </div>
+
+      {addFormOpen && (
+        <AddCompanyForm
+          categories={categories}
+          submitting={addSubmitting}
+          onSubmittingChange={setAddSubmitting}
+          onCategoryCreated={handleCategoryCreated}
+          onCreated={handleCompanyCreated}
+          onCancel={closeAddForm}
+        />
+      )}
 
       {loadError && <p className="text-sm text-status-urgent">{t("loadError")}</p>}
 

@@ -81,6 +81,7 @@ export default function NewCardPage() {
           lat: values.newCompanyLat,
           lng: values.newCompanyLng,
           googlePlaceId: values.newCompanyGooglePlaceId,
+          address: values.newCompanyAddress,
         }),
       });
 

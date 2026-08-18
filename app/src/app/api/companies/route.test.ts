@@ -99,6 +99,7 @@ describe("GET /api/companies", () => {
       select: {
         id: true,
         name: true,
+        address: true,
         lat: true,
         lng: true,
         category: {
@@ -212,6 +213,7 @@ describe("POST /api/companies — dodanie firmy ręcznie (Sesja 8, kategorie od 
       data: {
         name: "FitZone",
         categoryId: GYM_CATEGORY.id,
+        address: null,
         lat: null,
         lng: null,
         googlePlaceId: null,
@@ -219,6 +221,7 @@ describe("POST /api/companies — dodanie firmy ręcznie (Sesja 8, kategorie od 
       select: {
         id: true,
         name: true,
+        address: true,
         lat: true,
         lng: true,
         category: {
@@ -270,6 +273,7 @@ describe("POST /api/companies — dodanie firmy ręcznie (Sesja 8, kategorie od 
         body: JSON.stringify({
           name: "FitZone",
           categoryId: GYM_CATEGORY.id,
+          address: "ul. Testowa 1, Warszawa",
           lat: 52.2297,
           lng: 21.0122,
           googlePlaceId: "ChIJ_test",
@@ -281,6 +285,7 @@ describe("POST /api/companies — dodanie firmy ręcznie (Sesja 8, kategorie od 
       data: {
         name: "FitZone",
         categoryId: GYM_CATEGORY.id,
+        address: "ul. Testowa 1, Warszawa",
         lat: 52.2297,
         lng: 21.0122,
         googlePlaceId: "ChIJ_test",
@@ -288,6 +293,7 @@ describe("POST /api/companies — dodanie firmy ręcznie (Sesja 8, kategorie od 
       select: {
         id: true,
         name: true,
+        address: true,
         lat: true,
         lng: true,
         category: {

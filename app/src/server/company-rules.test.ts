@@ -77,6 +77,7 @@ describe("parseCompanyInput", () => {
     ).toEqual({
       name: "FitZone",
       categoryId: GYM_CATEGORY_ID,
+      address: null,
       lat: null,
       lng: null,
       googlePlaceId: null,
@@ -87,6 +88,7 @@ describe("parseCompanyInput", () => {
     expect(parseCompanyInput({ name: "FitZone", categoryId: "" })).toEqual({
       name: "FitZone",
       categoryId: null,
+      address: null,
       lat: null,
       lng: null,
       googlePlaceId: null,
@@ -97,6 +99,7 @@ describe("parseCompanyInput", () => {
     expect(parseCompanyInput(undefined)).toEqual({
       name: null,
       categoryId: null,
+      address: null,
       lat: null,
       lng: null,
       googlePlaceId: null,
@@ -115,6 +118,7 @@ describe("parseCompanyInput", () => {
     ).toEqual({
       name: "FitZone",
       categoryId: GYM_CATEGORY_ID,
+      address: null,
       lat: 52.2297,
       lng: 21.0122,
       googlePlaceId: "ChIJ_test",
@@ -133,9 +137,24 @@ describe("parseCompanyInput", () => {
     ).toEqual({
       name: "FitZone",
       categoryId: GYM_CATEGORY_ID,
+      address: null,
       lat: null,
       lng: null,
       googlePlaceId: null,
     });
+  });
+
+  it("trims a provided address and treats blank as null", () => {
+    expect(
+      parseCompanyInput({
+        name: "FitZone",
+        categoryId: GYM_CATEGORY_ID,
+        address: "  ul. Testowa 1, Warszawa  ",
+      }).address
+    ).toBe("ul. Testowa 1, Warszawa");
+    expect(
+      parseCompanyInput({ name: "FitZone", categoryId: GYM_CATEGORY_ID, address: "   " })
+        .address
+    ).toBeNull();
   });
 });

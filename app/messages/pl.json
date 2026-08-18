@@ -3,7 +3,7 @@
     "homeAria": "Przejdź do strony głównej",
     "themeAria": "Przełącz tryb ciemny",
     "localeToggleAria": "Wybór języka",
-    "companiesNav": "Firmy",
+    "companiesNav": "Miejsca",
     "recommendationsNav": "Doradca AI",
     "settingsAria": "Ustawienia",
     "settingsLocaleSection": "Język",
@@ -17,7 +17,7 @@
     "sections": {
       "addingCard": {
         "title": "Dodawanie karnetu",
-        "body": "Na ekranie „Karnety” dotknij przycisku „Dodaj karnet”. Firmę wybierz z listy albo dodaj nową — zacznij pisać jej nazwę, żeby zobaczyć podpowiedzi z Google Maps, albo wpisz nazwę ręcznie. Wybierz też kategorię, a potem typ karnetu: „Limit wejść” (data ważności opcjonalna) albo „Bez limitu” (data ważności wymagana). Voucher lub kod możesz dodać od razu albo później."
+        "body": "Na ekranie „Karnety” dotknij przycisku „Dodaj karnet”. Miejsce wybierz z listy albo dodaj nowe — zacznij pisać jego nazwę, żeby zobaczyć podpowiedzi z Google Maps, albo wpisz nazwę ręcznie. Wybierz też kategorię, a potem typ karnetu: „Limit wejść” (data ważności opcjonalna) albo „Bez limitu” (data ważności wymagana). Voucher lub kod możesz dodać od razu albo później."
       },
       "visits": {
         "title": "Zapisywanie wejść",
@@ -25,15 +25,15 @@
       },
       "expiryArchive": {
         "title": "Ważność i archiwum",
-        "body": "W szczegółach karnetu widzisz liczbę wykorzystanych wejść, datę ważności i całą historię. Karnety, które wygasły lub zostały w pełni wykorzystane, trafiają automatycznie do „Archiwum” — stamtąd jednym dotknięciem dodasz nowy karnet w tej samej firmie."
+        "body": "W szczegółach karnetu widzisz liczbę wykorzystanych wejść, datę ważności i całą historię. Karnety, które wygasły lub zostały w pełni wykorzystane, trafiają automatycznie do „Archiwum” — stamtąd jednym dotknięciem dodasz nowy karnet w tym samym miejscu."
       },
       "account": {
         "title": "Konto",
         "body": "Aplikacja działa w pełni bez zakładania konta. Zaloguj się tylko wtedy, gdy chcesz mieć te same karnety na kilku urządzeniach."
       },
       "companies": {
-        "title": "Firmy",
-        "body": "W zakładce „Firmy” przeglądasz firmy powiązane z Twoimi karnetami, oznaczasz ulubione, sortujesz listę (w tym „najbliżej mnie”, jeśli zgodzisz się na udostępnienie lokalizacji) i sprawdzasz, jakie karnety masz w danej firmie. Jeśli firma ma zapisaną lokalizację, w jej szczegółach zobaczysz też mapę."
+        "title": "Miejsca",
+        "body": "W zakładce „Miejsca” przeglądasz miejsca powiązane z Twoimi karnetami, oznaczasz ulubione, sortujesz listę (w tym „najbliżej mnie”, jeśli zgodzisz się na udostępnienie lokalizacji) i sprawdzasz, jakie karnety masz w danym miejscu. Możesz też dodać nowe miejsce bezpośrednio z tej zakładki. Jeśli miejsce ma zapisaną lokalizację, w jego szczegółach zobaczysz też mapę."
       }
     },
     "faqHeading": "Najczęstsze pytania",
@@ -103,7 +103,7 @@
   "tabs": {
     "navAria": "Nawigacja główna",
     "cards": "Karnety",
-    "companies": "Firmy",
+    "companies": "Miejsca",
     "recommendations": "Doradca",
     "account": "Konto",
     "addCardAria": "Dodaj karnet"
@@ -128,12 +128,13 @@
     "helpRow": "Jak korzystać z Karnet.asist"
   },
   "companiesPage": {
-    "title": "Firmy",
-    "loadError": "Nie udało się pobrać listy firm. Spróbuj odświeżyć stronę.",
-    "emptyState": "Nie ma jeszcze żadnych firm. Dodaj pierwszą podczas tworzenia karnetu.",
-    "noFilterResults": "Brak firm pasujących do filtra.",
+    "title": "Miejsca",
+    "addCompanyButton": "Dodaj miejsce",
+    "loadError": "Nie udało się pobrać listy miejsc. Spróbuj odświeżyć stronę.",
+    "emptyState": "Nie ma jeszcze żadnych miejsc. Dodaj pierwsze podczas tworzenia karnetu.",
+    "noFilterResults": "Brak miejsc pasujących do filtra.",
     "filterNameLabel": "Filtruj po nazwie",
-    "filterNamePlaceholder": "Szukaj po nazwie firmy",
+    "filterNamePlaceholder": "Szukaj po nazwie miejsca",
     "filterCategoryLabel": "Filtruj po kategorii",
     "filterCategoryAll": "Wszystkie kategorie",
     "sortByLabel": "Sortuj",
@@ -164,13 +165,26 @@
     "nearbyHeading": "Polecane w okolicy",
     "relatedHeading": "Może Cię zainteresować"
   },
+  "addCompanyForm": {
+    "title": "Dodaj miejsce",
+    "nameLabel": "Nazwa miejsca",
+    "namePlaceholder": "Np. Studio Pilates Centrum",
+    "addressLabel": "Adres",
+    "addressPlaceholder": "Np. ul. Kwiatowa 5, Warszawa",
+    "addressHint": "Opcjonalny. Przy wyborze z wyszukiwarki uzupełnia się automatycznie — możesz go potem poprawić.",
+    "errors": {
+      "nameRequired": "Podaj nazwę miejsca.",
+      "categoryRequired": "Wybierz kategorię miejsca.",
+      "saveFailed": "Nie udało się zapisać miejsca. Spróbuj ponownie."
+    }
+  },
   "companyDetailsPage": {
-    "backLink": "Wróć do listy firm",
-    "loadError": "Nie udało się pobrać danych firmy. Spróbuj odświeżyć stronę.",
+    "backLink": "Wróć do listy miejsc",
+    "loadError": "Nie udało się pobrać danych miejsca. Spróbuj odświeżyć stronę.",
     "voucherUploadFailed": "Karnet zapisano, ale nie udało się wgrać pliku vouchera. Spróbuj ponownie w edycji karnetu.",
-    "notFound": "Nie znaleziono tej firmy.",
+    "notFound": "Nie znaleziono tego miejsca.",
     "cardsTitle": "Twoje karnety tutaj",
-    "emptyState": "Nie masz jeszcze karnetu w tej firmie.",
+    "emptyState": "Nie masz jeszcze karnetu w tym miejscu.",
     "addCardButton": "Dodaj karnet tutaj"
   },
   "cardsPage": {
@@ -201,15 +215,15 @@
     "addTitle": "Nowy karnet",
     "editTitle": "Edytuj karnet",
     "renewTitle": "Odnów karnet",
-    "companyLabel": "Firma",
-    "companyPlaceholder": "Wybierz firmę",
+    "companyLabel": "Miejsce",
+    "companyPlaceholder": "Wybierz miejsce",
     "companyModeOptions": {
       "existing": "Wybierz z listy",
-      "new": "Dodaj nową firmę"
+      "new": "Dodaj nowe miejsce"
     },
     "mapsSearchHint": "Zacznij pisać nazwę, żeby zobaczyć podpowiedzi z Google Maps — możesz też wpisać nazwę ręcznie, bez wybierania podpowiedzi.",
     "placesNoResults": "Brak podpowiedzi dla tej nazwy.",
-    "newCompanyNameLabel": "Nazwa firmy",
+    "newCompanyNameLabel": "Nazwa miejsca",
     "newCompanyNamePlaceholder": "Np. Studio Pilates Centrum",
     "categoryLabel": "Kategoria",
     "categoryPlaceholder": "Wybierz kategorię",
@@ -256,14 +270,14 @@
     "stepLabel": "Krok {step} z 3",
     "nextButton": "Dalej",
     "backAria": "Wstecz",
-    "step1Title": "Jaka to firma?",
+    "step1Title": "Jakie to miejsce?",
     "step2Title": "Jaki to karnet?",
     "step3Title": "Dodaj voucher",
     "expiryOptionalSuffix": "opcjonalna",
     "expiryRequiredSuffix": "wymagana",
     "voucherSkipHint": "Możesz dodać voucher później, w szczegółach karnetu.",
     "errors": {
-      "companyRequired": "Wybierz firmę.",
+      "companyRequired": "Wybierz miejsce.",
       "typeRequired": "Wybierz typ karnetu.",
       "expiryDateRequiredForUnlimited": "Karnet bez limitu wymaga daty ważności.",
       "totalVisitsRequiredForLimit": "Podaj liczbę wejść dla karnetu z limitem.",
@@ -271,8 +285,8 @@
       "voucherModeRequired": "Wybierz sposób pokazywania vouchera.",
       "voucherFileTooLarge": "Plik jest za duży (maks. 10 MB).",
       "voucherFileTypeUnsupported": "Nieobsługiwany typ pliku (dozwolone: JPG, PNG, WebP, PDF).",
-      "newCompanyNameRequired": "Podaj nazwę firmy.",
-      "newCompanyCategoryRequired": "Wybierz kategorię firmy.",
+      "newCompanyNameRequired": "Podaj nazwę miejsca.",
+      "newCompanyCategoryRequired": "Wybierz kategorię miejsca.",
       "newCategoryNameRequired": "Podaj nazwę kategorii.",
       "newCategoryColorRequired": "Wybierz kolor kategorii.",
       "saveFailed": "Nie udało się zapisać karnetu. Spróbuj ponownie."

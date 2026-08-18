@@ -3,6 +3,7 @@ export type CompanyInputErrorCode = "nameRequired" | "categoryRequired" | "locat
 export interface CompanyInputCandidate {
   name: string | null | undefined;
   categoryId: string | null | undefined;
+  address?: string | null;
   lat?: number | null;
   lng?: number | null;
   googlePlaceId?: string | null;
@@ -45,6 +46,10 @@ export function parseCompanyInput(body: unknown): CompanyInputCandidate {
     categoryId:
       typeof record.categoryId === "string" && record.categoryId.trim().length > 0
         ? record.categoryId
+        : null,
+    address:
+      typeof record.address === "string" && record.address.trim().length > 0
+        ? record.address.trim()
         : null,
     lat: typeof record.lat === "number" && Number.isFinite(record.lat) ? record.lat : null,
     lng: typeof record.lng === "number" && Number.isFinite(record.lng) ? record.lng : null,

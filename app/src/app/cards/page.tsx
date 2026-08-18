@@ -63,6 +63,7 @@ function cardToFormValues(card: ApiCard, existingFiles: VoucherFile[]): CardForm
     newCompanyLat: null,
     newCompanyLng: null,
     newCompanyGooglePlaceId: null,
+    newCompanyAddress: null,
     newCompanyCategorySelection: "",
     newCategoryName: "",
     newCategoryColor: "",
@@ -256,6 +257,7 @@ export default function CardsPage() {
           lat: values.newCompanyLat,
           lng: values.newCompanyLng,
           googlePlaceId: values.newCompanyGooglePlaceId,
+          address: values.newCompanyAddress,
         }),
       });
 
