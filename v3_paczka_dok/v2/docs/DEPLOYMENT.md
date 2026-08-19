@@ -33,8 +33,12 @@ framework detected", zero funkcji). Do rewizji, gdy wsparcie Vercela dla Next 16
 
 ## Migracje bazy danych
 
-- Migracje Prisma uruchamiane jako krok w pipeline CI/CD przed przełączeniem ruchu na
-  nową wersję (nie ręcznie na produkcji)
+- `npx prisma migrate deploy` wpięte w skrypt `build` w `app/package.json`
+  (`prisma migrate deploy && next build`) — uruchamia się automatycznie na Vercelu przy
+  każdym buildzie (Production i Preview), przed `next build`, więc nowa wersja kodu nigdy
+  nie idzie na produkcję bez zastosowanych migracji. Wymaga `DATABASE_URL` ustawionego w
+  zmiennych środowiskowych danego środowiska (Vercel → Project Settings → Environment
+  Variables) — sprawdzone 2026-08-19, ustawiony dla Production i Preview.
 - Migracje muszą być kompatybilne wstecz przez jeden deploy (rolling deploy) — nie usuwać
   kolumny w tym samym release, w którym przestaje być używana
 
