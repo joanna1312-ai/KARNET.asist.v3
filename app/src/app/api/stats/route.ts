@@ -85,14 +85,18 @@ export async function GET(request: Request) {
   }
 
   const topCompany =
-    [...byCompany.values()].sort((a, b) => b.count - a.count)[0] ?? null;
+    [...byCompany.values()].sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name)
+    )[0] ?? null;
 
   return NextResponse.json({
     period,
     rangeStart: formatDateOnly(start),
     rangeEnd: formatDateOnly(new Date(end.getTime() - 1)),
     totalVisits: visits.length,
-    byCategory: [...byCategory.values()].sort((a, b) => b.count - a.count),
+    byCategory: [...byCategory.values()].sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name)
+    ),
     topCompany,
   });
 }
