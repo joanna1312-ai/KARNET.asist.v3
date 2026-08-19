@@ -125,7 +125,29 @@
     "appearanceLight": "Light",
     "appearanceDark": "Dark",
     "appearanceAuto": "Auto",
-    "helpRow": "How to use Karnet.asist"
+    "statsRow": "Statistics",
+    "helpRow": "How to use Karnet.asist",
+    "resetCardsRow": "Clear card data",
+    "resetCardsHint": "Deletes all your cards (active and archived), including their voucher files. Places, categories and favorites are not affected.",
+    "resetCardsButton": "Clear all cards",
+    "resetCardsSuccess": "Your card data has been cleared.",
+    "resetCardsDialogTitle": "Clear all card data?",
+    "resetCardsDialogBody": "This can't be undone — every card you have (active and archived), their visit history and voucher files will disappear from the app. Places, categories and favorites stay untouched.",
+    "resetCardsDialogFailed": "Something went wrong and your cards were not cleared. Please try again.",
+    "resetCardsDialogCheckboxLabel": "I understand this cannot be undone.",
+    "resetCardsDialogConfirm": "Clear cards",
+    "resetCardsDialogCancel": "Cancel"
+  },
+  "statsPage": {
+    "title": "Statistics",
+    "periodWeek": "Week",
+    "periodMonth": "Month",
+    "totalVisitsLabel": "visits in this period",
+    "byCategoryTitle": "Visits by category",
+    "topCompanyTitle": "Most visited place",
+    "visitsCount": "{count, plural, one {# visit} other {# visits}}",
+    "emptyState": "You don't have any visits recorded in this period yet.",
+    "loadError": "Couldn't load statistics. Try refreshing the page."
   },
   "companiesPage": {
     "title": "Places",
@@ -250,11 +272,6 @@
     "expiryDateLabel": "Expiry date",
     "expiryDateHintRequired": "Required for unlimited cards.",
     "expiryDateHintOptional": "Optional — you can leave it blank.",
-    "voucherModeLabel": "How the voucher is shown",
-    "voucherModeOptions": {
-      "single": "One-time (single code/file)",
-      "per_visit": "For every visit"
-    },
     "voucherSectionLabel": "Voucher",
     "voucherInputModeOptions": {
       "text": "Text / link",
@@ -284,7 +301,6 @@
       "expiryDateRequiredForUnlimited": "An unlimited card requires an expiry date.",
       "totalVisitsRequiredForLimit": "Enter the number of visits for a limited card.",
       "totalVisitsPositive": "The number of visits must be greater than zero.",
-      "voucherModeRequired": "Choose how the voucher is shown.",
       "voucherFileTooLarge": "The file is too large (max 10 MB).",
       "voucherFileTypeUnsupported": "Unsupported file type (allowed: JPG, PNG, WebP, PDF).",
       "newCompanyNameRequired": "Enter the place name.",

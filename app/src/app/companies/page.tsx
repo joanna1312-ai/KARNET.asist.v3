@@ -256,7 +256,14 @@ export default function CompaniesPage() {
       {loadError && <p className="text-sm text-status-urgent">{t("loadError")}</p>}
 
       {companies === null && !loadError && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">…</p>
+        <div className="flex flex-col gap-3" aria-hidden>
+          {[0, 1, 2].map((index) => (
+            <div
+              key={index}
+              className="h-[72px] animate-pulse rounded-[20px] bg-black/5 dark:bg-white/5"
+            />
+          ))}
+        </div>
       )}
 
       {companies !== null && companies.length === 0 && (
@@ -377,7 +384,7 @@ export default function CompaniesPage() {
           {visibleCompanies.map((company) => (
             <li
               key={company.id}
-              className="flex items-center gap-3 rounded-2xl border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+              className="flex items-center gap-3 rounded-[20px] border border-black/[.07] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,.04)] hover:bg-black/5 dark:border-white/[.08] dark:bg-zinc-900 dark:hover:bg-white/5"
             >
               <Link
                 href={`/companies/${company.id}`}

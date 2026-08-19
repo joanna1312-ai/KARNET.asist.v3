@@ -51,7 +51,6 @@ Przykład odpowiedzi `GET /api/cards/:id`:
   "usedVisits": 8,
   "realizedVisits": 6,
   "expiryDate": "2026-09-15",
-  "voucherMode": "single",
   "voucherFileUrl": null,
   "visits": [
     { "id": "v1", "date": "2026-07-26", "time": null, "note": null }
@@ -206,6 +205,63 @@ zakaz wymyślania nazw miejsc spoza dostarczonego kontekstu (patrz `ADR-008`). `
 (opcjonalny, tylko w `recommendations`, nigdy w `relatedSuggestions`) to link do profilu
 miejsca na Google Maps, wzięty wprost z pola `googleMapsUri` zwróconego przez Google
 Places Text Search — bez dodatkowego wywołania API (V4.2b).
+
+## Statystyki (Sesja V6.7)
+
+| Metoda | Ścieżka | Opis |
+|---|---|---|
+| `GET` | `/api/stats?period=week\|month` | raport wejść wywołującego w wybranym okresie |
+
+Wymaga `Authorization: Device <token>` albo zalogowanej sesji (jak `/api/cards`) —
+inaczej `401 { "error": "unauthorized" }`. `period` domyślnie `week`, gdy pominięty;
+inna wartość niż `week`/`month` → `400 { "error": "invalid_period" }`. Okresy liczone
+**kalendarzowo** (tydzień pon–niedz, miesiąc 1.–ostatni dzień), nie jako "ostatnie 7/30
+dni" — ustalone przed sesją. Odpowiedź:
+
+```json
+{
+  "period": "week",
+  "rangeStart": "2026-08-17",
+  "rangeEnd": "2026-08-23",
+  "totalVisits": 5,
+  "byCategory": [
+    { "id": "uuid", "slug": "gym", "name": "Siłownia", "color": "mint", "isSystem": true, "count": 3 }
+  ],
+  "topCompany": { "id": "uuid", "name": "FitZone", "count": 2 }
+}
+```
+
+Uwzględnia wejścia ze wszystkich karnetów wywołującego (aktywnych i archiwalnych, filtr
+własności jak `/api/cards` — `userId`/`deviceId`), bez rozróżnienia zrealizowane/
+zaplanowane (inaczej niż `realizedVisits` z Sesji V6.3) — pokazuje wszystko zapisane z
+datą w danym okresie. `byCategory` posortowane malejąco po `count`; `topCompany` to
+firma z największą liczbą wejść w okresie, `null` gdy `totalVisits` wynosi `0`.
+
+## Konto (Sesja V6.10)
+
+| Metoda | Ścieżka | Opis |
+|---|---|---|
+| `POST` | `/api/account/reset-cards` | wyczyszczenie danych karnetów bieżącej tożsamości (ustawienia → „Wyczyść dane karnetów") |
+
+Wymaga `Authorization: Device <token>` albo zalogowanej sesji (jak `/api/cards`) — inaczej
+`401 { "error": "unauthorized" }`. Miękko usuwa (`deletedAt`, ten sam mechanizm co
+`DELETE /api/cards/:id`) **wszystkie** karnety wywołującego — aktywne i archiwalne, filtr
+własności identyczny jak reszta `/api/cards/*` (`userId`/`deviceId`). Dodatkowo, w
+odróżnieniu od usunięcia pojedynczego karnetu, kasuje też powiązane pliki voucherów: wiersze
+`CardVoucherFile` z bazy i odpowiadające im obiekty w Supabase Storage (best-effort, tak jak
+`DELETE .../voucher-files/:fileId` — błąd usunięcia z bucketa nie blokuje odpowiedzi). **Nie**
+kasuje `Visit` (zostają w bazie, ale nieosiągalne przez API, bo nadrzędny karnet jest
+odfiltrowany wszędzie po `deletedAt: null`) ani `Company`/kategorii/ulubionych — te mogą być
+współdzielone z innymi urządzeniami/kontem. Odpowiedź zawsze `200`:
+
+```json
+{ "ok": true, "count": 3 }
+```
+
+`count` — liczba skasowanych karnetów (`0`, gdy wywołujący nie miał żadnego). UI wymaga
+silniejszego potwierdzenia niż zwykłe usuwanie pojedynczego karnetu (checkbox „rozumiem, że
+tej operacji nie da się cofnąć" w dialogu, patrz `ConfirmDialog.tsx`) — sama operacja jest
+nieodwracalna z poziomu aplikacji.
 
 ## Urządzenie (tryb bez konta)
 

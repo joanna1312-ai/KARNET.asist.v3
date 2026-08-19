@@ -8,8 +8,8 @@ export async function Footer() {
   const t = await getTranslations("footer");
 
   return (
-    <footer className="mt-auto hidden shrink-0 border-t border-black/10 px-4 py-4 text-sm text-foreground/70 md:block dark:border-white/10">
-      <div className="mx-auto flex max-w-screen-lg flex-col items-center gap-2 text-center sm:flex-row sm:flex-wrap sm:justify-between sm:text-left">
+    <footer className="mx-auto mt-auto hidden w-full max-w-2xl shrink-0 border-t border-black/10 px-4 py-4 text-sm text-foreground/70 md:block dark:border-white/10">
+      <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:flex-wrap sm:justify-between sm:text-left">
         <Logo size="sm" />
         <p>{t("authorLine")}</p>
         <div className="flex items-center gap-1.5">

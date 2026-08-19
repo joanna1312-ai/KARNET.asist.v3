@@ -125,7 +125,29 @@
     "appearanceLight": "Jasny",
     "appearanceDark": "Ciemny",
     "appearanceAuto": "Auto",
-    "helpRow": "Jak korzystać z Karnet.asist"
+    "statsRow": "Statystyki",
+    "helpRow": "Jak korzystać z Karnet.asist",
+    "resetCardsRow": "Wyczyść dane karnetów",
+    "resetCardsHint": "Usuwa wszystkie Twoje karnety (aktywne i archiwalne), łącznie z plikami voucherów. Nie dotyka zapisanych miejsc, kategorii ani ulubionych.",
+    "resetCardsButton": "Wyczyść wszystkie karnety",
+    "resetCardsSuccess": "Dane karnetów zostały wyczyszczone.",
+    "resetCardsDialogTitle": "Wyczyścić wszystkie dane karnetów?",
+    "resetCardsDialogBody": "Tej operacji nie da się cofnąć — wszystkie Twoje karnety (aktywne i archiwalne), ich historia wejść i pliki voucherów znikną z aplikacji. Miejsca, kategorie i ulubione zostają nietknięte.",
+    "resetCardsDialogFailed": "Coś poszło nie tak i dane karnetów nie zostały wyczyszczone. Spróbuj ponownie.",
+    "resetCardsDialogCheckboxLabel": "Rozumiem, że tej operacji nie da się cofnąć.",
+    "resetCardsDialogConfirm": "Wyczyść karnety",
+    "resetCardsDialogCancel": "Anuluj"
+  },
+  "statsPage": {
+    "title": "Statystyki",
+    "periodWeek": "Tydzień",
+    "periodMonth": "Miesiąc",
+    "totalVisitsLabel": "wejść w tym okresie",
+    "byCategoryTitle": "Wejścia po kategoriach",
+    "topCompanyTitle": "Najczęściej odwiedzane miejsce",
+    "visitsCount": "{count, plural, one {# wejście} few {# wejścia} other {# wejść}}",
+    "emptyState": "W tym okresie nie masz jeszcze żadnych zapisanych wejść.",
+    "loadError": "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę."
   },
   "companiesPage": {
     "title": "Miejsca",
@@ -250,11 +272,6 @@
     "expiryDateLabel": "Data ważności",
     "expiryDateHintRequired": "Wymagana dla karnetu bez limitu.",
     "expiryDateHintOptional": "Opcjonalna — możesz zostawić puste.",
-    "voucherModeLabel": "Sposób pokazywania vouchera",
-    "voucherModeOptions": {
-      "single": "Jednorazowy (jeden kod/plik)",
-      "per_visit": "Przy każdej wizycie"
-    },
     "voucherSectionLabel": "Voucher",
     "voucherInputModeOptions": {
       "text": "Tekst / link",
@@ -284,7 +301,6 @@
       "expiryDateRequiredForUnlimited": "Karnet bez limitu wymaga daty ważności.",
       "totalVisitsRequiredForLimit": "Podaj liczbę wejść dla karnetu z limitem.",
       "totalVisitsPositive": "Liczba wejść musi być większa od zera.",
-      "voucherModeRequired": "Wybierz sposób pokazywania vouchera.",
       "voucherFileTooLarge": "Plik jest za duży (maks. 10 MB).",
       "voucherFileTypeUnsupported": "Nieobsługiwany typ pliku (dozwolone: JPG, PNG, WebP, PDF).",
       "newCompanyNameRequired": "Podaj nazwę miejsca.",

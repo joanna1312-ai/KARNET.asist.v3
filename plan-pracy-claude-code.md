@@ -1282,12 +1282,21 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > wyjaśnienie w `docs/user/faq.md`/`getting-started.md`, jeśli już opisują znaczenie kropek.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Sesja V6.3 ukończona (wymagana zależność — rozróżnienie zrealizowane/zaplanowane)
-- [ ] Zakres (szczegóły karnetu vs też lista) i styl koloru dla zaplanowanych wejść ustalone
-- [ ] Plan zaakceptowany
-- [ ] Kropki rozróżniają zrealizowane/zaplanowane wejścia w ustalonym zakresie
-- [ ] Sprawdzone w jasnym/ciemnym motywie
-- [ ] lint/test + commit
+- [x] Sesja V6.3 ukończona (wymagana zależność — rozróżnienie zrealizowane/zaplanowane)
+- [x] Zakres (szczegóły karnetu vs też lista) i styl koloru dla zaplanowanych wejść ustalone —
+      obie rekomendacje przyjęte: tylko `cards/[id]/page.tsx` (`size="lg"`), opacity `.45`
+- [x] Plan zaakceptowany
+- [x] Kropki rozróżniają zrealizowane/zaplanowane wejścia w ustalonym zakresie —
+      `VisitDots.tsx` dostał nowy opcjonalny prop `futureCount` (domyślnie `0`, więc
+      `CardListItem.tsx`/`ArchivedCardItem.tsx` bez zmian zachowania); `cards/[id]/page.tsx`
+      przekazuje `futureCount={card.usedVisits - card.realizedVisits}` — wykorzystuje już
+      istniejące pole `realizedVisits` z Sesji V6.3 (COUNT wejść z `visitDate <= dziś`),
+      zamiast liczyć daty ręcznie po stronie klienta
+- [x] Sprawdzone w jasnym/ciemnym motywie — zweryfikowane end-to-end w przeglądarce
+      2026-08-18: karnet z 1 wejściem zrealizowanym + 1 zaplanowanym pokazuje pierwszą kropkę
+      pełną (`opacity: 1`), drugą przyciemnioną (`opacity: 0.45`), ten sam kolor kategorii w
+      obu motywach
+- [x] lint/test (206/206) + commit
 
 ### Sesja V6.7 (punkt 13) — Statystyki: raporty tygodniowe/miesięczne — wymaga decyzji przed startem
 
@@ -1325,12 +1334,23 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > `docs/API.md` i `docs/ARCHITECTURE.md` (nowy ekran).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Zakres funkcji (metryki, granice okresu, miejsce w nawigacji) potwierdzony
-- [ ] Plan zaakceptowany
-- [ ] `GET /api/stats` z agregacją tygodniową/miesięczną
-- [ ] Strona `/stats`, link z `/account`
-- [ ] i18n uzupełnione, `docs/` zaktualizowane
-- [ ] lint/test + commit
+- [x] Zakres funkcji (metryki, granice okresu, miejsce w nawigacji) potwierdzony —
+      rekomendowany zakres MVP przyjęty (łączna liczba wejść + rozbicie po kategoriach +
+      najczęściej odwiedzane miejsce, bez wykresów); okresy kalendarzowo (pon–niedz,
+      1.–ostatni dzień miesiąca), nie "ostatnie N dni"; wiersz „Statystyki" w `/account`
+      prowadzący do `/stats`
+- [x] Plan zaakceptowany
+- [x] `GET /api/stats?period=week|month` z agregacją — uwzględnia wejścia ze wszystkich
+      karnetów wywołującego (aktywnych i archiwalnych), filtr własności jak `/api/cards`
+      (`ownerFilter`); bez rozróżnienia zrealizowane/zaplanowane (inaczej niż
+      `realizedVisits` z Sesji V6.3) — pokazuje wszystko zapisane z datą w okresie
+- [x] Strona `/stats` (przełącznik Tydzień/Miesiąc, karty w stylu `/account`), link z
+      `/account` (wiersz nad „Pomoc")
+- [x] i18n uzupełnione (PL/EN), `docs/API.md` i `docs/ARCHITECTURE.md` zaktualizowane
+- [x] Zweryfikowane end-to-end w przeglądarce 2026-08-18: pusty stan na `/stats` (zakresy
+      dat poprawne), potem testowy karnet + wejście pokazały poprawną agregację
+      („Siłownia — 1", „FitZone Siłownia · 1 wejście") — testowe dane usunięte po weryfikacji
+- [x] lint/test (221/221) + commit
 
 ### Sesja V6.8 (punkt 18) — Dokończenie designu „Miejsca" i „Doradca" analogicznie do „Karnety" — zależna od V6.4, V6.5, V6.13, V6.14
 
@@ -1358,12 +1378,19 @@ Prompt (skróć/dostosuj):
 > motyw) na wszystkich trzech ekranach obok siebie.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Sesje V6.4, V6.5, V6.13, V6.14 ukończone (wymagane zależności)
-- [ ] Plan zaakceptowany
-- [ ] Nagłówki, karty list i szkielety ładowania spójne z `/cards` na `/companies` i
-      `/recommendations`
-- [ ] Zweryfikowane wizualnie (mobile + desktop, jasny + ciemny motyw)
-- [ ] lint/test + commit
+- [x] Sesje V6.4, V6.5 ukończone; V6.13 i V6.14 **nieukończone w momencie startu tej
+      sesji** — zakres świadomie zawężony (patrz niżej), żeby nie blokować się na nich
+- [x] Plan zaakceptowany (zawężony: bez punktu 1 — nagłówek z logo, zależny od V6.13;
+      mobilny filtr kategorii na `/companies` zostaje osobno w V6.14)
+- [x] Karty list i szkielety ładowania spójne z `/cards` na `/companies` i
+      `/recommendations` (punkty 2 i 3 z pierwotnego promptu). Nagłówki stron **bez
+      zmian** (`text-2xl font-semibold`, bez logo) — dorobić przy V6.13, żeby nie
+      stylować dwa razy
+- [x] Zweryfikowane wizualnie (mobile 375px + desktop, jasny + ciemny motyw) —
+      `/companies` z realnymi danymi, `/recommendations` z zamockowaną geolokalizacją
+      (lokalnie brak klucza Groq, więc realny wynik AI niedostępny — sam styl karty i
+      szkielet zweryfikowane niezależnie od treści)
+- [x] lint (czysty) / test (221/221) + commit — do potwierdzenia z użytkowniczką
 
 ### Sesja V6.9 (punkt 10) — Węższy układ na desktopie (wrażenie ekranu telefonu) — wymaga decyzji przed startem
 
@@ -1468,10 +1495,10 @@ Prompt (skróć/dostosuj):
 > obecność `voucherMode` w payloadzie.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Migracja Prisma na bazie lokalnej (nie produkcyjnej)
-- [ ] Pole usunięte z formularza, walidacji, API, i18n, dokumentacji
-- [ ] Testy zaktualizowane, lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Migracja Prisma na bazie lokalnej (nie produkcyjnej)
+- [x] Pole usunięte z formularza, walidacji, API, i18n, dokumentacji
+- [x] Testy zaktualizowane, lint/test + commit
 
 ### Sesja V6.12 (dopisek 3) — Otwieranie pliku/zdjęcia vouchera na pełen ekran
 

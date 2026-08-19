@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 import { signDeviceToken } from "@/server/device-token";
 
 const prismaMock = {
@@ -44,7 +44,6 @@ const existingLimitCard = {
   totalVisits: 10,
   usedVisits: 2,
   expiryDate: null,
-  voucherMode: VoucherMode.single,
   deletedAt: null,
 };
 

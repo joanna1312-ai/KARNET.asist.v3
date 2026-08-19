@@ -19,7 +19,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CardType, VoucherMode } from "@/generated/prisma/enums";
+import { CardType } from "@/generated/prisma/enums";
 import { deviceFetch } from "@/lib/device-client";
 import { categoryDisplayName } from "@/lib/category-display";
 import {
@@ -47,7 +47,6 @@ interface ApiCard {
   // Sesja V6.3 — patrz CardListItem.tsx.
   realizedVisits: number;
   expiryDate: string | null;
-  voucherMode: VoucherMode;
   voucherFileUrl: string | null;
   company: { id: string; name: string; category: ApiCategory };
 }
@@ -70,7 +69,6 @@ function cardToFormValues(card: ApiCard, existingFiles: VoucherFile[]): CardForm
     type: card.type,
     totalVisits: card.totalVisits != null ? String(card.totalVisits) : "",
     expiryDate: card.expiryDate ? card.expiryDate.slice(0, 10) : "",
-    voucherMode: card.voucherMode,
     voucherFileUrl: card.voucherFileUrl ?? "",
     voucherInputMode: existingFiles.length > 0 ? "file" : "text",
     voucherExistingFiles: existingFiles,
@@ -282,7 +280,6 @@ export default function CardsPage() {
       type: values.type,
       totalVisits: values.totalVisits === "" ? null : Number(values.totalVisits),
       expiryDate: values.expiryDate === "" ? null : values.expiryDate,
-      voucherMode: values.voucherMode,
       voucherFileUrl: voucherFileUrlForSave(values),
     };
 

@@ -2,9 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { VoucherFilesGrid } from "@/components/VoucherFilesGrid";
-import { VoucherMode } from "@/generated/prisma/enums";
 import { VOUCHER_FILE_ACCEPT, VOUCHER_FILE_MAX_COUNT } from "@/server/voucher-file";
 import type { StepProps } from "./types";
 
@@ -71,24 +69,6 @@ export function VoucherStep({ values, setValues, submitting, fieldErrors }: Step
           error={fieldErrors.voucherNewFiles}
         />
       )}
-
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold">{t("voucherModeLabel")}</label>
-        <Select
-          value={values.voucherMode}
-          disabled={submitting}
-          className="rounded-full px-4 py-3"
-          onChange={(event) =>
-            setValues((prev) => ({ ...prev, voucherMode: event.target.value as VoucherMode }))
-          }
-        >
-          {(Object.values(VoucherMode) as VoucherMode[]).map((mode) => (
-            <option key={mode} value={mode}>
-              {t(`voucherModeOptions.${mode}`)}
-            </option>
-          ))}
-        </Select>
-      </div>
     </div>
   );
 }

@@ -14,6 +14,8 @@ type VisitDotsProps = {
   highlightLast?: boolean;
   /** Karnet zarchiwizowany — kropki w neutralnej szarości zamiast koloru kategorii. */
   muted?: boolean;
+  /** Liczba wypełnionych kropek (licząc od końca) odpowiadających wejściom zaplanowanym (data w przyszłości). */
+  futureCount?: number;
   className?: string;
 };
 
@@ -25,6 +27,7 @@ export function VisitDots({
   size = "sm",
   highlightLast = false,
   muted = false,
+  futureCount = 0,
   className = "",
 }: VisitDotsProps) {
   const t = useTranslations("cardDetailsPage");
@@ -51,12 +54,13 @@ export function VisitDots({
         {Array.from({ length: total }, (_, index) => {
           const isFilled = index < used;
           const isLast = highlightLast && index === used - 1;
+          const isPlanned = isFilled && futureCount > 0 && index >= used - futureCount;
           return (
             <span
               key={index}
               className={`${dotSize} shrink-0 rounded-full ${
                 isFilled
-                  ? `${filledClass} ${isLast ? "ring-2 ring-offset-1 ring-accent" : ""}`
+                  ? `${filledClass} ${isPlanned ? "opacity-[.45]" : ""} ${isLast ? "ring-2 ring-offset-1 ring-accent" : ""}`
                   : size === "lg"
                     ? "border-[1.5px] border-dashed border-black/16 dark:border-white/20"
                     : "bg-black/[.11] dark:bg-white/15"

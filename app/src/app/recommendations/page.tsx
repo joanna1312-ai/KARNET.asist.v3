@@ -192,6 +192,17 @@ export default function RecommendationsPage() {
         <p className="text-sm text-status-urgent">{t("loadError")}</p>
       )}
 
+      {isLoading && (
+        <div className="flex flex-col gap-3" aria-hidden>
+          {[0, 1, 2].map((index) => (
+            <div
+              key={index}
+              className="h-[100px] animate-pulse rounded-[20px] bg-black/5 dark:bg-white/5"
+            />
+          ))}
+        </div>
+      )}
+
       {requestStatus === "done" && result === null && (
         <EmptyState icon={SearchX}>{t("noResults")}</EmptyState>
       )}
@@ -205,7 +216,7 @@ export default function RecommendationsPage() {
                 {result.recommendations.map((item, index) => (
                   <li
                     key={`${item.name}-${index}`}
-                    className="rounded-2xl border border-black/10 p-4 dark:border-white/10"
+                    className="rounded-[20px] border border-black/[.07] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,.04)] dark:border-white/[.08] dark:bg-zinc-900"
                   >
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">{item.reason}</p>
@@ -242,7 +253,7 @@ export default function RecommendationsPage() {
                 {result.relatedSuggestions.map((item, index) => (
                   <li
                     key={`${item.name}-${index}`}
-                    className="rounded-2xl border border-black/10 p-4 dark:border-white/10"
+                    className="rounded-[20px] border border-black/[.07] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,.04)] dark:border-white/[.08] dark:bg-zinc-900"
                   >
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">{item.reason}</p>
