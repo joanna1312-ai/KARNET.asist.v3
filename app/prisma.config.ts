@@ -10,6 +10,11 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // MIGRATE_DATABASE_URL (session pooler / direct connection) ma pierwszeństwo nad
+    // DATABASE_URL (transaction pooler, np. Supabase port 6543) — `prisma migrate deploy`
+    // potrzebuje advisory locków na poziomie sesji, których transaction pooling nie
+    // wspiera (migracja wisi w nieskończoność zamiast się wykonać). Runtime aplikacji
+    // (src/lib/db.ts) czyta DATABASE_URL bezpośrednio i nie jest tym dotknięty.
+    url: process.env["MIGRATE_DATABASE_URL"] ?? process.env["DATABASE_URL"],
   },
 });
