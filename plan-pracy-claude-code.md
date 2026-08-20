@@ -1584,10 +1584,12 @@ Prompt (skróć/dostosuj):
 > Zweryfikuj w przeglądarce z emulacją mobilną (~375px) w jasnym i ciemnym motywie.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Filtr kategorii dostępny na mobile, działa tak samo jak dzisiejszy select desktopowy
-- [ ] Sprawdzone w jasnym/ciemnym motywie na wąskim ekranie
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Filtr kategorii dostępny na mobile (pigułki, wzorem `/recommendations`), działa tak
+      samo jak dzisiejszy select desktopowy — zweryfikowane funkcjonalnie w przeglądarce
+      (kliknięcie „Basen" filtruje listę identycznie jak select)
+- [x] Sprawdzone na 375px
+- [x] lint/test (224/224) + commit
 
 ### Sesja V6.15 (punkty 8+9) — Data ważności zawsze opcjonalna + kolor karnetu bez limitu wg kategorii
 

@@ -314,6 +314,38 @@ export default function CompaniesPage() {
             </button>
           </div>
 
+          {/* Mobile: pigułki kategorii (Sesja V6.14), wzorem /recommendations. */}
+          <div
+            className="flex gap-2 overflow-x-auto pb-1 md:hidden"
+            aria-label={t("filterCategoryLabel")}
+          >
+            <button
+              type="button"
+              onClick={() => setFilterCategoryId("all")}
+              className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold ${
+                filterCategoryId === "all"
+                  ? "bg-foreground text-background"
+                  : "bg-black/5 text-foreground/70 dark:bg-white/10"
+              }`}
+            >
+              {t("filterCategoryAll")}
+            </button>
+            {categoryOptions.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setFilterCategoryId(option.id)}
+                className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold ${
+                  filterCategoryId === option.id
+                    ? "bg-foreground text-background"
+                    : "bg-black/5 text-foreground/70 dark:bg-white/10"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
           {/* Desktop: bez zmian względem stanu sprzed Etapu 5. */}
           <div className="hidden flex-col gap-3 sm:flex-row sm:items-center md:flex">
             <input
