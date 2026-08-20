@@ -1,5 +1,5 @@
 // Prisma schema — KARNET.asist
-// Źródło: docs/DATABASE.md (v3_paczka_dok/v2/docs/DATABASE.md), status tam: DRAFT.
+// Źródło: ../docs/DATABASE.md, status tam: DRAFT.
 // Nazwy pól w schemacie: camelCase (konwencja TS/Prisma), zmapowane na snake_case
 // w bazie przez @map/@@map, zgodnie z nazwami kolumn z DATABASE.md.
 

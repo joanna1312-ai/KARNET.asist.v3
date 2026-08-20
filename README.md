@@ -42,18 +42,20 @@ Vitest (jednostkowe/integracyjne) + Playwright (e2e) · hosting: Vercel
 
 ```
 app/                          kod aplikacji (Next.js)
-v3_paczka_dok/
-  karnet-asist-prototyp_v6.html   pierwotny klikalny prototyp (punkt wyjścia projektu)
+docs/                         dokumentacja techniczna wersji produkcyjnej
+  ARCHITECTURE.md              widok systemu i przepływy
+  DATABASE.md                  schemat danych
+  API.md                       endpointy
+  DECISIONS.md                 decyzje architektoniczne (ADR)
+  SETUP.md                     pełna instrukcja uruchomienia lokalnego
+  DEPLOYMENT.md                wdrażanie, hosting, checklista produkcyjna
+  TESTING.md                   strategia testów
+  MOBILE_ROADMAP.md            plan Web → Android/iOS
+  user/                        dokumentacja dla użytkowników końcowych (FAQ, pierwsze kroki)
+v3_paczka_dok/                 materiały historyczne (punkt wyjścia projektu)
+  karnet-asist-prototyp_v6.html   pierwotny klikalny prototyp
   Karta_pomyslu_Karnet_asist.docx brief produktowy
-  v2/                         dokumentacja techniczna wersji produkcyjnej
-    docs/ARCHITECTURE.md      widok systemu i przepływy
-    docs/DATABASE.md          schemat danych
-    docs/API.md                endpointy
-    docs/DECISIONS.md         decyzje architektoniczne (ADR)
-    docs/SETUP.md             pełna instrukcja uruchomienia lokalnego
-    docs/DEPLOYMENT.md        wdrażanie, hosting, checklista produkcyjna
-    docs/TESTING.md           strategia testów
-    docs/MOBILE_ROADMAP.md    plan Web → Android/iOS
+  v2/                          archiwalny CLAUDE.md/README.md sprzed wydzielenia docs/
 plan-pracy-claude-code.md     chronologiczny log sesji rozwojowych (co, kiedy, dlaczego)
 docker-compose.yml            lokalny Postgres (dev + baza testowa) do developmentu
 .github/workflows/            automatyczny codzienny backup bazy produkcyjnej
@@ -62,7 +64,7 @@ docker-compose.yml            lokalny Postgres (dev + baza testowa) do developme
 ## Uruchomienie lokalne
 
 Pełna instrukcja (zmienne środowiskowe, konfiguracja Supabase Storage, Google OAuth):
-[`v3_paczka_dok/v2/docs/SETUP.md`](v3_paczka_dok/v2/docs/SETUP.md). Skrót:
+[`docs/SETUP.md`](docs/SETUP.md). Skrót:
 
 ```bash
 docker compose up -d db        # lokalny Postgres
@@ -82,13 +84,17 @@ npm run test       # Vitest — jednostkowe/integracyjne
 npm run test:e2e   # Playwright — e2e (docker compose up -d db_test)
 ```
 
-180/180 testów przechodzi (stan na 2026-08-09). Szczegóły środowiska testowego:
-[`docs/TESTING.md`](v3_paczka_dok/v2/docs/TESTING.md).
+Testy jednostkowe/integracyjne i e2e przechodzą przy każdym uruchomieniu lokalnym — nie
+utrzymujemy tu zamrożonej liczby testów, bo szybko się dezaktualizuje (brak jeszcze CI,
+patrz `docs/AUDIT_2026-08-20.md`, pkt 5). Szczegóły środowiska testowego:
+[`docs/TESTING.md`](docs/TESTING.md).
 
 ## Dokumentacja
 
 Pełna dokumentacja techniczna znajduje się w
-[`v3_paczka_dok/v2/docs/`](v3_paczka_dok/v2/docs/): architektura, schemat bazy danych,
+[`docs/`](docs/): architektura, schemat bazy danych,
 API, decyzje architektoniczne (ADR), setup, wdrażanie, strategia testów. Chronologiczny
 przebieg prac (sesja po sesji, z uzasadnieniami decyzji) —
-[`plan-pracy-claude-code.md`](plan-pracy-claude-code.md).
+[`plan-pracy-claude-code.md`](plan-pracy-claude-code.md). Dokumentacja dla użytkowników
+końcowych (FAQ, pierwsze kroki) —
+[`docs/user/`](docs/user/).

@@ -6,7 +6,7 @@ repozytorium](../README.md).
 
 ## Uruchomienie lokalne
 
-Skrót (pełna instrukcja: [`../v3_paczka_dok/v2/docs/SETUP.md`](../v3_paczka_dok/v2/docs/SETUP.md)):
+Skrót (pełna instrukcja: [`../docs/SETUP.md`](../docs/SETUP.md)):
 
 ```bash
 npm install

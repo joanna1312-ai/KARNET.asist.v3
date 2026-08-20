@@ -1,5 +1,11 @@
 # KARNET.asist
 
+> **Zastąpione 2026-08-20:** reguły dla Claude Code żyją dziś w
+> [`app/AGENTS.md`](../../app/AGENTS.md) (importowane przez `app/CLAUDE.md`) —
+> ten plik nie jest już ładowany automatycznie przez narzędzie, zostaje jako
+> historyczny zapis decyzji z fazy planowania/budowy MVP. `docs/` przeniesiony do
+> katalogu głównego repo, linki niżej zaktualizowane.
+
 > Nazwa projektu: KARNET.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 > Zaktualizowano: 2026-08-09 — MVP ukończone i wdrożone na produkcję
 > (`https://karnet.asist.dropia.pro`); Faza V4 (Google Maps/Places, Doradca AI, upload
@@ -93,7 +99,7 @@ każdego kroku, nie tylko większych, wieloetapowych zadań.
 Teksty w aplikacji (komunikaty, etykiety, treści błędów, puste stany list, powiadomienia)
 mają być: **rzeczowe i bezpośrednie, ale ciepłe** — zwracamy się do użytkownika przez
 "Ty", bez zbędnego formalizmu, ale też bez sztucznego entuzjazmu czy emoji. Wzorzec tonu:
-`docs/user/faq.md` i `docs/user/getting-started.md` — krótkie zdania, konkret, brak
+`../../docs/user/faq.md` i `../../docs/user/getting-started.md` — krótkie zdania, konkret, brak
 żargonu technicznego w treściach widocznych dla użytkownika.
 
 Przykłady:
@@ -129,10 +135,10 @@ budowy wersji produkcyjnej** — część decyzji jest jeszcze otwarta, patrz
 - **Pliki (vouchery/zdjęcia):** magazyn obiektowy S3-compatible — ostatecznie Supabase
   Storage, bucket prywatny + podpisane URL-e (Sesja V4.3, `ADR-009`)
 - **Mobile:** web-first / PWA na start; natywne aplikacje — patrz
-  [docs/MOBILE_ROADMAP.md](docs/MOBILE_ROADMAP.md)
+  [../../docs/MOBILE_ROADMAP.md](../../docs/MOBILE_ROADMAP.md)
 
-Uzasadnienie i alternatywy: [docs/DECISIONS.md](docs/DECISIONS.md).
-Pełny widok architektury: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Uzasadnienie i alternatywy: [../../docs/DECISIONS.md](../../docs/DECISIONS.md).
+Pełny widok architektury: [../../docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md).
 
 ## Konwencje i struktura (do ustalenia przy scaffoldingu)
 
@@ -165,7 +171,7 @@ npx prisma migrate dev   # migracje bazy danych
   zarchiwizuje). Wcześniej karnety „bez limitu” zawsze jej wymagały — ta reguła została
   celowo usunięta, nie przywracaj jej bez nowej decyzji właścicielki.
 - **Progi statusu ostrzegawczego** (`ok`/`soon`/`urgent`) — ustalone, patrz
-  `docs/DATABASE.md`, sekcja „Status karnetu — progi”. Nie zgaduj innych wartości;
+  `../../docs/DATABASE.md`, sekcja „Status karnetu — progi”. Nie zgaduj innych wartości;
   jeśli progi wymagają korekty, zaproponuj zmianę w tej samej sekcji zamiast
   hardkodować nowe liczby lokalnie w komponencie.
 - Usuwanie karnetu zawsze przez potwierdzenie (dialog), nigdy jednym kliknięciem.
@@ -184,7 +190,7 @@ npx prisma migrate dev   # migracje bazy danych
   `device_id` przekazanemu bezpośrednio przez klienta. Tryb bez konta identyfikuje
   urządzenie wyłącznie przez podpisany token JWT wydany przez
   `POST /api/device/register` (sekret `DEVICE_TOKEN_SECRET`, tylko po stronie
-  serwera) — szczegóły w `docs/DECISIONS.md` (`ADR-007`) i `docs/API.md`.
+  serwera) — szczegóły w `../../docs/DECISIONS.md` (`ADR-007`) i `../../docs/API.md`.
 - **Nie zgaduj brakujących wartości.** Jeśli czegoś nie ma jawnie w tym pliku ani w
   `docs/` (np. docelowa domena produkcyjna, konkretna wartość limitu) — zapytaj,
   zamiast przyjmować rozsądnie wyglądającą wartość na własną rękę. Dotyczy to

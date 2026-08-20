@@ -6,7 +6,9 @@
 
 > Aplikacja jest **live w produkcji** od 2026-08-09: `https://karnet.asist.dropia.pro`
 > (Vercel, projekt `karnet-asist-v3`; baza Supabase Postgres, region Irlandia; logowanie
-> Google działa; RLS włączone i przetestowane na wszystkich 9 tabelach).
+> Google działa; RLS włączone i przetestowane na tabelach z danymi użytkownika, stan na
+> 2026-08-09 — 9 tabel wtedy istniejących. Patrz zastrzeżenie w checkliście niżej: 2
+> tabele dodane później nie mają jeszcze potwierdzenia).
 
 ## Środowiska
 
@@ -99,6 +101,9 @@ uwaga pod listą.
 - [x] Klucz `service_role`/`STORAGE_ACCESS_KEY` (Supabase) używany wyłącznie po stronie
       serwera (`src/server/storage.ts`), nigdy w kodzie klienckim ani w zmiennych
       środowiskowych z prefiksem `NEXT_PUBLIC_`
+- [ ] **Do potwierdzenia:** RLS na `card_voucher_files` (Sesja V6.2, 2026-08-18) i
+      `push_subscriptions` (Faza V5b, 2026-08-16) — obie tabele dodane po weryfikacji
+      RLS z 2026-08-09 powyżej, status nieznany, patrz DATABASE.md
 
 **Ważne przy skalowaniu:** dopóki aplikacja ma małą/prywatną skalę użycia, powyższe
 odłożenie Sentry/RODO/DPA/usuwania konta było świadomą decyzją, nie przeoczeniem. Gdy

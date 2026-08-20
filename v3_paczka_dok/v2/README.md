@@ -1,5 +1,11 @@
 # KARNET.asist
 
+> **Aktualizacja 2026-08-20:** `docs/` przeniesiony do katalogu głównego repozytorium
+> (był mylący — nazwa sugerowała archiwalną „paczkę dokumentacji”, a opisywał żywą
+> produkcję). Aktualne linki: [`../../docs/`](../../docs/) i [README.md w katalogu
+> głównym](../../README.md). Ten plik zostaje jako historyczny opis zawartości
+> `v3_paczka_dok/` (prototyp, brief produktowy).
+
 Gdy masz kilka karnetów w różnych miejscach, łatwo stracić orientację, ile wejść
 zostało i kiedy który wygasa. KARNET.asist to centralizuje w jednym miejscu — bez
 zakładania konta.
@@ -39,7 +45,7 @@ produkcyjną — patrz [`CLAUDE.md`](CLAUDE.md) i [`docs/`](docs/).
 - `CLAUDE.md` — kontekst i zasady dla Claude Code przy budowie wersji produkcyjnej
 - `docs/` — dokumentacja techniczna (architektura, baza danych, API, setup, wdrożenie,
   plan mobile, decyzje architektoniczne, strategia testów)
-- `docs/user/` — dokumentacja dla użytkowników końcowych (FAQ, pierwsze kroki)
+- `../../docs/user/` — dokumentacja dla użytkowników końcowych (FAQ, pierwsze kroki)
 
 ## Uruchomienie prototypu
 
@@ -48,14 +54,16 @@ bez zależności ani serwera.
 
 ## Dokumentacja
 
-- [CLAUDE.md](CLAUDE.md) — kontekst projektu i zasady dla Claude Code
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — widok systemu i przepływy
-- [docs/DATABASE.md](docs/DATABASE.md) — schemat danych
-- [docs/API.md](docs/API.md) — endpointy
-- [docs/SETUP.md](docs/SETUP.md) — uruchomienie lokalne (wersja produkcyjna)
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — wdrażanie
-- [docs/MOBILE_ROADMAP.md](docs/MOBILE_ROADMAP.md) — plan Web → Android/iOS
-- [docs/DECISIONS.md](docs/DECISIONS.md) — decyzje architektoniczne (ADR)
-- [docs/TESTING.md](docs/TESTING.md) — strategia testów
-- [docs/AUDIT_2026-08-20.md](docs/AUDIT_2026-08-20.md) — audyt jakości i bezpieczeństwa kodu
-- [docs/user/](docs/user/) — dokumentacja dla użytkowników
+- [CLAUDE.md](CLAUDE.md) — historyczny kontekst projektu (reguły dla Claude Code żyją dziś
+  w [`app/AGENTS.md`](../../app/AGENTS.md))
+- [../../docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) — widok systemu i przepływy
+- [../../docs/DATABASE.md](../../docs/DATABASE.md) — schemat danych
+- [../../docs/API.md](../../docs/API.md) — endpointy
+- [../../docs/SETUP.md](../../docs/SETUP.md) — uruchomienie lokalne (wersja produkcyjna)
+- [../../docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md) — wdrażanie
+- [../../docs/MOBILE_ROADMAP.md](../../docs/MOBILE_ROADMAP.md) — plan Web → Android/iOS
+- [../../docs/DECISIONS.md](../../docs/DECISIONS.md) — decyzje architektoniczne (ADR)
+- [../../docs/TESTING.md](../../docs/TESTING.md) — strategia testów
+- [../../docs/AUDIT_2026-08-20.md](../../docs/AUDIT_2026-08-20.md) — audyt jakości i
+  bezpieczeństwa kodu
+- [../../docs/user/](../../docs/user/) — dokumentacja dla użytkowników

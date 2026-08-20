@@ -28,6 +28,11 @@ GROQ_API_KEY=...
 STORAGE_BUCKET_URL=...
 STORAGE_ACCESS_KEY=...
 STORAGE_BUCKET_NAME=...
+VAPID_PUBLIC_KEY=...
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=...
+CRON_SECRET=...
 ```
 
 `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` — klucz Google Maps JavaScript API + Places API (New)
@@ -115,6 +120,17 @@ wystarczy, żeby `PrismaClient` się połączył (Prisma 7 nie ma już wbudowane
 zapytań). W kodzie musi być zainstalowany i skonfigurowany `@prisma/adapter-pg` +
 `pg` (patrz `src/lib/db.ts`) oraz `@prisma/client` w zależnościach — bez tego kompilacja
 się nie powiedzie (`Module not found: Can't resolve '@prisma/client/runtime/client'`).
+
+`VAPID_PUBLIC_KEY` / `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`
+— Web Push (Faza V5b, przypomnienia 7 i 2 dni przed końcem karnetu). Para kluczy
+generowana lokalnie: `npx web-push generate-vapid-keys`. Klucz publiczny istnieje w
+dwóch wersjach — bez prefiksu używany po stronie serwera przy wysyłce, z prefiksem
+trafia do przeglądarki przy subskrypcji (`src/lib/push-client.ts`). `VAPID_SUBJECT` to
+`mailto:` z adresem kontaktowym (wymóg specyfikacji Web Push).
+
+`CRON_SECRET` — chroni `GET /api/cron/reminders` przed wywołaniem z zewnątrz; cron
+(`.github/workflows/reminders.yml`) wysyła go w nagłówku
+`Authorization: Bearer <CRON_SECRET>`. Wygeneruj lokalnie: `openssl rand -hex 32`.
 
 ## Kroki
 

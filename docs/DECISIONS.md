@@ -139,106 +139,125 @@ dodatkowej pracy. Wymaga nowego endpointu `POST /api/device/register` (patrz
 
 **Status:** potwierdzone (Sesja V4.2a, 2026-08-09; V4.2b zmienione tego samego dnia po
 informacji zwrotnej użytkowniczki — patrz niżej).
-**Decyzja:** nowy endpoint `POST /api/ai/recommendations` (patrz `API.md`) łączy dwa
-źródła danych po stronie serwera — wynik Google Places API (New) **Text Search** (nie
-Nearby Search: akceptuje dowolny tekst zapytania, więc działa też dla kategorii własnych
-użytkownika z Sesji 16, nie tylko 5 systemowych z ich zamkniętym zbiorem Google "types") w
-promieniu 5 km od pozycji użytkownika, oraz historię jego karnetów z własnej bazy — i
-dopiero ten złożony kontekst wysyła do Groq (`llama-3.3-70b-versatile`, REST API
-kompatybilne z OpenAI, zwykły `fetch`, bez dodatkowej zależności npm). Prompt systemowy
-twardo zabrania wymyślania nazw miejsc spoza dostarczonych list. Wywołania Groq i Places
-wyłącznie po stronie serwera — dwa nowe klucze serwerowe, `GROQ_API_KEY` i
-`GOOGLE_PLACES_SERVER_KEY` (ten drugi to **osobny** klucz Google, nie
-`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` z `ADR-004`, bo tamten jest ograniczony do referrerów
-przeglądarki). Każdy błąd na tej ścieżce (brak klucza, timeout, 4xx/5xx zewnętrznego API,
-niepoprawny JSON od modelu) jest łapany i zwraca `null` — endpoint zawsze odpowiada `200`,
-strona `/recommendations` pokazuje wtedy tylko łagodny komunikat. Groq sam w sobie nie ma
-dostępu do internetu ani wiedzy o rzeczywistych miejscach — pełni wyłącznie rolę warstwy
-rozumowania/syntezy nad kontekstem złożonym przez backend, nie źródła faktów.
-**Uzasadnienie:** to nowa płatna zależność zewnętrzna z realnym ryzykiem halucynacji —
-ograniczenie modelu wyłącznie do faktów podanych w promptcie jest jedynym sposobem, żeby
-uniknąć polecania nieistniejących miejsc. Pierwotny pomysł (Sesja V4.2, 2026-08-09)
-obejmował też porównanie cen karnetów ze scrapowanych cenników firm — świadomie wycięte
-poza Fazę V4 (nie tylko odłożone): wymagałoby albo ręcznego katalogowania cen, albo
-scrapowania cudzych stron z ryzykiem pokazania błędnej ceny (realne pieniądze
-użytkownika); osobna decyzja na przyszłość.
+
+**Decyzja:**
+- Endpoint `POST /api/ai/recommendations` (patrz `API.md`) łączy po stronie serwera wynik
+  Google Places API (New) **Text Search** — nie Nearby Search: akceptuje dowolny tekst
+  zapytania, więc działa też dla kategorii własnych użytkownika z Sesji 16, nie tylko 5
+  systemowych z zamkniętym zbiorem Google "types" — w promieniu 5 km od pozycji
+  użytkownika, z historią jego karnetów z własnej bazy.
+- Złożony kontekst trafia do Groq (`llama-3.3-70b-versatile`, REST API kompatybilne z
+  OpenAI, zwykły `fetch`, bez dodatkowej zależności npm). Prompt systemowy twardo zabrania
+  wymyślania nazw miejsc spoza dostarczonych list.
+- Wywołania Groq i Places wyłącznie po stronie serwera — dwa nowe klucze serwerowe,
+  `GROQ_API_KEY` i `GOOGLE_PLACES_SERVER_KEY` (ten drugi to **osobny** klucz Google, nie
+  `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` z `ADR-004`, bo tamten jest ograniczony do referrerów
+  przeglądarki).
+- Każdy błąd na tej ścieżce (brak klucza, timeout, 4xx/5xx zewnętrznego API, niepoprawny
+  JSON od modelu) jest łapany i zwraca `null` — endpoint zawsze odpowiada `200`, strona
+  `/recommendations` pokazuje wtedy tylko łagodny komunikat.
+- Groq sam w sobie nie ma dostępu do internetu ani wiedzy o rzeczywistych miejscach —
+  pełni wyłącznie rolę warstwy rozumowania/syntezy nad kontekstem złożonym przez backend,
+  nie źródła faktów.
+
+**Uzasadnienie:**
+- To nowa płatna zależność zewnętrzna z realnym ryzykiem halucynacji — ograniczenie
+  modelu wyłącznie do faktów podanych w promptcie jest jedynym sposobem, żeby uniknąć
+  polecania nieistniejących miejsc.
+- Pierwotny pomysł (Sesja V4.2, 2026-08-09) obejmował też porównanie cen karnetów ze
+  scrapowanych cenników firm — świadomie wycięte poza Fazę V4 (nie tylko odłożone):
+  wymagałoby albo ręcznego katalogowania cen, albo scrapowania cudzych stron z ryzykiem
+  pokazania błędnej ceny (realne pieniądze użytkownika); osobna decyzja na przyszłość.
+
 **V4.2b — wersja ostateczna (opinie zastąpione linkiem do Google Maps, 2026-08-09):**
-pierwsza wersja V4.2b dociągała do 3 recenzji z Place Details (New) dla góry listy
-"polecane w okolicy" — użytkowniczka zdecydowała tego samego dnia, że nie chce tej
-funkcji, i poprosiła o jej całkowite usunięcie. Zastąpione czymś prostszym: nazwa każdego
-polecanego miejsca linkuje wprost do jego profilu na Google Maps, przez pole
-`googleMapsUri`, które Text Search zwraca **w tej samej odpowiedzi** co reszta danych o
-miejscu — bez dodatkowego wywołania API, bez dodatkowego cache'a, bez pytań o ToS
-dotyczące przechowywania treści recenzji (ten problem po prostu przestał istnieć wraz z
-usunięciem funkcji). Link dołączany tylko do `recommendations` (nie
-`relatedSuggestions`), tak samo jak przy pierwszej wersji opinii — z tego samego powodu:
-`relatedSuggestions` to zwykle własne, dotychczasowe firmy użytkownika, bez gwarancji
-dopasowania do wyniku Google Places.
-**Cache (dodane 2026-08-09):** prosty cache TTL (~godzina) w pamięci procesu dla wyniku
-Google Places Text Search (klucz: zaokrąglone `lat`/`lng` do ~1 km + kategoria + język).
-Celowo **nie** obejmuje odpowiedzi Groq — ta zależy od historii karnetów konkretnego
-wywołującego, więc współdzielenie jej między użytkownikami byłoby wyciekiem cudzych
-spersonalizowanych sugestii. To cache per-proces, nie współdzielony między instancjami
-serverless (Vercel) ani między cold startami — pomaga w dev i w seriach żądań na tym samym
-"ciepłym" procesie; docelowo na produkcyjną skalę rozważyć Redis/Vercel KV, jeśli koszt
-wywołań Places okaże się problemem.
-**Do zrobienia przed produkcją:** ograniczenie `GOOGLE_PLACES_SERVER_KEY` po adresie IP
-serwera w Google Cloud Console (dziś "None" — dev na zmiennym IP domowym, patrz
-`SETUP.md`), ustawienie limitu budżetu na koncie Groq i na interfejsie Places API (New)
-analogicznie do `ADR-004`, ocena czy cache w pamięci procesu wystarcza przy realnym ruchu
-na Vercel czy potrzebny współdzielony cache.
+- Pierwsza wersja V4.2b dociągała do 3 recenzji z Place Details (New) dla góry listy
+  "polecane w okolicy" — użytkowniczka zdecydowała tego samego dnia, że nie chce tej
+  funkcji, i poprosiła o jej całkowite usunięcie.
+- Zastąpione czymś prostszym: nazwa każdego polecanego miejsca linkuje wprost do jego
+  profilu na Google Maps, przez pole `googleMapsUri`, które Text Search zwraca **w tej
+  samej odpowiedzi** co reszta danych o miejscu — bez dodatkowego wywołania API, bez
+  dodatkowego cache'a, bez pytań o ToS dotyczące przechowywania treści recenzji (ten
+  problem po prostu przestał istnieć wraz z usunięciem funkcji).
+- Link dołączany tylko do `recommendations` (nie `relatedSuggestions`), tak samo jak przy
+  pierwszej wersji opinii — z tego samego powodu: `relatedSuggestions` to zwykle własne,
+  dotychczasowe firmy użytkownika, bez gwarancji dopasowania do wyniku Google Places.
+
+**Cache (dodane 2026-08-09):**
+- Prosty cache TTL (~godzina) w pamięci procesu dla wyniku Google Places Text Search
+  (klucz: zaokrąglone `lat`/`lng` do ~1 km + kategoria + język).
+- Celowo **nie** obejmuje odpowiedzi Groq — ta zależy od historii karnetów konkretnego
+  wywołującego, więc współdzielenie jej między użytkownikami byłoby wyciekiem cudzych
+  spersonalizowanych sugestii.
+- To cache per-proces, nie współdzielony między instancjami serverless (Vercel) ani
+  między cold startami — pomaga w dev i w seriach żądań na tym samym "ciepłym" procesie;
+  docelowo na produkcyjną skalę rozważyć Redis/Vercel KV, jeśli koszt wywołań Places
+  okaże się problemem.
+
+**Do zrobienia przed produkcją:**
+- Ograniczenie `GOOGLE_PLACES_SERVER_KEY` po adresie IP serwera w Google Cloud Console
+  (dziś "None" — dev na zmiennym IP domowym, patrz `SETUP.md`).
+- Ustawienie limitu budżetu na koncie Groq i na interfejsie Places API (New), analogicznie
+  do `ADR-004`.
+- Ocena, czy cache w pamięci procesu wystarcza przy realnym ruchu na Vercel, czy potrzebny
+  współdzielony cache.
 
 ## ADR-009 — Upload vouchera: Supabase Storage, bucket prywatny, upload bezpośrednio z przeglądarki przez podpisany URL
 
-**Status:** potwierdzone (Sesja V4.3, 2026-08-09).
-**Decyzja:** Sesja 11 wprowadziła `cards.voucher_file_url` jako zwykłe pole tekstowe
-(treść/link), świadomie bez uploadu pliku (patrz `DATABASE.md`). Ta sesja dodaje
-rzeczywisty upload zdjęcia/PDF, bez zmiany typu kolumny — wartość zapisana przez upload
-dostaje prefiks `storage:` przed ścieżką w buckecie (np.
-`storage:cards/{cardId}/{uuid}.jpg`), co odróżnia ją od zwykłego tekstu/linku z Sesji 11;
-oba tryby współistnieją w formularzu (przełącznik tekst/plik, nie oba naraz).
+**Status:** potwierdzone (Sesja V4.3, 2026-08-09; rozszerzone Sesja V6.2, 2026-08-18 —
+patrz niżej).
 
-Dostawca: **Supabase Storage** — ten sam projekt co produkcyjna baza (jeden dostawca,
-jedna umowa DPA zamiast dwóch), osobne buckety dla dev (`voucher-files-dev`) i produkcji
-(`voucher-files`), żeby dane testowe nie mieszały się z prawdziwymi plikami użytkowników.
-Bucket **prywatny** (nie publiczny) — plik vouchera może pośrednio zawierać dane osobowe
-(patrz sekcja RODO niżej), więc dostęp tylko przez podpisane, wygasające URL-e (5 minut),
-generowane serwerowo po zweryfikowaniu właściciela karnetu (ta sama autoryzacja co reszta
-`/api/cards/*` — `findOwnedCard`/`ownerFilter`, `ADR-007`). Dozwolone typy: JPG, PNG, WebP,
-PDF; maksymalny rozmiar: 10 MB — egzekwowane docelowo przez konfigurację bucketa w
-Supabase (allowed MIME types + file size limit), nie tylko przez walidację w kodzie.
+**Decyzja:**
+- Sesja 11 wprowadziła `cards.voucher_file_url` jako zwykłe pole tekstowe (treść/link),
+  świadomie bez uploadu pliku (patrz `DATABASE.md`).
+- Ta sesja dodaje rzeczywisty upload zdjęcia/PDF, bez zmiany typu kolumny — wartość
+  zapisana przez upload dostaje prefiks `storage:` przed ścieżką w buckecie (np.
+  `storage:cards/{cardId}/{uuid}.jpg`), co odróżnia ją od zwykłego tekstu/linku z Sesji 11;
+  oba tryby współistnieją w formularzu (przełącznik tekst/plik, nie oba naraz).
+- Dostawca: **Supabase Storage** — ten sam projekt co produkcyjna baza (jeden dostawca,
+  jedna umowa DPA zamiast dwóch), osobne buckety dla dev (`voucher-files-dev`) i produkcji
+  (`voucher-files`), żeby dane testowe nie mieszały się z prawdziwymi plikami użytkowników.
+- Bucket **prywatny** (nie publiczny) — plik vouchera może pośrednio zawierać dane osobowe
+  (patrz sekcja RODO niżej), więc dostęp tylko przez podpisane, wygasające URL-e
+  (5 minut), generowane serwerowo po zweryfikowaniu właściciela karnetu (ta sama
+  autoryzacja co reszta `/api/cards/*` — `findOwnedCard`/`ownerFilter`, `ADR-007`).
+- Dozwolone typy: JPG, PNG, WebP, PDF; maksymalny rozmiar: 10 MB — egzekwowane docelowo
+  przez konfigurację bucketa w Supabase (allowed MIME types + file size limit), nie tylko
+  przez walidację w kodzie.
 
-**Upload z pominięciem naszego backendu (ważne odkrycie tej sesji):** Vercel Serverless
-Functions mają twardy limit ciała requestu ~4.5 MB, niezależny od planu — plik do 10 MB
-przesyłany przez zwykły endpoint `POST` z plikiem w body **nie zadziałałby na
-produkcji**, mimo że lokalnie by przeszedł. Rozwiązanie: trójkrokowy flow z podpisanym
-URL-em do zapisu (Supabase Storage `createSignedUploadUrl`, dokładnie ten sam mechanizm co
-podpisane URL-e do odczytu, tylko w drugą stronę):
-1. `POST /api/cards/:id/voucher-file/sign-upload` — serwer weryfikuje właściciela karnetu i
-   deklarowany typ pliku, zwraca podpisany URL do zapisu + docelową ścieżkę w buckecie.
-2. Przeglądarka wysyła plik **bezpośrednio do Supabase Storage** tym URL-em (zwykły `PUT`,
-   token uwierzytelniający jest już częścią URL-a) — z pominięciem funkcji serverless, więc
-   limit Vercela nie ma zastosowania.
-3. `POST /api/cards/:id/voucher-file/confirm` — serwer zapisuje ścieżkę w `voucherFileUrl`
-   (z prefiksem `storage:`) dopiero po potwierdzeniu udanego uploadu; sprząta poprzedni
-   plik, jeśli karnet już jakiś miał i ścieżka faktycznie należała do tego karnetu (patrz
-   niżej).
-`GET /api/cards/:id/voucher-file` generuje świeży podpisany URL do odczytu przy każdym
-wejściu na stronę szczegółów karnetu — nigdy nie osadzamy trwałego linku w odpowiedzi
-`GET /api/cards/:id`.
+**Uzasadnienie — upload z pominięciem naszego backendu (ważne odkrycie tej sesji):**
+- Vercel Serverless Functions mają twardy limit ciała requestu ~4.5 MB, niezależny od
+  planu — plik do 10 MB przesyłany przez zwykły endpoint `POST` z plikiem w body **nie
+  zadziałałby na produkcji**, mimo że lokalnie by przeszedł.
+- Rozwiązanie: trójkrokowy flow z podpisanym URL-em do zapisu (Supabase Storage
+  `createSignedUploadUrl`, dokładnie ten sam mechanizm co podpisane URL-e do odczytu,
+  tylko w drugą stronę):
+  1. `POST /api/cards/:id/voucher-file/sign-upload` — serwer weryfikuje właściciela
+     karnetu i deklarowany typ pliku, zwraca podpisany URL do zapisu + docelową ścieżkę
+     w buckecie.
+  2. Przeglądarka wysyła plik **bezpośrednio do Supabase Storage** tym URL-em (zwykły
+     `PUT`, token uwierzytelniający jest już częścią URL-a) — z pominięciem funkcji
+     serverless, więc limit Vercela nie ma zastosowania.
+  3. `POST /api/cards/:id/voucher-file/confirm` — serwer zapisuje ścieżkę w
+     `voucherFileUrl` (z prefiksem `storage:`) dopiero po potwierdzeniu udanego uploadu;
+     sprząta poprzedni plik, jeśli karnet już jakiś miał i ścieżka faktycznie należała do
+     tego karnetu (patrz niżej).
+- `GET /api/cards/:id/voucher-file` generuje świeży podpisany URL do odczytu przy każdym
+  wejściu na stronę szczegółów karnetu — nigdy nie osadzamy trwałego linku w odpowiedzi
+  `GET /api/cards/:id`.
+- **Klucz service-role (`STORAGE_ACCESS_KEY`) tylko po stronie serwera**
+  (`@/server/storage.ts`, biblioteka `@supabase/supabase-js`) — nigdy w kodzie klienckim
+  ani z prefiksem `NEXT_PUBLIC_`. Klient przeglądarki dostaje wyłącznie jednorazowy,
+  ograniczony czasowo podpisany URL wygenerowany dla konkretnego żądania.
 
-**Klucz service-role (`STORAGE_ACCESS_KEY`) tylko po stronie serwera** (`@/server/storage.ts`,
-biblioteka `@supabase/supabase-js`) — nigdy w kodzie klienckim ani z prefiksem
-`NEXT_PUBLIC_`. Klient przeglądarki dostaje wyłącznie jednorazowy, ograniczony czasowo
-podpisany URL wygenerowany dla konkretnego żądania.
+**"Odnów" (archiwum → nowy karnet) i sprzątanie plików:**
+- Nowy karnet po "Odnów" dziedziczy `voucherFileUrl` karnetu źródłowego (świadomie ten
+  sam voucher, patrz `cards/page.tsx`) — ścieżka w buckecie może więc wskazywać na folder
+  innego (starszego) karnetu.
+- Sprzątanie osieroconych plików przy zamianie/usunięciu vouchera (w
+  `PATCH /api/cards/:id` i w `.../confirm`) usuwa poprzedni obiekt **tylko** gdy jego
+  ścieżka leży pod `cards/{tenSamKarnet}/` — w przeciwnym razie zostawia go w spokoju,
+  żeby nie skasować pliku wciąż widocznego na zarchiwizowanym karnecie źródłowym.
 
-**"Odnów" (archiwum → nowy karnet) i sprzątanie plików:** nowy karnet po "Odnów" dziedziczy
-`voucherFileUrl` karnetu źródłowego (świadomie ten sam voucher, patrz `cards/page.tsx`) —
-ścieżka w buckecie może więc wskazywać na folder innego (starszego) karnetu. Sprzątanie
-osieroconych plików przy zamianie/usunięciu vouchera (w `PATCH /api/cards/:id` i w
-`.../confirm`) usuwa poprzedni obiekt **tylko** gdy jego ścieżka leży pod `cards/{tenSamKarnet}/`
-— w przeciwnym razie zostawia go w spokoju, żeby nie skasować pliku wciąż widocznego na
-zarchiwizowanym karnecie źródłowym.
 **Odrzucone alternatywy:**
 - **Publiczny bucket z trwałymi linkami** — prostsze, ale bez kontroli dostępu; dane w
   pliku mogą być pośrednio danymi osobowymi (RODO), więc private + signed URLs wygrywa mimo
@@ -250,31 +269,32 @@ zarchiwizowanym karnecie źródłowym.
   przez naszą warstwę (`findOwnedCard`), nie przez reguły RLS Supabase (ten projekt nie
   używa Supabase Auth, tylko Prisma + NextAuth/token urządzenia, `ADR-003`/`ADR-007`).
 
-**Rozszerzenie: wiele plików na karnet (Sesja V6.2, 2026-08-18).** Powyższy opis
-(kroki 1–3, klucz service-role, sprzątanie osieroconych plików) dotyczy historycznie
-pojedynczego pliku w `voucher_file_url` — od tej sesji karnet może mieć **do 5 plików
-naraz** (`VOUCHER_FILE_MAX_COUNT`), każdy jako osobny wiersz w nowej tabeli
-`card_voucher_files` (`ON DELETE CASCADE`, patrz `DATABASE.md`), nie jako pojedyncza
-kolumna. Endpointy przeniesione z `/api/cards/:id/voucher-file/*` (liczba pojedyncza) na
-`/api/cards/:id/voucher-files/*` (liczba mnoga) + nowy `DELETE .../voucher-files/:fileId`
-— patrz `API.md`. Trójkrokowy flow (sign-upload → PUT bezpośrednio do Supabase → confirm)
-i bucket prywatny + podpisane URL-e zostają bez zmian, tylko `confirm` teraz **dodaje**
-wiersz zamiast nadpisywać kolumnę, więc dawne sprzątanie "poprzedniego pliku" nie ma już
-zastosowania (usuwanie idzie wyłącznie przez `DELETE .../voucher-files/:fileId`, na
-wyraźne działanie użytkownika).
-
-Ustalone przy tej sesji (zasada „nie zgaduj” z `CLAUDE.md`):
-- **Tekst/link (Sesja 11) zostaje jako osobna, niezależna opcja** obok listy plików —
-  można ustawić jedno, drugie albo oba naraz; to była wprost rekomendowana opcja jako
-  najmniejsza zmiana względem dotychczasowego UX.
-- **„Odnów” z archiwum nie kopiuje plików** źródłowego karnetu — nowy karnet zaczyna bez
-  nich (inaczej niż tekst/link, który nadal jest dziedziczony) — świadoma zmiana względem
-  dotychczasowego zachowania pojedynczego pliku, żeby uniknąć wieloetapowego dziedziczenia
-  ścieżek między kolejnymi odnowieniami tego samego karnetu.
-- Migracja `20260817220804_add_card_voucher_files` przenosi istniejące `storage:`-owe
-  wartości `voucher_file_url` (dawny tryb "plik") jako pierwszy wiersz nowej tabeli i
-  czyści `voucher_file_url`, żeby nie zostawić osieroconej wartości w kolumnie, która od
-  teraz jest wyłącznie trybem tekstowym.
+**Rozszerzenie: wiele plików na karnet (Sesja V6.2, 2026-08-18):**
+- Powyższy opis (kroki 1–3, klucz service-role, sprzątanie osieroconych plików) dotyczy
+  historycznie pojedynczego pliku w `voucher_file_url` — od tej sesji karnet może mieć
+  **do 5 plików naraz** (`VOUCHER_FILE_MAX_COUNT`), każdy jako osobny wiersz w nowej
+  tabeli `card_voucher_files` (`ON DELETE CASCADE`, patrz `DATABASE.md`), nie jako
+  pojedyncza kolumna.
+- Endpointy przeniesione z `/api/cards/:id/voucher-file/*` (liczba pojedyncza) na
+  `/api/cards/:id/voucher-files/*` (liczba mnoga) + nowy `DELETE .../voucher-files/:fileId`
+  — patrz `API.md`.
+- Trójkrokowy flow (sign-upload → PUT bezpośrednio do Supabase → confirm) i bucket
+  prywatny + podpisane URL-e zostają bez zmian, tylko `confirm` teraz **dodaje** wiersz
+  zamiast nadpisywać kolumnę, więc dawne sprzątanie "poprzedniego pliku" nie ma już
+  zastosowania (usuwanie idzie wyłącznie przez `DELETE .../voucher-files/:fileId`, na
+  wyraźne działanie użytkownika).
+- Ustalone przy tej sesji (zasada „nie zgaduj” z `app/AGENTS.md`):
+  - **Tekst/link (Sesja 11) zostaje jako osobna, niezależna opcja** obok listy plików —
+    można ustawić jedno, drugie albo oba naraz; to była wprost rekomendowana opcja jako
+    najmniejsza zmiana względem dotychczasowego UX.
+  - **„Odnów” z archiwum nie kopiuje plików** źródłowego karnetu — nowy karnet zaczyna
+    bez nich (inaczej niż tekst/link, który nadal jest dziedziczony) — świadoma zmiana
+    względem dotychczasowego zachowania pojedynczego pliku, żeby uniknąć wieloetapowego
+    dziedziczenia ścieżek między kolejnymi odnowieniami tego samego karnetu.
+  - Migracja `20260817220804_add_card_voucher_files` przenosi istniejące `storage:`-owe
+    wartości `voucher_file_url` (dawny tryb "plik") jako pierwszy wiersz nowej tabeli i
+    czyści `voucher_file_url`, żeby nie zostawić osieroconej wartości w kolumnie, która od
+    teraz jest wyłącznie trybem tekstowym.
 
 ## RODO — dane osobowe przetwarzane przez aplikację
 

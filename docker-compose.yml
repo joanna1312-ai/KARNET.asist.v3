@@ -1,4 +1,4 @@
-# Lokalny Postgres do developmentu — patrz v3_paczka_dok/v2/docs/SETUP.md.
+# Lokalny Postgres do developmentu — patrz docs/SETUP.md.
 # Produkcja nadal celuje w Supabase; to jest wyłącznie zamiennik na czas pracy lokalnej,
 # gdy Direct connection do Supabase jest nieosiągalne z tego środowiska (IPv6-only host).
 services:
@@ -16,8 +16,8 @@ services:
 
   # Baza pod testy e2e (Playwright, Sesja 13) — osobny kontener/port/wolumin, żeby testy
   # (reset/truncate tabel przed każdym przebiegiem) nigdy nie mogły dotknąć bazy dev z
-  # usługi `db` wyżej. Patrz v3_paczka_dok/v2/docs/TESTING.md (sekcja "Środowisko
-  # testowe") i app/.env.test.example.
+  # usługi `db` wyżej. Patrz docs/TESTING.md (sekcja "Środowisko testowe") i
+  # app/.env.test.example.
   db_test:
     image: postgres:17
     restart: unless-stopped

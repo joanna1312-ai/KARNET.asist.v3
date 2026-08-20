@@ -62,6 +62,24 @@ zawsze odpowiada `200`, strona pokazuje wtedy łagodny komunikat "brak rekomenda
 rozróżnienia dla użytkownika między "nic w okolicy" a "błąd integracji" (błędy widoczne
 tylko w logach serwera).
 
+```mermaid
+sequenceDiagram
+  participant U as Przeglądarka
+  participant A as /api/ai/recommendations
+  participant P as Google Places (Text Search)
+  participant G as Groq (llama-3.3-70b)
+  participant D as Baza (Card / Visit)
+
+  U->>A: POST {lat, lng, categoryId?}
+  A->>D: historia karnetów wywołującego
+  A->>P: Text Search, promień 5 km (cache ~1h)
+  P-->>A: miejsca + googleMapsUri
+  A->>G: prompt = miejsca + historia
+  G-->>A: rekomendacje + powiązane sugestie
+  A-->>U: 200 { recommendations, relatedSuggestions }
+  Note over A: błąd na dowolnym kroku → recommendations: null, zawsze 200
+```
+
 **Upload vouchera (Sesja V4.3, ADR-009; wiele plików od Sesji V6.2):** pliki/zdjęcia
 vouchera (do 5 na karnet) **nie** przechodzą przez `API` — trafiają bezpośrednio z
 przeglądarki do Supabase Storage. Powód: limit ciała requestu na Vercel Serverless
@@ -75,6 +93,24 @@ potwierdzeniu udanego uploadu. Bucket jest **prywatny** — odczyt
 plików karnetu przy każdym wejściu na szczegóły/edycję, nigdy trwały link. Tekst/link
 (Sesja 11, `voucherFileUrl`) jest niezależny od tej listy plików. Szczegóły:
 [DECISIONS.md](DECISIONS.md), ADR-009.
+
+```mermaid
+sequenceDiagram
+  participant U as Przeglądarka
+  participant A as API (Next.js)
+  participant S as Supabase Storage
+
+  U->>A: POST .../voucher-files/sign-upload {contentType}
+  A->>A: weryfikacja właściciela karnetu + limit 5 plików
+  A->>S: createSignedUploadUrl()
+  S-->>A: uploadUrl + path
+  A-->>U: { uploadUrl, path }
+  U->>S: PUT plik (bezpośrednio, pomija API)
+  S-->>U: 200 OK
+  U->>A: POST .../voucher-files/confirm {path}
+  A->>A: weryfikacja ścieżki pod cards/:id/ + limit
+  A-->>U: nowy wiersz CardVoucherFile
+```
 
 **Statystyki (Sesja V6.7):** `/stats` woła `GET /api/stats?period=week|month`, który
 agreguje `Visit` wywołującego (przez `Card`, filtr własności jak `/api/cards`) w
