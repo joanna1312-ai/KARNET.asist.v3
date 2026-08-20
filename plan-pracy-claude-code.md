@@ -521,11 +521,13 @@ Checklista z `docs/DEPLOYMENT.md`:
 - [ ] Monitoring błędów (np. Sentry) podłączony — **świadomie odłożone do kolejnej
       wersji aplikacji** (decyzja 2026-08-09)
 - [ ] Polityka prywatności / regulamin gotowe (aplikacja przetwarza dane osobowe) —
-      **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09)
+      **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09); podjęte w
+      Fazie V7 — patrz Sesja V7.9 (RODO) i Sesja V7.8 (regulamin)
 - [ ] Umowy powierzenia danych (DPA) z dostawcami hostingu/bazy/storage —
       **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09)
 - [ ] Techniczna możliwość usunięcia konta i danych na żądanie —
-      **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09)
+      **świadomie odłożone do kolejnej wersji aplikacji** (decyzja 2026-08-09); podjęte w
+      Fazie V7 — patrz Sesja V7.13 (usuń konto, obok Sesji V6.10 — usuń tylko dane karnetów)
 - [x] Jeśli Supabase: RLS włączone na wszystkich tabelach z danymi użytkownika,
       przetestowane kluczem `anon` — zweryfikowane bezpośrednio w bazie
       (`relrowsecurity = true` na wszystkich 9 tabelach) i przez REST API
@@ -1814,6 +1816,524 @@ należy do najcięższej grupy):
 18. **Sesja V6.18 — Ujednolicenie pisowni „KARNET.asist".**
 19. **Sesja V6.19 — Numer wersji `V6_260817`.** Zawsze ostatnia — niezależnie od
     pracochłonności, ma sens dopiero po wszystkich pozostałych.
+
+---
+
+## Faza V7 — kolejny zestaw zmian (zestaw z 2026-08-20)
+
+Uwaga: lista życzeń z rozmowy z właścicielką projektu 2026-08-20 (11 punktów), rozbita na
+osobne sesje wg tej samej zasady co Faza V6b — jedna decyzja/ryzyko na sesję. Trzy punkty
+(RODO, regulamin, usuwanie konta) pokrywają się z pozycjami w checkliście „Przed pierwszym
+wdrożeniem produkcyjnym" wyżej w tym pliku, świadomie odłożonymi 2026-08-09 „do kolejnej
+wersji aplikacji" — ta faza jest tą kolejną wersją dla tych trzech punktów, patrz też Sesja
+V6.10 (kasowanie danych karnetów — węższy krewny Sesji V7.13 niżej). **Kolejność sesji niżej
+to szacowana pracochłonność, od najmniejszej do największej** (na wyraźną prośbę, odwrotnie
+niż w Fazie V6b) — patrz też podsumowanie na końcu tej fazy. To szacunek, nie pomiar, więc
+rzeczywisty nakład pracy przy konkretnej sesji (zwłaszcza tam, gdzie dopiero decyzja właścicielki
+ustali ostateczny zakres) może się różnić.
+
+### Sesja V7.1 — „Miejsca": zawijanie długich nazw + adres/miasto małą czcionką
+
+Kontekst: elementy listy na `/companies` (`src/app/companies/page.tsx`) pokazują dziś nazwę
+firmy i kategorię, ale bez adresu/miasta pod nazwą — dane `company.address`/miasto z Google
+Places (V4.1) są zapisane w bazie, ale ten ekran ich nie pokazuje. Długie nazwy firm dziś się
+prawdopodobnie obcinają/nie zawijają poprawnie w wąskim elemencie listy — do potwierdzenia
+wizualnie przy starcie sesji, na jakiej dokładnie szerokości problem występuje.
+
+Prompt (skróć/dostosuj):
+> Na liście `/companies` (elementy renderowane w `src/app/companies/page.tsx`): 1) popraw
+> zawijanie długich nazw firm (usuń `truncate`/`whitespace-nowrap`, jeśli występuje, na rzecz
+> zawijania do kilku linii z rozsądnym `line-clamp`), 2) dodaj pod nazwą adres i miasto firmy
+> (`company.address`, jeśli dostępne — dla firm dodanych ręcznie przed V4.1 może być puste,
+> wtedy nie pokazuj nic) mniejszą, przygaszoną czcionką (np. `text-xs text-foreground/60`,
+> konwencja podobna do istniejących elementów pomocniczych w UI). Zweryfikuj na realnych
+> firmach z długimi nazwami, mobile (375px) i desktop, jasny/ciemny motyw.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Długie nazwy zawijają się czytelnie zamiast obcinać
+- [ ] Adres/miasto widoczne pod nazwą, mniejszą czcionką (puste, gdy brak danych)
+- [ ] Zweryfikowane na mobile i desktop, jasny/ciemny motyw
+- [ ] lint/test + commit
+
+### Sesja V7.2 — „Nowy karnet" z przyciskiem od razu na 1 wejście
+
+Kontekst: dziś dodanie karnetu i zalogowanie pierwszego wejścia to dwa osobne kroki —
+`CardWizard` (mobile, `/cards/new`) i `CardForm` (desktop) nie mają nigdzie logiki dodawania
+wejścia podczas tworzenia karnetu; dopiero po zapisaniu karnetu można doliczyć wejście
+przyciskiem „+1" (`QuickVisitButton.tsx`, Etap 2 Fazy V5b) z poziomu listy. Właścicielka chce
+skrótu: przycisk, który od razu tworzy karnet **i** zapisuje pierwsze wejście (z dzisiejszą
+datą) jednym działaniem.
+
+Prompt (skróć/dostosuj):
+> W kreatorze karnetu (`CardWizard`, mobile) i formularzu karnetu (`CardForm`, desktop) dodaj
+> drugi przycisk zapisu obok istniejącego „Dodaj karnet" — np. „Dodaj karnet + 1 wejście"
+> (dokładne brzmienie do i18n). Po kliknięciu: `POST /api/cards` jak dziś, a bezpośrednio po
+> sukcesie `POST /api/cards/:id/visits` z dzisiejszą datą (ten sam endpoint, co
+> `QuickVisitButton.tsx`/`VisitForm.tsx` już wywołują) — jedna spójna operacja z punktu
+> widzenia użytkownika (jeśli drugi krok się nie powiedzie, karnet i tak zostaje utworzony;
+> pokaż błąd, że wejście nie zostało dodane, zamiast cofać cały karnet). Zweryfikuj w
+> przeglądarce (mobile kreator + desktop formularz), że licznik wejść na nowym karnecie
+> pokazuje 1/... od razu po utworzeniu.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany
+- [ ] Przycisk „Dodaj karnet + 1 wejście" w `CardWizard` (mobile) i `CardForm` (desktop)
+- [ ] Zweryfikowane w przeglądarce: nowy karnet ma od razu 1 wejście
+- [ ] i18n uzupełnione
+- [ ] lint/test + commit
+
+### Sesja V7.3 — Zmiana miniaturki (ikona aplikacji) — wymaga decyzji przed startem
+
+Kontekst: dzisiejsza ikona aplikacji (favicon, ikona PWA 192/512, `apple-icon.tsx`) to prosty
+kształt: miętowe tło (`#82d2b9`) z pomarańczową kropką (`#f2825a`) na środku — wygenerowana
+identycznie w czterech miejscach (`src/app/icon.tsx`, `apple-icon.tsx`, `icon-192/route.tsx`,
+`icon-512/route.tsx`). To ta sama „kropka" co logo w nagłówku (`Logo.tsx`). Zmiana wyglądu tej
+ikony to decyzja projektowa (branding), jak Sesja V5.1 — Claude Code nie powinien projektować
+nowego wyglądu bez wytycznych.
+
+Przed startem ustal, na co ma wyglądać nowa miniaturka (kształt, kolory, czy nadal oparta o
+`Logo.tsx`, czy zupełnie nowy motyw).
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Zmień wygląd ikony aplikacji w `src/app/icon.tsx`, `apple-icon.tsx`, `icon-192/route.tsx` i
+> `icon-512/route.tsx` na [ustalony wygląd] — wszystkie cztery pliki generują tę samą ikonę w
+> różnych rozmiarach/formatach, muszą zostać spójne. Zweryfikuj w przeglądarce: favicon w
+> karcie, podgląd ikony PWA (`/manifest.webmanifest`), instalacja na ekran główny (jeśli
+> możliwe do przetestowania).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Nowy wygląd ikony ustalony
+- [ ] Plan zaakceptowany
+- [ ] Cztery pliki ikon zaktualizowane spójnie
+- [ ] Zweryfikowane w przeglądarce (favicon + manifest PWA)
+- [ ] lint/test + commit
+
+### Sesja V7.4 — Licencja użytkowania/przerabiania — wymaga decyzji przed startem
+
+Kontekst: to jedyny punkt z tej listy, który wymaga rozstrzygnięcia, **czego** w ogóle dotyczy,
+zanim da się go zaplanować — „licencja użytkowania/przerabiania" może znaczyć dwie zupełnie
+różne rzeczy:
+1. Licencja dla **użytkowników aplikacji** (na czym polega prawo do korzystania z appki jako
+   usługi) — w praktyce pokrywa się z regulaminem z Sesji V7.8, więc osobny dokument byłby
+   duplikatem.
+2. Licencja dla **kodu źródłowego** repozytorium (czy i na jakich zasadach ktoś inny może
+   kopiować/modyfikować/rozprowadzać ten kod — np. plik `LICENSE` w standardzie open source
+   typu MIT/Apache-2.0, albo przeciwnie: „All rights reserved", zastrzegające pełnię praw i
+   zakaz przerabiania bez zgody).
+
+To pytanie „do pytania, nie zgadywania" wprost — Claude Code nie powinien wybierać licencji
+kodu ani zakresu praw za właścicielkę.
+
+Przed startem ustal:
+- Który z dwóch wariantów wyżej (albo oba)
+- Jeśli kod źródłowy: czy repo ma być otwarte na modyfikacje przez innych (jaka licencja
+  open source), czy zastrzeżone (to repo jest dziś prywatne)
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> [Po ustaleniu zakresu wyżej] Dodaj [plik `LICENSE` w repo / sekcję w `/terms` / oba] z
+> treścią [ustaloną licencją]. Jeśli plik `LICENSE`: standardowy tekst wybranej licencji (nie
+> redagować własnej treści prawnej od zera dla licencji open source — użyć oficjalnego tekstu
+> SPDX). Jeśli zastrzeżenie praw dla użytkowników appki: dopisać do `/terms` z Sesji V7.8, nie
+> jako osobna strona.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Zakres pojęcia „licencja" ustalony (kod źródłowy / korzystanie z appki / oba)
+- [ ] Wariant/typ licencji ustalony
+- [ ] Plan zaakceptowany
+- [ ] Plik/sekcja z treścią licencji dodany
+- [ ] commit
+
+### Sesja V7.5 — Wyszukiwarka miejsc: sensowna odległość + sortowanie po dystansie
+
+Kontekst: `PlacesAutocomplete.tsx` (wyszukiwanie firmy przy dodawaniu karnetu, V4.1) dziś
+wywołuje `google.maps.places.AutocompleteSuggestion` bez żadnego `locationBias`/
+`locationRestriction` — zwraca podpowiedzi z całego świata, nie ograniczone do okolicy
+użytkownika, i bez sortowania po odległości. To inny mechanizm niż sortowanie „Najbliżej mnie"
+na `/companies` (już istnieje, V4.1, oparte na `navigator.geolocation` + haversine) — tamto
+dotyczy listy już zapisanych firm, to dotyczy wyszukiwania **nowej** firmy do dodania.
+
+Prompt (skróć/dostosuj):
+> W `PlacesAutocomplete.tsx` dodaj `locationBias` do wywołania
+> `AutocompleteSuggestion.fetchAutocompleteSuggestions`, oparty na pozycji użytkownika
+> (`navigator.geolocation`, ten sam wzorzec zgody/fallbacku co na `/companies` — jeśli
+> użytkownik odmówi lub przeglądarka nie wspiera geolokalizacji, wyszukiwanie działa jak dziś,
+> bez błędu). Promień do ustalenia (np. 30–50 km — rozsądny zasięg dojazdu, nie całe
+> województwo) — dobierz i uzasadnij w planie. Podpowiedzi nie muszą być twardo odfiltrowane
+> poza promieniem (`locationBias`, nie `locationRestriction`) — to tylko preferencja
+> sortowania, nie blokada wyników spoza promienia, gdyby ktoś świadomie szukał firmy w innym
+> mieście. Zweryfikuj w przeglądarce: wyszukanie popularnej nazwy (np. sieciowej siłowni)
+> pokazuje najpierw wyniki blisko bieżącej lokalizacji.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Plan zaakceptowany (w tym dobrany promień `locationBias`)
+- [ ] `PlacesAutocomplete.tsx` używa geolokalizacji do obciążenia wyników odległością
+- [ ] Fallback bez zgody/wsparcia geolokalizacji działa jak dziś, bez błędu
+- [ ] Zweryfikowane w przeglądarce: bliższe wyniki wyżej na liście
+- [ ] lint/test + commit
+
+### Sesja V7.6 — Data ostatniej zmiany z dokładnością do godziny — wymaga ustalenia zakresu
+
+Kontekst: `Card.updatedAt` (pełny znacznik czasu, `DateTime` w Prisma) już istnieje w bazie,
+ale nigdzie nie jest wyświetlany w UI. `Visit.visitDate` to celowo tylko data (`@db.Date`, bez
+godziny) — to dzień wejścia, nie moment zapisania go w systemie; `Visit.createdAt` (pełny
+znacznik czasu) też istnieje, ale też nigdzie się nie pokazuje. Prośba „data zmiany z
+dokładnością do godziny przy kropkach" jest niejednoznaczna między dwoma różnymi rzeczami — do
+ustalenia przed startem, żeby nie zbudować niewłaściwej z nich:
+
+1. Godzina, kiedy karnet/wejście zostało ostatnio **zmienione w systemie** (`updatedAt`/
+   `createdAt`) — np. tooltip przy kropce pokazujący „zapisano 20.08.2026, 14:32".
+2. Godzina **samego wejścia** (kiedy użytkownik faktycznie był na zajęciach) — wymagałoby
+   dodania pola godziny do formularza wejścia (`VisitForm.tsx`), bo dziś zapisuje się tylko
+   dzień; `visits.visitTime` (`@db.Time`, opcjonalne) już istnieje w schemacie, ale żaden
+   formularz go dziś nie ustawia.
+
+Przed startem ustal, o którą z tych dwóch rzeczy chodzi (albo obie) i gdzie dokładnie ma się
+pokazać (tooltip po najechaniu/dotknięciu kropki, czy stały tekst obok).
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> [Wariant 1 — czas zapisu w systemie:] Dodaj przy kropkach w `VisitDots.tsx` (lub przy
+> wejściu w historii na `cards/[id]/page.tsx`) [tooltip/tekst] pokazujący `createdAt` wejścia
+> (lub `updatedAt` karnetu) sformatowany z dokładnością do godziny i minuty. [Wariant 2 —
+> godzina samego wejścia:] Dodaj opcjonalne pole godziny w `VisitForm.tsx`, zapisywane do
+> istniejącej kolumny `visits.visitTime`, wyświetlane przy wejściu w historii, jeśli
+> ustawione. Dodaj klucze i18n (PL/EN) na format i etykiety.
+> Najpierw krótki plan (który wariant, dokładne miejsce wyświetlenia), poczekaj na akceptację.
+
+- [ ] Zakres ustalony (czas zapisu w systemie / godzina samego wejścia / oba) i miejsce
+      wyświetlenia
+- [ ] Plan zaakceptowany
+- [ ] Godzina wyświetlana zgodnie z ustaleniem
+- [ ] i18n uzupełnione
+- [ ] lint/test + commit
+
+### Sesja V7.7 — Kropki wejść w kolorze statusu, nie w kolorze kategorii — wymaga decyzji przed startem
+
+Kontekst: `VisitDots.tsx` maluje wypełnione kropki zawsze kolorem kategorii firmy
+(`CATEGORY_COLOR_CLASS[color]`) — status karnetu (ok/soon/urgent/wygasły) jest dziś widoczny
+tylko osobno, w `StatusBadge` obok nazwy karnetu. Właścicielka chce, żeby same kropki
+(wszędzie, gdzie się pojawiają: `CardListItem.tsx`, `ArchivedCardItem.tsx`, szczegóły karnetu)
+też sygnalizowały status kolorem, nie tylko kategorię. To zmienia dziś jednoznaczną funkcję
+koloru kropek (kategoria) na dwuznaczną (kategoria + status) — do ustalenia, jak to pogodzić
+wizualnie (np. kolor wypełnienia = status, kategoria zostaje gdzie indziej — ikona/nazwa; albo
+obwódka kropki = status, wypełnienie = kategoria).
+
+Nie mylić z Sesją V6.6 (kropki zrealizowane/zaplanowane — inny wymiar, data wejścia względem
+dziś) ani V6.15 (kolor ikony nieskończoności dla `unlimited`, już zmieniony na kolor
+kategorii — osobny scenariusz).
+
+Przed startem ustal, jak dokładnie ma wyglądać rozróżnienie kolorem (patrz propozycje wyżej) —
+to zmiana czysto wizualna, ale wpływa na czytelność, warto ją zobaczyć opisaną/na mockupie
+przed wdrożeniem.
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> W `VisitDots.tsx` (i wszystkich miejscach, które go używają: `CardListItem.tsx`,
+> `ArchivedCardItem.tsx`, `src/app/cards/[id]/page.tsx`) zmień sposób kolorowania wypełnionych
+> kropek na [ustalony wyżej sposób], korzystając z istniejących funkcji statusu
+> (`getCardWarningStatus`/`getExpiryStatus`, te same, których używa `StatusBadge`). Zachowaj
+> rozróżnienie zrealizowane/zaplanowane z Sesji V6.6 (`futureCount`/opacity) i kolor kategorii
+> dla karnetów `unlimited` z Sesji V6.15 — to osobne mechanizmy, nie zastępować ich. Sprawdź
+> kontrast WCAG dla nowych kolorów kropek w jasnym i ciemnym motywie.
+> Najpierw krótki plan (dokładny sposób łączenia koloru statusu z dzisiejszym kolorem
+> kategorii), poczekaj na akceptację.
+
+- [ ] Sposób łączenia koloru statusu i kategorii na kropce ustalony
+- [ ] Plan zaakceptowany
+- [ ] `VisitDots.tsx` koloruje kropki wg statusu we wszystkich miejscach użycia
+- [ ] Rozróżnienie zrealizowane/zaplanowane (V6.6) i kolor `unlimited` (V6.15) zachowane
+- [ ] Kontrast WCAG sprawdzony w obu motywach
+- [ ] lint/test + commit
+
+### Sesja V7.8 — Regulamin korzystania z aplikacji — wymaga danych przed startem
+
+Kontekst: to ta sama pozycja checklisty wdrożeniowej co Sesja V7.9 niżej („Polityka
+prywatności / regulamin"), ale to osobny dokument (zasady korzystania z usługi, nie
+przetwarzanie danych) — osobna sesja, żeby nie mieszać dwóch różnych treści prawnych w jednym
+kroku.
+
+Przed startem przygotuj:
+- Nazwa usługodawcy i dane kontaktowe (te same co w Sesji V7.9, do potwierdzenia spójności)
+- Zasady korzystania: czy usługa jest bezpłatna (dziś tak — bez płatności w MVP), ograniczenia
+  wieku użytkownika, zakaz nadużyć (np. masowe fałszywe konta), zastrzeżenie, że dane karnetów
+  wprowadza sam użytkownik i aplikacja nie weryfikuje ich prawdziwości wobec partnerów
+- Zasady rozwiązania umowy/zamknięcia konta (odsyła do Sesji V7.13)
+- Prawo właściwe i sąd właściwy (Polska, zapewne)
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Dodaj stronę `/terms` (regulamin korzystania z aplikacji) na bazie ustaleń wyżej: strony
+> umowy, opis usługi, zasady rejestracji/konta, obowiązki użytkownika, ograniczenia
+> odpowiedzialności (dane karnetów wprowadza użytkownik, aplikacja nie gwarantuje ich
+> akceptacji przez partnerów), zasady usunięcia konta (link do Sesji V7.13), prawo właściwe.
+> Tekst przez i18n (PL/EN) albo statyczna treść strony — tak samo jak ustalono w Sesji V7.9,
+> dla spójności obu dokumentów. Dodaj link do `/terms` w stopce i przy rejestracji (obok
+> `/privacy`), z checkboxem akceptacji regulaminu na `/register` (dziś rejestracja nie wymaga
+> żadnej akceptacji).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Treść regulaminu ustalona (dane usługodawcy, zasady, prawo właściwe)
+- [ ] Plan zaakceptowany
+- [ ] Strona `/terms` z pełną treścią
+- [ ] Checkbox akceptacji regulaminu na `/register`, linki ze stopki
+- [ ] Checklista wdrożeniowa odhaczona
+- [ ] lint/test + commit
+
+### Sesja V7.9 — Polityka prywatności (RODO) — wymaga danych przed startem
+
+Kontekst: checklista wdrożeniowa ma pozycję „Polityka prywatności / regulamin gotowe" —
+świadomie odłożoną 2026-08-09. `docs/DECISIONS.md` już dziś zbiera notatki RODO per funkcja
+(lokalizacja z V4.1, plik vouchera z V4.3 itd.) — to materiał źródłowy do treści, ale nie
+gotowy dokument dla użytkownika końcowego. To treść prawna — Claude Code nie powinien zmyślać
+danych administratora danych ani podstaw prawnych przetwarzania.
+
+Przed startem przygotuj (żeby Claude Code nie wymyślało):
+- Administrator danych: pełna nazwa/imię i nazwisko, adres do kontaktu w sprawach RODO,
+  e-mail kontaktowy (prawdopodobnie `kontakt@dropia.pro`, do potwierdzenia)
+- Pełna lista odbiorców/podmiotów przetwarzających: Supabase (baza + storage), Vercel
+  (hosting), Google (Maps/Places, OAuth), Groq (AI) — czy są jeszcze inni
+- Podstawa prawna przetwarzania (zgoda / uzasadniony interes) i okres przechowywania danych
+- Czy potrzebny inspektor ochrony danych (przy tej skali raczej nie, ale do potwierdzenia)
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Na bazie zebranych notatek RODO z `docs/DECISIONS.md` i ustaleń wyżej, opracuj i dodaj
+> stronę `/privacy` (polityka prywatności zgodna z RODO: administrator, cele i podstawy
+> przetwarzania, kategorie danych, odbiorcy/podmioty przetwarzające, okres przechowywania,
+> prawa osoby, informacja o usuwaniu konta [Sesja V7.13] i danych karnetów [Sesja V6.10]).
+> Tekst przez i18n (PL/EN) albo jako statyczna treść strony, jeśli słownik i18n nie pasuje do
+> długiego tekstu prawnego — zdecyduj i uzasadnij w planie. Dodaj link do `/privacy` w stopce
+> (`Footer.tsx` i odpowiednik w `/account`) i przy rejestracji/logowaniu hasłem (`/register`).
+> Najpierw krótki plan (struktura sekcji, sposób przechowania tekstu), poczekaj na akceptację.
+
+- [ ] Dane administratora, lista odbiorców i podstawy prawne ustalone
+- [ ] Plan zaakceptowany
+- [ ] Strona `/privacy` z pełną treścią
+- [ ] Linki ze stopki i z ekranu rejestracji
+- [ ] Checklista wdrożeniowa odhaczona (pozycja „Polityka prywatności / regulamin")
+- [ ] lint/test + commit
+
+### Sesja V7.10 — „Miejsca": usuwanie zapisanych miejsc — wymaga decyzji przed startem
+
+Kontekst: `Company` to dziś dane **współdzielone** między urządzeniami/kontami (każde
+urządzenie, które doda firmę przez Places albo ręcznie, tworzy wpis widoczny dla wszystkich —
+`GET /api/companies` zwraca globalną listę, nie tylko własne). „Usuwanie zapisanych miejsc"
+może więc znaczyć dwie różne operacje o zupełnie innym ryzyku:
+1. Usunięcie z **ulubionych** (`DELETE /api/companies/favorites/:id`, już istnieje od Sesji 12
+   — dziś tylko przez kliknięcie gwiazdki, bez gestu przeciągnięcia).
+2. Trwałe usunięcie samej firmy z bazy (`Company`) — niebezpieczne, bo skasowałoby też dostęp
+   do niej innym użytkownikom, którzy mają do niej karnety (`Card.companyId` — usunięcie firmy
+   złamałoby ich karnety, chyba że zablokować usuwanie firm z aktywnymi kartami).
+
+Rekomendacja: to dotyczy wariantu 1 (usuwanie z ulubionych/zapisanych), zwłaszcza że prośba
+mówi „zapisane miejsca", nie „miejsca w ogóle" — ale wymaga wyraźnego potwierdzenia przed
+startem, żeby nie usunąć czegoś współdzielonego przez pomyłkę interpretacji.
+
+Przed startem ustal:
+- Wariant 1 czy 2 (rekomendacja: wariant 1)
+- Gest: przeciągnięcie (swipe-to-delete, wzorem list w aplikacjach mobilnych) czy zwykły
+  przycisk/ikona kosza wystarczy — przeciągnięcie wymaga nowej biblioteki gestów albo ręcznej
+  obsługi `touch`/`pointer` events (sprawdzić aktywne utrzymanie, jeśli nowa zależność)
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> [Zakładając wariant 1 — usuwanie z ulubionych:] Dodaj na `/companies` możliwość usunięcia
+> miejsca z listy ulubionych przez [ustalony gest — przeciągnięcie w lewo z przyciskiem
+> „Usuń", wzorem typowych list mobilnych], korzystający z istniejącego
+> `DELETE /api/companies/favorites/:id` (Sesja 12) — bez zmian w API, tylko nowy sposób
+> wywołania z UI, obok już istniejącej gwiazdki. Potwierdzenie przed usunięciem [ustalić, czy
+> potrzebne, czy przeciągnięcie z opcją cofnięcia (wzorem `UndoToast.tsx` z Fazy V5b)
+> wystarczy zamiast dialogu]. Zweryfikuj na mobile (gest dotykowy) i desktop (odpowiednik bez
+> przeciągania, jeśli przeciąganie nie ma sensu myszką).
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Wariant (ulubione vs. trwałe usunięcie firmy) i gest ustalone
+- [ ] Plan zaakceptowany
+- [ ] Usuwanie z zapisanych/ulubionych działa przez ustalony gest, obok gwiazdki
+- [ ] Zweryfikowane na mobile i desktop
+- [ ] lint/test + commit
+
+### Sesja V7.11 — Naprawa układu desktopowego (nagłówek, rozjeżdżający się layout) — zależna od V6.9
+
+Kontekst: to zgłoszenie pokrywa się z już otwartą, nieukończoną **Sesją V6.9** (wyżej w tym
+pliku) — węższy, spójny układ desktopowy. `Header.tsx` ma dziś `max-w-2xl` i `mx-auto`, ale
+sama treść stron ma różne szerokości kontenerów (`max-w-2xl` na `/cards`/`/companies`/
+`/recommendations`, `max-w-screen-sm` na `/account`, `max-w-screen-lg` w stopce) — stąd może
+wyglądać na „rozjeżdżające się" wyrównanie między nagłówkiem a treścią na różnych ekranach,
+dokładnie to, co Sesja V6.9 miała ujednolicić. Zanim odpalisz tę sesję, zbierz zrzuty ekranu
+konkretnego problemu (jaka szerokość okna, która strona) — „coś się rozjeżdża" samo w sobie nie
+wystarczy Claude Code do naprawienia właściwej rzeczy.
+
+Prompt: patrz Sesja V6.9 wyżej w tym pliku — to ta sama praca. Przed odpaleniem: dołącz zrzuty
+ekranu problemu (szerokość okna, która strona, na czym polega „rozjechanie") jako uzupełnienie
+promptu z V6.9, i rozstrzygnij tam wymienione trzy pytania (docelowa szerokość kolumny, tło
+poza kolumną, zakres stron).
+
+- [ ] Zrzuty ekranu/opis konkretnego problemu zebrane
+- [ ] Sesja V6.9 (decyzje + plan + implementacja) odhaczona jako ukończona — patrz checklista
+      wyżej w tym pliku
+- [ ] Nowo zgłoszony problem zweryfikowany jako naprawiony tym samym rozwiązaniem (albo
+      opisany jako osobny, jeśli V6.9 go nie pokrywa)
+
+### Sesja V7.12 — „Miejsca": lista tylko z dodanych karnetów lub wyszukanych + gwiazdka — wymaga decyzji przed startem
+
+Kontekst: dziś `GET /api/companies` (używany na `/companies`) zwraca **wszystkie** firmy w
+bazie — każdą, którą jakiekolwiek urządzenie kiedykolwiek dodało (przez kreator karnetu albo
+ręcznie), niezależnie od tego, czy oglądający ma do niej karnet czy ją ulubił. Prośba
+„zapisywanie miejsc — tylko z dodanych karnetów lub wyszukane + gwiazdka" brzmi jak chęć
+**zawężenia** tej listy: pokazywać na `/companies` tylko firmy, do których użytkownik ma
+karnet, plus firmy, które sam wyszukał i oznaczył gwiazdką (ulubione) — nie całą globalną bazę
+firm dodanych przez innych. To zmiana zasady widoczności, nie tylko UI — wymaga potwierdzenia,
+bo dziś funkcja „przeglądaj wszystkie firmy w bazie" (w tym cudze) może być świadomym
+zamierzeniem (np. żeby zobaczyć, jakie miejsca już są skatalogowane, zanim doda się nowe).
+
+Przed startem ustal:
+- Czy `/companies` ma pokazywać wyłącznie: (a) firmy z własnych karnetów (`Card.companyId`
+  bieżącej tożsamości) + (b) własne ulubione (`Favorite`) — z wykluczeniem firm dodanych przez
+  innych, do których nie mam ani karnetu, ani gwiazdki
+- Czy wyszukiwanie nowej firmy (przy dodawaniu karnetu, `PlacesAutocomplete`) nadal przeszukuje
+  wszystko z Google Places (bez zmian) — zawężenie dotyczy tylko **listy** `/companies`, nie
+  wyszukiwania przy tworzeniu karnetu
+- Co z firmami dodanymi ręcznie bez karnetu i bez gwiazdki (np. ktoś dodał firmę, potem usunął
+  jedyny karnet do niej) — znikają z widoku, ale zostają w bazie (inni użytkownicy z kartami do
+  tej samej firmy nadal ją widzą)
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Zmień `GET /api/companies`, żeby domyślnie zwracał tylko firmy powiązane z bieżącą
+> tożsamością (`deviceId`/`userId`): firmy, do których użytkownik ma co najmniej jeden karnet
+> (`Card.companyId`), połączone (nie duplikowane) z firmami oznaczonymi jako ulubione
+> (`Favorite`). Nie zmieniaj wyszukiwania Google Places przy dodawaniu nowej firmy
+> (`PlacesAutocomplete.tsx`) — to zawężenie dotyczy wyłącznie listy na `/companies`.
+> Zaktualizuj `docs/API.md` (nowe zachowanie domyślne endpointu) i testy API firm, które dziś
+> zakładają zwracanie wszystkich firm.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Dokładna reguła widoczności (karnet i/lub gwiazdka) ustalona
+- [ ] Plan zaakceptowany
+- [ ] `GET /api/companies` zwraca zawężoną listę wg ustalonej reguły
+- [ ] Wyszukiwanie przy dodawaniu karnetu (Places) działa bez zmian
+- [ ] `docs/API.md` i testy zaktualizowane
+- [ ] lint/test + commit
+
+### Sesja V7.13 — Opcja „Usuń konto" — wymaga decyzji przed startem
+
+Kontekst: checklista „Przed pierwszym wdrożeniem produkcyjnym" (wyżej w tym pliku) ma pozycję
+„Techniczna możliwość usunięcia konta i danych na żądanie" — świadomie odłożoną 2026-08-09.
+Sesja V6.10 (nadal otwarta) dodaje w `/account` kasowanie **tylko karnetów** bieżącej
+tożsamości — usuwanie konta to więcej: kasuje sam wiersz `User` (login, e-mail, hash hasła),
+nie tylko `Card`/`Visit`. Dziś logowanie i tryb gościa (`deviceId`) to trwale rozłączne
+przestrzenie (Sesja 14) — po usunięciu konta użytkownik naturalnie wraca do trybu gościa na
+tym urządzeniu (nowy `deviceId`, bez dostępu do danych po usuniętym koncie).
+
+Przed startem ustal:
+- Co dokładnie kasuje usunięcie konta: tylko wiersz `User` + karnety/wejścia/ulubione/vouchery
+  powiązane przez `userId`, czy też firmy (`Company`) dodane ręcznie przez to konto (te mogą
+  być współdzielone z innymi użytkownikami — analogicznie do zastrzeżenia w Sesji V6.10, że
+  firmy/kategorie/ulubione nie są kasowane razem z karnetami)
+- Forma potwierdzenia (ta sama silna forma co w Sesji V6.10, czy jeszcze silniejsza, skoro to
+  nieodwracalne skasowanie loginu, nie tylko danych karnetów)
+- Czy po usunięciu konta użytkownik zostaje automatycznie wylogowany i przekierowany na `/`
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Dodaj endpoint `DELETE /api/account` kasujący konto zalogowanego użytkownika: wiersz
+> `User`, wszystkie jego karnety/wejścia/ulubione/pliki voucherów (Supabase Storage), zgodnie
+> z ustaleniami wyżej — [zakres ustalony]. Dodaj w `/account` sekcję/wiersz „Usuń konto"
+> (wizualnie destrukcyjny, `variant="danger"` z `Button.tsx`, wzorem Sesji V6.10), z
+> potwierdzeniem [ustalona forma]. Po sukcesie: wylogowanie (`signOut`) i przekierowanie na
+> `/`. Dodaj klucze i18n (PL/EN). Zaktualizuj `docs/API.md`, i odhacz pozycję „Techniczna
+> możliwość usunięcia konta" w checkliście „Przed pierwszym wdrożeniem produkcyjnym" w tym
+> pliku.
+> Najpierw krótki plan (w tym dokładny zakres kasowanych danych i forma potwierdzenia),
+> poczekaj na akceptację.
+
+- [ ] Zakres kasowanych danych i forma potwierdzenia ustalone
+- [ ] Plan zaakceptowany
+- [ ] `DELETE /api/account` kasuje konto + dane powiązane (nie dotyka współdzielonych firm)
+- [ ] Akcja w `/account`, potwierdzenie silniejsze niż zwykłe usuwanie karnetu
+- [ ] Wylogowanie i przekierowanie po sukcesie
+- [ ] `docs/API.md` zaktualizowane, checklista wdrożeniowa odhaczona, i18n uzupełnione
+- [ ] lint/test + commit
+
+### Sesja V7.14 — Reset hasła — wymaga decyzji przed startem
+
+Kontekst: logowanie e-mail+hasło istnieje od Sesji V6.1 (`CredentialsProvider`, `bcryptjs`,
+`src/server/auth.ts`), ale nie ma żadnej ścieżki resetu zapomnianego hasła — ani endpointu,
+ani ekranu. Wysyłka e-maili nie jest dziś w projekcie w ogóle podłączona (brak
+`nodemailer`/`resend`/innego dostawcy w zależnościach) — to nowa zależność zewnętrzna, ta sama
+decyzja co przy „magic link" rozważanym (i odłożonym) w Sesji V6.1.
+
+Przed startem ustal:
+- Dostawca wysyłki e-mail (Resend/Postmark/SES/inny) i czy masz już klucz API
+- Adres nadawcy — z treści prośby wynika, że e-mail resetu ma iść z `karnet.asist@dropia.pro`
+  lub `kontakt@dropia.pro`: który z tych dwóch adresów ma być nadawcą, i czy domena
+  `dropia.pro` jest już zweryfikowana u wybranego dostawcy (SPF/DKIM) — bez tego maile trafiają
+  do spamu albo w ogóle się nie wysyłają
+- Czas ważności linku resetującego (np. 1h) i czy stare hasło ma zostać unieważnione od razu
+  po wygenerowaniu nowego tokenu, czy dopiero po użyciu linku
+
+Prompt (skróć/dostosuj, po ustaleniu powyższego):
+> Dodaj resetowanie hasła dla logowania e-mail+hasło (`src/server/auth.ts`,
+> `CredentialsProvider`). Rozszerz `User` w Prisma o pola na token resetu (hash tokenu +
+> data wygaśnięcia, nie sam token jawnie w bazie). Dodaj `POST /api/auth/request-reset`
+> (przyjmuje e-mail, zawsze zwraca sukces niezależnie od tego, czy konto istnieje — nie
+> zdradzać, czy dany e-mail jest zarejestrowany) i `POST /api/auth/reset-password` (token +
+> nowe hasło). Wyślij e-mail z linkiem resetu przez [ustalony dostawca], z adresu [ustalony
+> adres] — sprawdź aktywne utrzymanie paczki klienta dostawcy przed dodaniem do
+> `package.json` (zasada z Sesji 13). Dodaj ekrany `/forgot-password` i
+> `/reset-password?token=...`, linki z ekranu `/login`. Zaktualizuj `.env.example` (klucz
+> API dostawcy) i `docs/SETUP.md`/`docs/API.md`.
+> Najpierw krótki plan, poczekaj na akceptację.
+
+- [ ] Dostawca e-mail, adres nadawcy i domena zweryfikowane
+- [ ] Plan zaakceptowany
+- [ ] Endpointy request-reset/reset-password + token z wygaśnięciem (hash w bazie)
+- [ ] Ekrany `/forgot-password`, `/reset-password`
+- [ ] E-mail resetu faktycznie dochodzi (zweryfikowane na prawdziwej skrzynce)
+- [ ] `.env.example`/`docs/SETUP.md`/`docs/API.md` zaktualizowane, i18n uzupełnione
+- [ ] lint/test + commit
+
+---
+
+### Podsumowanie Fazy V7 — wszystkie sesje od najmniej do najbardziej pracochłonnej
+
+Dla orientacji przed rozpoczęciem — to ten sam szacunek, który ustala kolejność sesji wyżej.
+
+**Bardzo małe:**
+1. **Sesja V7.1 — Miejsca: zawijanie nazw + adres/miasto małą czcionką.** Czysta zmiana CSS,
+   bez backendu.
+2. **Sesja V7.2 — Nowy karnet z przyciskiem od razu na 1 wejście.** Spina dwa już istniejące
+   endpointy, bez nowej logiki serwerowej.
+3. **Sesja V7.3 — Zmiana miniaturki (ikona aplikacji).** Cztery pliki generujące SVG/ImageResponse,
+   bez backendu — czasochłonna głównie decyzja projektowa, nie implementacja.
+4. **Sesja V7.4 — Licencja użytkowania/przerabiania.** Sam plik/tekst po podjęciu decyzji, jaki
+   to w ogóle rodzaj licencji.
+
+**Małe:**
+5. **Sesja V7.5 — Wyszukiwarka miejsc: sensowna odległość + sortowanie.** Jeden komponent,
+   wzorowany na już istniejącym mechanizmie geolokalizacji z `/companies`.
+6. **Sesja V7.6 — Data ostatniej zmiany z dokładnością do godziny.** Wyświetlenie już
+   istniejącego pola w bazie (w wariancie „czas zapisu w systemie") albo małe rozszerzenie
+   formularza wejścia (w wariancie „godzina samego wejścia").
+
+**Średnie:**
+7. **Sesja V7.7 — Kropki wejść w kolorze statusu.** Dotyka kilku miejsc użycia
+   `VisitDots.tsx` + sprawdzenie kontrastu WCAG w obu motywach.
+8. **Sesja V7.8 — Regulamin korzystania z aplikacji.** Praca redakcyjna (treść prawna) +
+   checkbox akceptacji na rejestracji.
+9. **Sesja V7.9 — Polityka prywatności (RODO).** Praca redakcyjna, więcej sekcji niż regulamin
+   (podstawy prawne, odbiorcy danych, prawa osoby).
+10. **Sesja V7.10 — Miejsca: usuwanie zapisanych miejsc.** Gest przeciągnięcia/swipe, możliwa
+    nowa zależność do obsługi gestów dotykowych.
+
+**Duże:**
+11. **Sesja V7.11 — Naprawa układu desktopowego.** Zależna od nieukończonej Sesji V6.9,
+    dotyka wielu ekranów naraz (Header/Footer/treść).
+12. **Sesja V7.12 — Miejsca: lista tylko z dodanych karnetów lub wyszukanych + gwiazdka.**
+    Zmiana zasady widoczności danych współdzielonych między użytkownikami + aktualizacja
+    testów API.
+
+**Bardzo duże:**
+13. **Sesja V7.13 — Opcja „Usuń konto".** Kaskadowe kasowanie w wielu tabelach + plikach w
+    Supabase Storage, silne potwierdzenie, wpływ na dane współdzielone (firmy).
+14. **Sesja V7.14 — Reset hasła.** Nowa zależność zewnętrzna (dostawca e-mail + weryfikacja
+    domeny), migracja Prisma, tokeny z wygaśnięciem, dwa nowe ekrany — najcięższa sesja tej
+    fazy.
 
 ---
 
