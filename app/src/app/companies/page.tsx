@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AddCompanyForm, type CreatedCompany } from "@/components/AddCompanyForm";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { CompaniesOverviewMap } from "@/components/CompaniesOverviewMap";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
@@ -233,7 +234,10 @@ export default function CompaniesPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
+        <div className="min-w-0">
+          <Logo size="md" className="mb-1" />
+          <h1 className="text-2xl font-semibold">{t("title")}</h1>
+        </div>
         {!addFormOpen && (
           <Button type="button" onClick={openAddForm} className="shrink-0">
             <Plus className="size-4" aria-hidden />

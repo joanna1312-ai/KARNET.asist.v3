@@ -1522,10 +1522,12 @@ Prompt (skróć/dostosuj):
 > bucketa `voucher-files-dev`, w jasnym i ciemnym motywie, na mobile i desktopie.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Kliknięcie w zdjęcie vouchera otwiera pełnoekranowy podgląd, zamykany klik-poza/Escape/X
-- [ ] Sprawdzone na realnym pliku, mobile + desktop, jasny/ciemny motyw
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Kliknięcie w zdjęcie vouchera otwiera pełnoekranowy podgląd, zamykany klik-poza/Escape/X
+      (nowy `ImageLightbox.tsx`, wzorzec `<dialog>` jak `ConfirmDialog`/`HelpDialog`)
+- [x] Sprawdzone na realnym pliku (bucket `voucher-files-dev`), mobile (375px) + desktop,
+      jasny/ciemny motyw
+- [x] lint/test + commit (`14a3479`, branch `Faza_V6`)
 
 ### Sesja V6.13 (punkty 5+17) — Logo: powiększenie i spójna obecność w nagłówku każdej zakładki
 
@@ -1552,6 +1554,18 @@ Prompt (skróć/dostosuj):
 - [ ] Plan zaakceptowany
 - [ ] Wszystkie wystąpienia poprawione, w tym tytuł powiadomienia push i manifest PWA
 - [ ] lint/test + commit
+
+> Uwaga (2026-08-20): tytuł tej sesji i treść wklejonego wyżej promptu były niespójne —
+> nagłówek mówił o logo w nagłówku, prompt kopiował sesję V6.18 (pisownia „Karnet.asist").
+> Po ustaleniu z właścicielką zrealizowano to, co mówi nagłówek: logo w nagłówku mobilnym.
+> Powyższe checkboxy i prompt dotyczą więc **sesji V6.18**, nie tego, co faktycznie zrobiono
+> tutaj — patrz checklista niżej.
+
+- [x] Plan zaakceptowany (logo w mobilnym nagłówku każdej zakładki, nie pisownia)
+- [x] Logo dodane/ujednolicone na `/cards`, `/stats`, `/companies`, `/recommendations`,
+      `/account` — rozmiar `md`, bez przygaszenia (`opacity-60` usunięte)
+- [x] Zweryfikowane w przeglądarce na 375px, wszystkie 5 zakładek
+- [x] lint/test (224/224) + commit
 
 ### Sesja V6.14 (punkt 16) — „Miejsca": filtr po kategoriach na mobile
 

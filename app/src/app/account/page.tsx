@@ -100,6 +100,7 @@ export default function AccountPage() {
 
   return (
     <div className="mx-auto w-full max-w-screen-sm px-4 pt-5 pb-6">
+      <Logo size="md" className="mb-1" />
       <h1 className="font-brand text-[27px] leading-[1.15] font-extrabold tracking-[-0.02em]">
         {t("title")}
       </h1>

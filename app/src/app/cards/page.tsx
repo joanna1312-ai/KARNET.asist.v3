@@ -386,7 +386,7 @@ export default function CardsPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 pt-4 pb-10 md:gap-6 md:py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <Logo size="sm" className="mb-1 opacity-60" />
+          <Logo size="md" className="mb-1" />
           <h1 className="font-brand text-[27px] leading-[1.15] font-extrabold tracking-[-0.02em]">
             {t("title")}
           </h1>

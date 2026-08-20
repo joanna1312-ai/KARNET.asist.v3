@@ -4,6 +4,7 @@ import { Map as MapIcon, Plus, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { deviceFetch } from "@/lib/device-client";
@@ -125,6 +126,7 @@ export default function RecommendationsPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
       <div className="flex flex-col gap-1">
+        <Logo size="md" className="mb-1" />
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("intro")}</p>
       </div>
