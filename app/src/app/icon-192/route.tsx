@@ -3,9 +3,8 @@ import { loadIconFont } from "../icon-font";
 
 export const runtime = "edge";
 
-// Ikona 192×192 do manifest.ts (PWA) — te same proporcje co icon.tsx/apple-icon.tsx
-// (litera „K” nad paskiem trzech kropek na miętowym tle), po prostu w rozmiarze
-// wymaganym przez manifest.
+// Ikona 192×192 do manifest.ts (PWA) — te same proporcje co apple-icon.tsx (płytka
+// z literą „K” nad paskiem karnetu na białym kaflu), przeskalowane do 192px.
 export async function GET() {
   const font = await loadIconFont();
   return new ImageResponse(
@@ -18,18 +17,50 @@ export async function GET() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 11,
-          background: "#82d2b9",
-          borderRadius: 42,
+          gap: 9.75,
+          background: "#ffffff",
+          borderRadius: 42.75,
         }}
       >
-        <span style={{ fontFamily: "Baloo 2", fontWeight: 800, fontSize: 82, color: "#f2825a", lineHeight: 1 }}>
-          K
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-          <div style={{ width: 27, height: 27, borderRadius: "50%", background: "#f2825a" }} />
-          <div style={{ width: 24, height: 24, borderRadius: "50%", border: "6px solid rgba(23,94,75,0.35)" }} />
-          <div style={{ width: 24, height: 24, borderRadius: "50%", border: "6px solid rgba(23,94,75,0.35)" }} />
+        <div
+          style={{
+            display: "flex",
+            width: 108,
+            height: 108,
+            borderRadius: 29.25,
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(150deg, #f5a07f, #f2825a)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "Baloo 2",
+              fontWeight: 800,
+              fontSize: 78.75,
+              letterSpacing: -1.5,
+              color: "#ffffff",
+              lineHeight: 1,
+            }}
+          >
+            K
+          </span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 9,
+            width: 100.5,
+            height: 39,
+            borderRadius: 19.5,
+            background: "linear-gradient(140deg, #9adcc6, #3f9c86)",
+          }}
+        >
+          <div style={{ width: 17.25, height: 17.25, borderRadius: "50%", background: "#f2825a" }} />
+          <div style={{ width: 17.25, height: 17.25, borderRadius: "50%", background: "#ffffff" }} />
+          <div style={{ width: 17.25, height: 17.25, borderRadius: "50%", background: "#ffffff" }} />
         </div>
       </div>
     ),

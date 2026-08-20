@@ -3,7 +3,8 @@ import { loadIconFont } from "../icon-font";
 
 export const runtime = "edge";
 
-// Ikona 512×512 do manifest.ts (PWA) — patrz icon-192/route.tsx.
+// Ikona 512×512 do manifest.ts (PWA) — patrz icon-192/route.tsx. Wymiary 1:1 z
+// referencji redesignu (canvas 512, promienie 114/78/52, płytka 288, pasek 268×104).
 export async function GET() {
   const font = await loadIconFont();
   return new ImageResponse(
@@ -16,18 +17,50 @@ export async function GET() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 28,
-          background: "#82d2b9",
-          borderRadius: 112,
+          gap: 26,
+          background: "#ffffff",
+          borderRadius: 114,
         }}
       >
-        <span style={{ fontFamily: "Baloo 2", fontWeight: 800, fontSize: 218, color: "#f2825a", lineHeight: 1 }}>
-          K
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#f2825a" }} />
-          <div style={{ width: 64, height: 64, borderRadius: "50%", border: "16px solid rgba(23,94,75,0.35)" }} />
-          <div style={{ width: 64, height: 64, borderRadius: "50%", border: "16px solid rgba(23,94,75,0.35)" }} />
+        <div
+          style={{
+            display: "flex",
+            width: 288,
+            height: 288,
+            borderRadius: 78,
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(150deg, #f5a07f, #f2825a)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "Baloo 2",
+              fontWeight: 800,
+              fontSize: 210,
+              letterSpacing: -4,
+              color: "#ffffff",
+              lineHeight: 1,
+            }}
+          >
+            K
+          </span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 24,
+            width: 268,
+            height: 104,
+            borderRadius: 52,
+            background: "linear-gradient(140deg, #9adcc6, #3f9c86)",
+          }}
+        >
+          <div style={{ width: 46, height: 46, borderRadius: "50%", background: "#f2825a" }} />
+          <div style={{ width: 46, height: 46, borderRadius: "50%", background: "#ffffff" }} />
+          <div style={{ width: 46, height: 46, borderRadius: "50%", background: "#ffffff" }} />
         </div>
       </div>
     ),
