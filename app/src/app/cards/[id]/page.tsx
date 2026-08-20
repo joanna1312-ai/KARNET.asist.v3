@@ -14,6 +14,7 @@ import {
 } from "@/components/CardForm";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VisitDots } from "@/components/VisitDots";
 import { Button } from "@/components/ui/Button";
@@ -100,32 +101,49 @@ function visitToFormValues(visit: ApiVisit): VisitFormValues {
 // z kartą.
 function VoucherFilesPreview({ files }: { files: VoucherFile[] }) {
   const t = useTranslations("cardDetailsPage");
+  const [openImageUrl, setOpenImageUrl] = useState<string | null>(null);
 
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
-      {files.map((file) =>
-        file.kind === "pdf" ? (
-          <a
-            key={file.id}
-            href={file.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex size-24 shrink-0 flex-col items-center justify-center gap-1.5 rounded-lg bg-coral/15 p-2 text-coral-ink transition-colors hover:bg-coral/25 dark:bg-coral/10 dark:hover:bg-coral/20"
-          >
-            <FileText className="size-7" aria-hidden />
-            <span className="text-center text-xs font-medium leading-tight">
-              {t("voucherOpenPdf")}
-            </span>
-          </a>
-        ) : (
-          // Podpisany URL Supabase (wygasa po kilku minutach) nie jest znaną domeną na
-          // build-time — next/image wymagałby remotePatterns dla efemerycznego hosta i tak
-          // nie dałoby żadnej korzyści.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={file.id} src={file.url} alt="" className="size-24 rounded-lg object-cover" />
-        )
-      )}
-    </div>
+    <>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {files.map((file) =>
+          file.kind === "pdf" ? (
+            <a
+              key={file.id}
+              href={file.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex size-24 shrink-0 flex-col items-center justify-center gap-1.5 rounded-lg bg-coral/15 p-2 text-coral-ink transition-colors hover:bg-coral/25 dark:bg-coral/10 dark:hover:bg-coral/20"
+            >
+              <FileText className="size-7" aria-hidden />
+              <span className="text-center text-xs font-medium leading-tight">
+                {t("voucherOpenPdf")}
+              </span>
+            </a>
+          ) : (
+            <button
+              key={file.id}
+              type="button"
+              onClick={() => setOpenImageUrl(file.url)}
+              aria-label={t("voucherImageOpenAria")}
+              className="size-24 shrink-0 cursor-pointer rounded-lg"
+            >
+              {/* Podpisany URL Supabase (wygasa po kilku minutach) nie jest znaną domeną na
+              build-time — next/image wymagałby remotePatterns dla efemerycznego hosta i tak
+              nie dałoby żadnej korzyści. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={file.url} alt="" className="size-24 rounded-lg object-cover" />
+            </button>
+          )
+        )}
+      </div>
+      <ImageLightbox
+        open={openImageUrl !== null}
+        imageUrl={openImageUrl}
+        closeAriaLabel={t("voucherLightboxCloseAria")}
+        onClose={() => setOpenImageUrl(null)}
+      />
+    </>
   );
 }
 

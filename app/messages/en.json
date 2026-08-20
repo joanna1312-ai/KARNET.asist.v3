@@ -332,6 +332,8 @@
     "archivedNotice": "This card is archived — you can no longer add visits to it.",
     "voucherLabel": "Voucher",
     "voucherOpenPdf": "Open PDF file",
+    "voucherImageOpenAria": "Enlarge the voucher image",
+    "voucherLightboxCloseAria": "Close preview",
     "editButton": "Edit",
     "deleteButton": "Delete",
     "editCardAria": "Edit card",

@@ -332,6 +332,8 @@
     "archivedNotice": "Ten karnet jest zarchiwizowany — nie można już dodawać do niego wejść.",
     "voucherLabel": "Voucher",
     "voucherOpenPdf": "Otwórz plik PDF",
+    "voucherImageOpenAria": "Powiększ zdjęcie vouchera",
+    "voucherLightboxCloseAria": "Zamknij podgląd",
     "editButton": "Edytuj",
     "deleteButton": "Usuń",
     "editCardAria": "Edytuj karnet",
