@@ -1661,9 +1661,10 @@ Prompt (skróć/dostosuj):
 > zakładek ani stanu `tab` — to wyłącznie kwestia widoczności podczas edycji.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Pigułki niewidoczne, gdy formularz otwarty; wracają po zamknięciu
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Pigułki niewidoczne, gdy formularz otwarty; wracają po zamknięciu — zweryfikowane w
+      przeglądarce (otwarcie/zamknięcie formularza „Dodaj karnet")
+- [x] lint/test (225/225) + commit
 
 ### Sesja V6.17 (punkt 6) — Skróć tekst stopki — wymaga ustalenia treści przed startem
 
@@ -1684,10 +1685,18 @@ Prompt (skróć/dostosuj, po ustaleniu powyższego):
 > wizualnie oba miejsca po zmianie.
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Docelowa treść stopki ustalona
-- [ ] Plan zaakceptowany
-- [ ] Stopka skrócona w obu miejscach (`Footer.tsx`, `/account`), i18n PL/EN
-- [ ] lint/test + commit
+> Uwaga (2026-08-20): przy realizacji okazało się, że polecenie właścicielki dotyczyło
+> zmniejszenia **rozmiaru czcionki** stopki, nie skrócenia jej **treści** — treść (autor,
+> AI, kontakt, wersja) miała zostać bez zmian, co potwierdziła wprost przy ustalaniu
+> zakresu. Zrealizowano więc zmianę `text-sm` → `text-xs` na kontenerze `<footer>`, bez
+> ruszania kluczy i18n. Powyższe checkboxy dotyczyły innej wersji tej sesji (skrót treści),
+> nie tego, co faktycznie zrobiono — patrz checklista niżej.
+
+- [x] Docelowa treść stopki ustalona (bez zmian treści — tylko rozmiar czcionki)
+- [x] Plan zaakceptowany
+- [x] Font stopki zmniejszony (`text-sm` → `text-xs`) w obu miejscach (`Footer.tsx`,
+      `/account`) — zweryfikowane w przeglądarce (12px w obu)
+- [x] lint/test (225/225) + commit
 
 ### Sesja V6.18 (punkt 11) — Ujednolicenie pisowni „KARNET.asist"
 
@@ -1711,9 +1720,16 @@ Prompt (skróć/dostosuj):
 > (adresy/URL-e zwykle są małymi literami z innych powodów — sprawdź kontekst przed zmianą).
 > Najpierw krótki plan (lista plików), poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Wszystkie wystąpienia poprawione, w tym tytuł powiadomienia push i manifest PWA
-- [ ] lint/test + commit
+- [x] Plan zaakceptowany (zakres rozszerzony przy akceptacji: oprócz listy „co najmniej"
+      wyżej, objęto też żywą dokumentację `v3_paczka_dok/v2/` — `docs/`, `CLAUDE.md`,
+      `README.md` — dla spójności z tym, co aktualizują poprzednie sesje V6b. Świadomie
+      pominięto `v3_paczka_dok/karnet-asist-prototyp_v6.html` — zamrożony prototyp
+      referencyjny — i `plan-pracy-claude-code.md`, gdzie „Karnet.asist" jest cytatem
+      opisującym ten sam problem, nie błędem do poprawienia)
+- [x] Wszystkie wystąpienia poprawione (21 plików), w tym tytuł powiadomienia push i
+      manifest PWA — zweryfikowane w przeglądarce (modal pomocy: „Jak korzystać z
+      KARNET.asist")
+- [x] lint/test (225/225) + commit
 
 ### Sesja V6.19 (punkt 12) — Numer wersji `V6_260817`
 
@@ -1730,11 +1746,23 @@ Prompt (skróć/dostosuj):
 > się poprawnie w obu miejscach (stopka desktopowa i `/account` na mobile).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Wszystkie sesje V6.2–V6.18 ukończone (ten numer wersji ma sens dopiero po nich)
-- [ ] Plan zaakceptowany
-- [ ] `APP_VERSION` w jednym wspólnym miejscu, wartość `V6_260817`
-- [ ] Zweryfikowane w obu miejscach wyświetlania
-- [ ] lint/test + commit
+> Uwaga (2026-08-20): sesja odpalona z aktualną datą dnia realizacji, więc wartość to
+> `V6_260820`, nie `V6_260817` zapisane w nagłówku/promptcie wyżej (ten plik nie był
+> zaktualizowany między 17 a 20 sierpnia). `APP_VERSION` odzwierciedla dzień faktycznego
+> wdrożenia tej zmiany, nie datę spisania checklisty.
+
+- [ ] Wszystkie sesje V6.2–V6.18 ukończone (ten numer wersji ma sens dopiero po nich) —
+      **nie w pełni spełnione**: V6.9 (węższy układ desktop) i V6.10 (wyczyszczenie danych
+      karnetów) nadal mają puste checkboxy wyżej w tym pliku. Sesja V6.19 została mimo to
+      odpalona na wyraźne polecenie właścicielki jako czwarta z zamkniętej grupy V6.16–V6.19,
+      nie jako sygnał, że cała Faza V6b jest ukończona — do wyjaśnienia z właścicielką, czy
+      V6.9/V6.10 są zrobione poza checklistą (kod `/account` sugeruje, że akcja „Wyczyść dane
+      karnetów" z V6.10 już istnieje w UI) czy realnie czekają.
+- [x] Plan zaakceptowany
+- [x] `APP_VERSION` w jednym wspólnym miejscu (`src/lib/app-version.ts`), wartość
+      `V6_260820`
+- [x] Zweryfikowane w obu miejscach wyświetlania (stopka desktopowa, `/account`)
+- [x] lint/test (225/225) + commit
 
 ---
 
