@@ -13,6 +13,7 @@ import { Logo } from "@/components/Logo";
 import { Button, buttonClassName } from "@/components/ui/Button";
 import { CARD_SURFACE_CLASS } from "@/components/ui/Card";
 import { Switch } from "@/components/ui/Switch";
+import { APP_VERSION } from "@/lib/app-version";
 import { deviceFetch } from "@/lib/device-client";
 import {
   getExistingPushSubscription,
@@ -22,7 +23,6 @@ import {
   unsubscribeFromPush,
 } from "@/lib/push-client";
 
-const APP_VERSION = "v5_260809";
 const CONTACT_EMAIL = "ai.joanna.dropia@gmail.com";
 
 export default function AccountPage() {
