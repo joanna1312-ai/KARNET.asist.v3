@@ -57,4 +57,5 @@ bez zależności ani serwera.
 - [docs/MOBILE_ROADMAP.md](docs/MOBILE_ROADMAP.md) — plan Web → Android/iOS
 - [docs/DECISIONS.md](docs/DECISIONS.md) — decyzje architektoniczne (ADR)
 - [docs/TESTING.md](docs/TESTING.md) — strategia testów
+- [docs/AUDIT_2026-08-20.md](docs/AUDIT_2026-08-20.md) — audyt jakości i bezpieczeństwa kodu
 - [docs/user/](docs/user/) — dokumentacja dla użytkowników
