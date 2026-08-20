@@ -401,22 +401,24 @@ export default function CardsPage() {
         </div>
       </div>
 
-      <div className="flex w-fit gap-1 rounded-full bg-black/5 p-1 dark:bg-white/10">
-        {(["active", "archived"] as const).map((tabOption) => (
-          <button
-            key={tabOption}
-            type="button"
-            onClick={() => setTab(tabOption)}
-            className={`min-h-9 rounded-full px-4 text-sm font-semibold transition-colors ${
-              tab === tabOption
-                ? "bg-foreground text-background"
-                : "text-foreground/50 hover:text-foreground"
-            }`}
-          >
-            {t(tabOption === "active" ? "tabActive" : "tabArchived")}
-          </button>
-        ))}
-      </div>
+      {!formOpen && (
+        <div className="flex w-fit gap-1 rounded-full bg-black/5 p-1 dark:bg-white/10">
+          {(["active", "archived"] as const).map((tabOption) => (
+            <button
+              key={tabOption}
+              type="button"
+              onClick={() => setTab(tabOption)}
+              className={`min-h-9 rounded-full px-4 text-sm font-semibold transition-colors ${
+                tab === tabOption
+                  ? "bg-foreground text-background"
+                  : "text-foreground/50 hover:text-foreground"
+              }`}
+            >
+              {t(tabOption === "active" ? "tabActive" : "tabArchived")}
+            </button>
+          ))}
+        </div>
+      )}
 
       {formOpen && (
         <div className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
