@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { CardType } from "@/generated/prisma/enums";
 import type { StepProps } from "./types";
 
-const VISIT_PRESETS = [4, 8, 10, 12, 20];
+const VISIT_PRESETS = [1, 4, 8, 10, 12, 20];
 
 type TypeStepProps = StepProps & { companyName: string; categoryName: string | null };
 
