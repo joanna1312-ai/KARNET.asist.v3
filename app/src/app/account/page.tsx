@@ -215,7 +215,7 @@ export default function AccountPage() {
         )}
       </section>
 
-      <footer className="mt-6 flex flex-col items-center gap-2 text-center text-sm text-foreground/70">
+      <footer className="mt-6 flex flex-col items-center gap-2 text-center text-xs text-foreground/70">
         <Logo size="sm" />
         <p>{tFooter("authorLine")}</p>
         <div className="flex items-center gap-1.5">
