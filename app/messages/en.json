@@ -11,7 +11,7 @@
   },
   "help": {
     "buttonAria": "Help",
-    "title": "How to use Karnet.asist",
+    "title": "How to use KARNET.asist",
     "closeAria": "Close",
     "guideHeading": "Quick guide",
     "sections": {
@@ -40,7 +40,7 @@
     "faq": {
       "paymentsAndBookings": {
         "question": "Can I pay for a card or book classes in the app?",
-        "answer": "No — Karnet.asist only tracks cards you've already paid for. It doesn't handle payments, sales, or class bookings."
+        "answer": "No — KARNET.asist only tracks cards you've already paid for. It doesn't handle payments, sales, or class bookings."
       },
       "deleteConfirm": {
         "question": "Can a card or visit be deleted by accident?",
@@ -119,14 +119,14 @@
     "signInHint": "Signing in is only used to sync between devices. Without an account the app works the same way.",
     "remindersLabel": "Reminders",
     "remindersHint": "7 and 2 days before expiry",
-    "iosInstallHint": "On iPhone, add Karnet.asist to your home screen (Share → Add to Home Screen) for notifications to work.",
+    "iosInstallHint": "On iPhone, add KARNET.asist to your home screen (Share → Add to Home Screen) for notifications to work.",
     "languageLabel": "Language",
     "appearanceLabel": "Appearance",
     "appearanceLight": "Light",
     "appearanceDark": "Dark",
     "appearanceAuto": "Auto",
     "statsRow": "Statistics",
-    "helpRow": "How to use Karnet.asist",
+    "helpRow": "How to use KARNET.asist",
     "resetCardsRow": "Clear card data",
     "resetCardsHint": "Deletes all your cards (active and archived), including their voucher files. Places, categories and favorites are not affected.",
     "resetCardsButton": "Clear all cards",

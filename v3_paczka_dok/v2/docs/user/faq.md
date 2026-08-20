@@ -1,13 +1,13 @@
-# FAQ — Karnet.asist
+# FAQ — KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
+> Nazwa projektu: KARNET.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
 
 **Czy muszę założyć konto, żeby korzystać z aplikacji?**
 Nie. Konto jest opcjonalne i potrzebne wyłącznie do synchronizacji karnetów między
 urządzeniami.
 
 **Czy mogę zapłacić za karnet w aplikacji?**
-Nie — Karnet.asist tylko śledzi Twoje już opłacone karnety. Nie obsługuje płatności ani
+Nie — KARNET.asist tylko śledzi Twoje już opłacone karnety. Nie obsługuje płatności ani
 sprzedaży karnetów.
 
 **Czy mogę zarezerwować zajęcia przez aplikację?**

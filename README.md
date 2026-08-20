@@ -1,4 +1,4 @@
-# Karnet.asist
+# KARNET.asist
 
 Aplikacja webowa do trzymania w jednym miejscu wszystkich karnetów wejściowych —
 siłownia, basen, zajęcia grupowe, masaże, zabiegi kosmetyczne — z licznikiem

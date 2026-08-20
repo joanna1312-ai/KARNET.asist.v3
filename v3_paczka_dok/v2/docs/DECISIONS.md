@@ -1,6 +1,6 @@
-# Decyzje architektoniczne (ADR) — Karnet.asist
+# Decyzje architektoniczne (ADR) — KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Nazwa projektu: KARNET.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
 Format: co zdecydowano, dlaczego, jakie były alternatywy. Wpisy dodawane chronologicznie,
 nie edytowane wstecz — jeśli decyzja się zmienia, dopisywany jest nowy wpis z odnośnikiem

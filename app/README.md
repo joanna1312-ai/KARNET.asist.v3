@@ -1,4 +1,4 @@
-# Karnet.asist — app/
+# KARNET.asist — app/
 
 Kod aplikacji Next.js (App Router) + TypeScript + Tailwind CSS. Pełny opis projektu,
 funkcje, stack i linki do dokumentacji technicznej: [README.md w katalogu głównym

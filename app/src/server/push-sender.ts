@@ -21,12 +21,12 @@ function ensureConfigured() {
 // dociągać cały mechanizm i18n tylko dla tego jednego miejsca.
 const REMINDER_TEXT: Record<"pl" | "en", (companyName: string, days: number) => { title: string; body: string }> = {
   pl: (companyName, days) => ({
-    title: "Karnet.asist",
+    title: "KARNET.asist",
     // "dni" poprawne dla obu progów (2 i 7 — polska odmiana liczebników 2–4 i 5+ oba "dni").
     body: `${companyName} — karnet kończy się za ${days} dni.`,
   }),
   en: (companyName, days) => ({
-    title: "Karnet.asist",
+    title: "KARNET.asist",
     body: `${companyName} — your card expires in ${days} day${days === 1 ? "" : "s"}.`,
   }),
 };

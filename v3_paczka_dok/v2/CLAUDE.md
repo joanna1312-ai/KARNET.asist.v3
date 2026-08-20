@@ -1,6 +1,6 @@
-# Karnet.asist
+# KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Nazwa projektu: KARNET.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 > Zaktualizowano: 2026-08-09 — MVP ukończone i wdrożone na produkcję
 > (`https://karnet.asist.dropia.pro`); Faza V4 (Google Maps/Places, Doradca AI, upload
 > vouchera) też ukończona i zmergowana do `main` — patrz oznaczenia "zrobione" w sekcji
@@ -23,7 +23,7 @@ kupuje bezpośrednio u różnych usługodawców.
 
 **Problem:** traci orientację, ile wejść jej zostało na danym karnecie i kiedy kończy się
 jego ważność, bo te informacje są rozproszone (papierowe karnety, różne apki partnerów,
-pamięć). Karnet.asist centralizuje to w jednym miejscu, bez konieczności zakładania konta.
+pamięć). KARNET.asist centralizuje to w jednym miejscu, bez konieczności zakładania konta.
 
 ## Zakres: co na start, co później
 

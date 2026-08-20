@@ -4,8 +4,8 @@ import type { MetadataRoute } from "next";
 // przez icon-192/route.tsx i icon-512/route.tsx (te same proporcje co icon.tsx).
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Karnet.asist",
-    short_name: "Karnet.asist",
+    name: "KARNET.asist",
+    short_name: "KARNET.asist",
     description: "Twoje karnety zawsze pod ręką.",
     start_url: "/cards",
     display: "standalone",

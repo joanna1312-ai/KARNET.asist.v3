@@ -1,7 +1,7 @@
-# Karnet.asist
+# KARNET.asist
 
 Gdy masz kilka karnetów w różnych miejscach, łatwo stracić orientację, ile wejść
-zostało i kiedy który wygasa. Karnet.asist to centralizuje w jednym miejscu — bez
+zostało i kiedy który wygasa. KARNET.asist to centralizuje w jednym miejscu — bez
 zakładania konta.
 
 Aplikacja do trzymania w jednym miejscu wszystkich karnetów wejściowych — siłownia,

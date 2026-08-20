@@ -1,6 +1,6 @@
 # Uruchomienie projektu lokalnie
 
-> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Nazwa projektu: KARNET.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
 > Zaktualizowano: 2026-08-09 — opisuje faktyczny setup wersji produkcyjnej (po Fazie V4),
 > nie propozycję. Komendy poniżej są gotowe do uruchomienia.

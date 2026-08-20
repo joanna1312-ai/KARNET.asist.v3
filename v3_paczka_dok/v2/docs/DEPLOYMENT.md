@@ -1,6 +1,6 @@
-# Wdrażanie — Karnet.asist
+# Wdrażanie — KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
+> Nazwa projektu: KARNET.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
 > Zaktualizowano: 2026-08-09 — stan po pierwszym wdrożeniu produkcyjnym, patrz checklista
 > niżej i `plan-pracy-claude-code.md`.
 

@@ -1,6 +1,6 @@
-# Schemat danych — Karnet.asist
+# Schemat danych — KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Nazwa projektu: KARNET.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 
 > Zaktualizowano: 2026-08-16 — opisuje faktyczny schemat Prisma wersji produkcyjnej (po
 > Fazie V4 i Fazie V5b — PWA/Web Push), nie propozycję.

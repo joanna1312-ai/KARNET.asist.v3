@@ -1,6 +1,6 @@
-# Architektura — Karnet.asist
+# Architektura — KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
+> Nazwa projektu: KARNET.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08
 > Zaktualizowano: 2026-08-16 (Faza V5b — przeprojektowanie mobilne + PWA/Web Push;
 > poprzednio 2026-08-09, Faza V4 — Doradca AI, upload vouchera do Supabase Storage)
 

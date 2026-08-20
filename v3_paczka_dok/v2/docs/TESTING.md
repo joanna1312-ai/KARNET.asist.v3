@@ -1,6 +1,6 @@
-# Strategia testów — Karnet.asist
+# Strategia testów — KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08 · Sekcja e2e
+> Nazwa projektu: KARNET.asist · Wersja: v2 · Zapisano: 2026-08-02 00:08 · Sekcja e2e
 > zaktualizowana: 2026-08-06 (Sesja 13) · Stan e2e Google Maps/Places zaktualizowany:
 > 2026-08-09 (Faza V4)
 

@@ -11,7 +11,7 @@
   },
   "help": {
     "buttonAria": "Pomoc",
-    "title": "Jak korzystać z Karnet.asist",
+    "title": "Jak korzystać z KARNET.asist",
     "closeAria": "Zamknij",
     "guideHeading": "Krótki przewodnik",
     "sections": {
@@ -40,7 +40,7 @@
     "faq": {
       "paymentsAndBookings": {
         "question": "Czy mogę zapłacić za karnet albo zarezerwować zajęcia w aplikacji?",
-        "answer": "Nie — Karnet.asist tylko śledzi Twoje już opłacone karnety. Nie obsługuje płatności, sprzedaży ani rezerwacji zajęć."
+        "answer": "Nie — KARNET.asist tylko śledzi Twoje już opłacone karnety. Nie obsługuje płatności, sprzedaży ani rezerwacji zajęć."
       },
       "deleteConfirm": {
         "question": "Czy da się usunąć karnet albo wejście przez pomyłkę?",
@@ -119,14 +119,14 @@
     "signInHint": "Logowanie służy tylko do synchronizacji między urządzeniami. Bez konta aplikacja działa tak samo.",
     "remindersLabel": "Przypomnienia",
     "remindersHint": "7 i 2 dni przed końcem ważności",
-    "iosInstallHint": "Na iPhonie dodaj Karnet.asist do ekranu głównego (Udostępnij → Dodaj do ekranu początkowego), żeby powiadomienia działały.",
+    "iosInstallHint": "Na iPhonie dodaj KARNET.asist do ekranu głównego (Udostępnij → Dodaj do ekranu początkowego), żeby powiadomienia działały.",
     "languageLabel": "Język",
     "appearanceLabel": "Wygląd",
     "appearanceLight": "Jasny",
     "appearanceDark": "Ciemny",
     "appearanceAuto": "Auto",
     "statsRow": "Statystyki",
-    "helpRow": "Jak korzystać z Karnet.asist",
+    "helpRow": "Jak korzystać z KARNET.asist",
     "resetCardsRow": "Wyczyść dane karnetów",
     "resetCardsHint": "Usuwa wszystkie Twoje karnety (aktywne i archiwalne), łącznie z plikami voucherów. Nie dotyka zapisanych miejsc, kategorii ani ulubionych.",
     "resetCardsButton": "Wyczyść wszystkie karnety",

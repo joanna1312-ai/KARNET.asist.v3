@@ -1,6 +1,6 @@
 # Plan przejścia Web → Android/iOS
 
-> Nazwa projektu: Karnet.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
+> Nazwa projektu: KARNET.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
 > Zaktualizowano: 2026-08-16 (Faza V5b) — punkt 3 rozstrzygnięty, patrz niżej.
 
 > Brief produktowy zakłada start jako aplikacja webowa i natywne aplikacje mobilne w

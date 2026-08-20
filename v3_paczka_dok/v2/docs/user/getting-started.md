@@ -1,6 +1,6 @@
-# Pierwsze kroki w Karnet.asist
+# Pierwsze kroki w KARNET.asist
 
-> Nazwa projektu: Karnet.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
+> Nazwa projektu: KARNET.asist · Wersja: v1 · Zapisano: 2026-08-01 23:33
 
 ## Dodawanie pierwszego karnetu
 

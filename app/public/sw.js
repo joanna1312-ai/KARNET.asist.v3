@@ -1,4 +1,4 @@
-// Service worker Karnet.asist (Etap 6, PWA) — świadomie tylko Web Push + kliknięcie
+// Service worker KARNET.asist (Etap 6, PWA) — świadomie tylko Web Push + kliknięcie
 // powiadomienia. Bez cache'owania offline w tej fazie (README.md, PLAN_PRAC.md).
 
 self.addEventListener("install", () => {

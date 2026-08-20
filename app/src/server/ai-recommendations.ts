@@ -185,7 +185,7 @@ function buildPrompt(
   const languageName = input.locale === "pl" ? "Polish" : "English";
 
   const system = [
-    "You are an advisor inside Karnet.asist, an app that helps people track passes/vouchers",
+    "You are an advisor inside KARNET.asist, an app that helps people track passes/vouchers",
     "for gyms, pools, group classes, massages and beauty treatments.",
     "You will get a list of real nearby places (from Google Places) and a list of",
     "companies where the user already holds a pass.",
