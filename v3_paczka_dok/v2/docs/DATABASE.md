@@ -75,7 +75,7 @@ zawsze + kategorie, gdzie `created_by_device_id` = zweryfikowany `deviceId` wywo
 | `type` | enum: `limit`, `unlimited` | |
 | `total_visits` | int, nullable | wymagane, gdy `type = limit` |
 | `used_visits` | int, default 0 | |
-| `expiry_date` | date, **nullable** | **opcjonalna dla `limit`, wymagana dla `unlimited`** — reguła z v5/v6 |
+| `expiry_date` | date, **nullable** | **zawsze opcjonalna, dla obu typów** (Sesja V6.15) — wcześniej wymagana dla `unlimited`, ta reguła została usunięta |
 | `voucher_file_url` | text, nullable | wyłącznie treść/link wpisany ręcznie (Sesja 11). Do Sesji V6.2 przyjmował też ścieżkę pliku w Supabase Storage (prefiks `storage:`) — od Sesji V6.2 pliki żyją w osobnej tabeli `card_voucher_files` niżej, niezależnie od tej kolumny (można ustawić jedno, drugie albo oba naraz) |
 | `deleted_at` | timestamptz, nullable | miękkie usuwanie (rekomendacja) |
 | `created_at`, `updated_at` | timestamptz | |
@@ -88,8 +88,8 @@ samym urządzeniu) na zawsze, dane wprowadzone na koncie zostają widoczne wył�
 koncie na zawsze. Logika wyboru właściwej kolumny do zapytania: `src/server/card-owner.ts`
 (`ownerFilter`), używana identycznie przy odczycie i przy tworzeniu nowego karnetu.
 
-Reguła biznesowa (constraint aplikacyjny, najlepiej też CHECK w DB):
-`type = 'unlimited' ⇒ expiry_date IS NOT NULL`.
+Reguła biznesowa: `expiry_date` opcjonalna dla obu typów (Sesja V6.15) — brak wcześniej
+obowiązującego constraintu `type = 'unlimited' ⇒ expiry_date IS NOT NULL`.
 
 Status „aktywny / w archiwum” **nie jest** osobną kolumną w MVP — liczony w locie:
 `archived = realized_visits >= total_visits (dla limit) OR (expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE)`,
@@ -173,7 +173,8 @@ device 1───N categories  (własne kategorie, prywatne per urządzenie)
 Status liczony w locie (analogicznie do `archived`), nie jest osobną kolumną w MVP.
 Do potwierdzenia przed implementacją — patrz zastrzeżenie niżej.
 
-**Wymiar 1 — data ważności** (dotyczy `unlimited` zawsze, `limit` jeśli ustawiona):
+**Wymiar 1 — data ważności** (dotyczy obu typów, tylko jeśli `expiry_date` ustawiona —
+Sesja V6.15, wcześniej `unlimited` zawsze):
 
 | Status | Próg |
 |---|---|
@@ -181,7 +182,7 @@ Do potwierdzenia przed implementacją — patrz zastrzeżenie niżej.
 | `soon` | 3–7 dni do wygaśnięcia |
 | `urgent` | 0–2 dni do wygaśnięcia |
 | `wygasł` | data minęła |
-| `brak terminu` | `expiry_date IS NULL` (możliwe tylko dla `limit`) |
+| `brak terminu` | `expiry_date IS NULL` (możliwe dla obu typów) |
 
 **Wymiar 2 — pozostałe wejścia** (dotyczy tylko `limit`; „pozostało” liczone jak przy
 `archived` na bazie `realized_visits`, nie surowego `used_visits` — Sesja V6.3):

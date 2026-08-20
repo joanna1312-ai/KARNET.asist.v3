@@ -59,6 +59,12 @@ describe("getCardWarningStatus — wymiar 1: data ważności (docs/DATABASE.md)"
       )
     ).toBe("brak terminu");
   });
+
+  it("brak terminu — unlimited bez ustawionej daty ważności (Sesja V6.15 — teraz dozwolone)", () => {
+    expect(
+      getCardWarningStatus({ ...baseUnlimited, expiryDate: null }, TODAY)
+    ).toBe("brak terminu");
+  });
 });
 
 describe("getCardWarningStatus — wymiar 2: pozostałe wejścia, tylko `limit` (docs/DATABASE.md)", () => {

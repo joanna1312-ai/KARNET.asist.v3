@@ -50,7 +50,7 @@ export interface WarnableCard {
 // pominięty); u `unlimited` expiryDate jest zawsze ustawione (reguła z card-rules.ts).
 function getExpiryStatus(card: WarnableCard, today: Date): CardWarningStatus | null {
   if (card.expiryDate == null) {
-    return card.type === CardType.limit ? "brak terminu" : null;
+    return "brak terminu";
   }
 
   const daysLeft = Math.floor(

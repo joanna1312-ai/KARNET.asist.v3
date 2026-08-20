@@ -355,7 +355,9 @@ wymaga sesji, wszystkie działają też z samym tokenem urządzenia.
 
 ## Uwagi
 
-- Wszystkie mutacje na `Card`/`Visit` muszą utrzymywać regułę „`unlimited` wymaga
-  `expiryDate`” po stronie serwera, nie tylko w UI.
+- `expiryDate` jest zawsze opcjonalna, dla obu typów karnetu (Sesja V6.15) — karnet
+  `unlimited` bez ustawionej daty po prostu nigdy się sam nie zarchiwizuje, to świadoma
+  konsekwencja, nie błąd. Wcześniej `unlimited` wymagał `expiryDate`; ta reguła została
+  usunięta.
 - `DELETE /api/cards/:id` — rozważyć miękkie usuwanie (`deletedAt`) zamiast trwałego, przy
   zachowaniu w API zachowania „znika z list” tak jak w prototypie.

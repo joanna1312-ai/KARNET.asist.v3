@@ -120,7 +120,6 @@ interface CardFormProps {
 const FIELD_FOR_ERROR: Record<FormErrorCode, keyof CardFormValues> = {
   companyRequired: "companyId",
   typeRequired: "type",
-  expiryDateRequiredForUnlimited: "expiryDate",
   totalVisitsRequiredForLimit: "totalVisits",
   totalVisitsPositive: "totalVisits",
   newCompanyNameRequired: "newCompanyName",
@@ -428,9 +427,7 @@ export function CardForm({
           }
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {values.type === CardType.unlimited
-            ? t("expiryDateHintRequired")
-            : t("expiryDateHintOptional")}
+          {t("expiryDateHintOptional")}
         </p>
         {errorFor("expiryDate") && (
           <p className="text-sm text-status-urgent">

@@ -1,6 +1,6 @@
 import { Infinity as InfinityIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { CATEGORY_COLOR_CLASS } from "@/lib/category-display";
+import { CATEGORY_COLOR_CLASS, CATEGORY_TEXT_COLOR_CLASS } from "@/lib/category-display";
 import type { CategoryColor } from "@/server/system-categories";
 
 const WRAP_THRESHOLD = 12;
@@ -33,8 +33,9 @@ export function VisitDots({
   const t = useTranslations("cardDetailsPage");
 
   if (unlimited || total == null) {
+    const iconColorClass = muted ? "text-foreground/50" : CATEGORY_TEXT_COLOR_CLASS[color];
     return (
-      <span className={`inline-flex items-center gap-1.5 text-status-urgent ${className}`}>
+      <span className={`inline-flex items-center gap-1.5 ${iconColorClass} ${className}`}>
         <InfinityIcon className={size === "lg" ? "size-6" : "size-4"} aria-hidden />
         <span className="text-sm font-medium">{t("unlimitedLabel")}</span>
       </span>

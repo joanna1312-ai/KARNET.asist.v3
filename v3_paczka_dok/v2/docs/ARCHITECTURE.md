@@ -130,7 +130,8 @@ przeliczenie statusu archiwizacji.
 
 **Dodanie karnetu** — kreator 3-krokowy: (1) firma istniejąca / nowa (wpisana ręcznie lub
 wybrana z podpowiedzi Google Places — Sesja V4.1) + kategoria, (2) typ karnetu (limit +
-liczba wejść, lub bez limitu) + data ważności (wymagana tylko dla „bez limitu”), (3)
+liczba wejść, lub bez limitu) + data ważności (zawsze opcjonalna, dla obu typów —
+Sesja V6.15), (3)
 voucher/QR (jeden dla karnetu lub osobny na wejście), pokazywany jako tekst/link **albo**
 jako wgrany plik/zdjęcie (Sesja V4.3, przełącznik w formularzu — nie oba naraz) +
 podsumowanie → zapis.
@@ -143,7 +144,8 @@ zapisie i cronem/edge-function dla przypadków „czas minął bez akcji użytko
 **Odnowienie karnetu** — z widoku archiwum (`/cards`, zakładka „Archiwum”) użytkownik może
 jednym dotknięciem otworzyć kreator nowego karnetu wstępnie wypełniony danymi karnetu
 archiwalnego (ta sama firma, typ, liczba wejść, sposób pokazywania vouchera), z wyczyszczoną
-datą ważności — musi ją podać od nowa. To **nie jest edycja** starego karnetu: powstaje nowy
+datą ważności — opcjonalnie ustawia ją od nowa (Sesja V6.15: pole opcjonalne dla obu typów).
+To **nie jest edycja** starego karnetu: powstaje nowy
 rekord przez ten sam `POST /api/cards` co zwykłe dodanie (bez osobnego endpointu), z
 `usedVisits = 0`; archiwalny karnet i jego historia wejść zostają nienaruszone.
 
@@ -153,8 +155,8 @@ archiwum. Konkretne progi dni/wejść: patrz `DATABASE.md`, sekcja „Status kar
 progi”.
 
 **Edycja/usunięcie wejścia i daty ważności** — operacje na pojedynczym rekordzie
-`Visit`/polu `Card.expiry`, z walidacją: karnet typu `unlimited` zawsze wymaga daty
-ważności, `limit` — nie.
+`Visit`/polu `Card.expiry`. Data ważności jest zawsze opcjonalna, dla obu typów karnetu
+(Sesja V6.15) — brak wcześniej obowiązującej walidacji „`unlimited` zawsze wymaga daty”.
 
 **Usunięcie karnetu** — zawsze poprzedzone potwierdzeniem (modal), operacja nieodwracalna
 w prototypie → w produkcji rozważyć miękkie usuwanie (`deletedAt`) zamiast trwałego, dla

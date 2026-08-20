@@ -13,7 +13,7 @@ const validUnlimitedCard = {
   companyId: "company-1",
   type: CardType.unlimited,
   totalVisits: null,
-  expiryDate: new Date("2026-12-31"),
+  expiryDate: null,
 };
 
 describe("getCardInputErrors — reguła limit/unlimited (docs/DATABASE.md)", () => {
@@ -27,14 +27,14 @@ describe("getCardInputErrors — reguła limit/unlimited (docs/DATABASE.md)", ()
     ).toEqual([]);
   });
 
-  it("accepts a valid unlimited card with expiryDate", () => {
+  it("accepts a valid unlimited card without expiryDate", () => {
     expect(getCardInputErrors(validUnlimitedCard)).toEqual([]);
   });
 
-  it("rejects an unlimited card without expiryDate", () => {
+  it("accepts an unlimited card with expiryDate set (optional, not forbidden)", () => {
     expect(
-      getCardInputErrors({ ...validUnlimitedCard, expiryDate: null })
-    ).toContain("expiryDateRequiredForUnlimited");
+      getCardInputErrors({ ...validUnlimitedCard, expiryDate: new Date("2026-12-31") })
+    ).toEqual([]);
   });
 
   it("rejects a limit card without totalVisits", () => {

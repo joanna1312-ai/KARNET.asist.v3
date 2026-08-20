@@ -143,8 +143,9 @@ describe("PATCH /api/cards/:id — reguła limit/unlimited na scalonym stanie", 
     expect(response.status).toBe(404);
   });
 
-  it("rejects switching an existing limit card to unlimited without also setting expiryDate", async () => {
+  it("allows switching an existing limit card to unlimited without setting expiryDate (Sesja V6.15 — always optional)", async () => {
     prismaMock.card.findFirst.mockResolvedValue(existingLimitCard);
+    prismaMock.card.update.mockResolvedValue({ id: "card-1" });
 
     const response = await PATCH(
       new Request(cardUrl("card-1"), {
@@ -154,11 +155,13 @@ describe("PATCH /api/cards/:id — reguła limit/unlimited na scalonym stanie", 
       }),
       routeParams("card-1")
     );
-    const body = await response.json();
 
-    expect(response.status).toBe(400);
-    expect(body.errors).toContain("expiryDateRequiredForUnlimited");
-    expect(prismaMock.card.update).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(prismaMock.card.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ type: CardType.unlimited }),
+      })
+    );
   });
 
   it("allows explicitly clearing expiryDate on a limit card (null is a valid patch value)", async () => {

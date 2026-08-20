@@ -3,7 +3,6 @@ import { CardType } from "@/generated/prisma/enums";
 export type CardInputErrorCode =
   | "companyRequired"
   | "typeRequired"
-  | "expiryDateRequiredForUnlimited"
   | "totalVisitsRequiredForLimit"
   | "totalVisitsPositive";
 
@@ -19,9 +18,9 @@ export interface CardInputCandidate {
   voucherFileUrl?: string | null;
 }
 
-// Reguła biznesowa (docs/DATABASE.md): `unlimited` ⇒ expiryDate wymagane, `limit` —
-// opcjonalnie. Egzekwowana tu, na granicy API, niezależnie od walidacji w UI — nie
-// wolno jej stracić przy zmianach w formularzu (patrz CLAUDE.md).
+// Reguła biznesowa (docs/DATABASE.md): expiryDate zawsze opcjonalna, dla obu typów
+// karnetu (Sesja V6.15) — karnet `unlimited` bez daty po prostu nigdy się sam nie
+// zarchiwizuje, to świadoma konsekwencja, nie błąd.
 export function getCardInputErrors(
   candidate: CardInputCandidate
 ): CardInputErrorCode[] {
@@ -29,10 +28,6 @@ export function getCardInputErrors(
 
   if (!candidate.companyId) errors.push("companyRequired");
   if (!candidate.type) errors.push("typeRequired");
-
-  if (candidate.type === CardType.unlimited && !candidate.expiryDate) {
-    errors.push("expiryDateRequiredForUnlimited");
-  }
 
   if (candidate.type === CardType.limit) {
     if (candidate.totalVisits == null) {

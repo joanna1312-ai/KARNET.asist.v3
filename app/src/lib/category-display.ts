@@ -28,3 +28,18 @@ export const CATEGORY_COLOR_CLASS: Record<CategoryColor, string> = {
   violet: "bg-violet",
   slate: "bg-slate",
 };
+
+// Warianty tekstowe (Sesja V6.15) — dla miejsc, gdzie kolor kategorii koloruje sam
+// tekst/ikonę na tle strony, a nie wypełnienie kształtu. Kolor bazowy każdej kategorii
+// ma za mały kontrast na tekst (ok. 2.4–3.2:1 na tle strony) — każdy kolor ma dedykowany
+// "-ink" wariant (ciemniejszy w jasnym motywie, jaśniejszy w ciemnym), trzymający
+// ≥ 4.5:1 (WCAG AA). accent-deep to wyjątek: już istniejący token, używany tak samo w
+// BottomTabBar dla aktywnej zakładki.
+export const CATEGORY_TEXT_COLOR_CLASS: Record<CategoryColor, string> = {
+  mint: "text-mint-ink",
+  coral: "text-coral-ink",
+  accent: "text-accent-deep",
+  sky: "text-sky-ink",
+  violet: "text-violet-ink",
+  slate: "text-slate-ink",
+};

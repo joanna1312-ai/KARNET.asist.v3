@@ -216,7 +216,10 @@ describe("POST /api/cards — kreator karnetu", () => {
     );
   });
 
-  it("rejects an unlimited card without expiryDate, even though the client sent one", async () => {
+  it("accepts an unlimited card without expiryDate (Sesja V6.15 — always optional)", async () => {
+    prismaMock.company.findUnique.mockResolvedValue({ id: "co1" });
+    prismaMock.card.create.mockResolvedValue({ id: "new-card" });
+
     const response = await POST(
       new Request(endpoint, {
         method: "POST",
@@ -230,11 +233,9 @@ describe("POST /api/cards — kreator karnetu", () => {
         }),
       })
     );
-    const body = await response.json();
 
-    expect(response.status).toBe(400);
-    expect(body.errors).toContain("expiryDateRequiredForUnlimited");
-    expect(prismaMock.card.create).not.toHaveBeenCalled();
+    expect(response.status).toBe(201);
+    expect(prismaMock.card.create).toHaveBeenCalled();
   });
 
   it("rejects a card pointing at a company that does not exist", async () => {

@@ -13,7 +13,7 @@ Priorytet — to reguły, które w prototypie są łatwe do przypadkowego popsuc
 refaktorze:
 
 - `isArchived(card)` — karnet limit w pełni wykorzystany LUB data ważności minęła
-- Walidacja: `type === 'unlimited'` zawsze wymaga `expiryDate`; `type === 'limit'` — nie
+- Walidacja: `expiryDate` zawsze opcjonalna, dla obu typów karnetu (Sesja V6.15)
 - Liczenie dni do końca ważności / etykiety statusu (`ok`/`soon`/`urgent`/`wygasł`/
   `brak terminu`) wg progów z `DATABASE.md` („Status karnetu — progi”), w tym reguła
   łączenia dla karnetów `limit` z ustawioną datą ważności (gorszy z dwóch wymiarów wygrywa)

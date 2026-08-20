@@ -47,8 +47,8 @@
         "answer": "Nie — usunięcie zawsze wymaga potwierdzenia w osobnym oknie."
       },
       "expiryOptional": {
-        "question": "Czy karnet na limit wejść musi mieć datę ważności?",
-        "answer": "Nie, jest opcjonalna. Karnety typu „bez limitu” zawsze jej wymagają."
+        "question": "Czy karnet musi mieć datę ważności?",
+        "answer": "Nie — data ważności jest zawsze opcjonalna, dla obu typów karnetu. Karnet „bez limitu” bez ustawionej daty po prostu nigdy się sam nie zarchiwizuje."
       },
       "ocr": {
         "question": "Czy aplikacja rozpoznaje dane z karnetu ze zdjęcia?",
@@ -270,7 +270,6 @@
     },
     "totalVisitsLabel": "Liczba wejść",
     "expiryDateLabel": "Data ważności",
-    "expiryDateHintRequired": "Wymagana dla karnetu bez limitu.",
     "expiryDateHintOptional": "Opcjonalna — możesz zostawić puste.",
     "voucherSectionLabel": "Voucher",
     "voucherInputModeOptions": {
@@ -293,12 +292,10 @@
     "step2Title": "Jaki to karnet?",
     "step3Title": "Dodaj voucher",
     "expiryOptionalSuffix": "opcjonalna",
-    "expiryRequiredSuffix": "wymagana",
     "voucherSkipHint": "Możesz dodać voucher później, w szczegółach karnetu.",
     "errors": {
       "companyRequired": "Wybierz miejsce.",
       "typeRequired": "Wybierz typ karnetu.",
-      "expiryDateRequiredForUnlimited": "Karnet bez limitu wymaga daty ważności.",
       "totalVisitsRequiredForLimit": "Podaj liczbę wejść dla karnetu z limitem.",
       "totalVisitsPositive": "Liczba wejść musi być większa od zera.",
       "voucherFileTooLarge": "Plik jest za duży (maks. 10 MB).",

@@ -63,9 +63,7 @@ export function TypeStep({
               <span className={`font-semibold ${selected ? "text-mint-ink" : "text-foreground"}`}>
                 {t(`typeOptions.${type}`)}
               </span>
-              <span className="text-xs text-foreground/50">
-                {type === CardType.limit ? t("expiryDateHintOptional") : t("expiryDateHintRequired")}
-              </span>
+              <span className="text-xs text-foreground/50">{t("expiryDateHintOptional")}</span>
             </button>
           );
         })}
@@ -122,12 +120,7 @@ export function TypeStep({
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold">
           {t("expiryDateLabel")}{" "}
-          <span className="font-normal text-foreground/50">
-            —{" "}
-            {values.type === CardType.unlimited
-              ? t("expiryRequiredSuffix")
-              : t("expiryOptionalSuffix")}
-          </span>
+          <span className="font-normal text-foreground/50">— {t("expiryOptionalSuffix")}</span>
         </label>
         <Input
           type="date"

@@ -15,7 +15,7 @@
    zespołu). **Rekomendacja: React Native**, głównie dlatego że backend i typy danych są
    już w TypeScript. Wciąż otwarte — nie podjęte przy Fazie V5b.
 2. **Zakres współdzielenia kodu:** czy tylko API/typy, czy też logika (np. wyliczanie
-   `archived`, walidacja „unlimited wymaga expiry”) w osobnym pakiecie (`packages/core`
+   `archived`, progi statusu ostrzegawczego) w osobnym pakiecie (`packages/core`
    w monorepo) używanym i przez web, i przez mobile. Wciąż otwarte.
 3. ~~**Czy PWA wystarczy na start** zamiast pierwszej natywnej wersji — szybszy
    time-to-market, ale bez części funkcji natywnych (powiadomienia push, aparat

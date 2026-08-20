@@ -13,9 +13,10 @@ sprzedaży karnetów.
 **Czy mogę zarezerwować zajęcia przez aplikację?**
 Nie — rezerwacje i grafiki zajęć nie są częścią aplikacji.
 
-**Czy karnet na limit wejść musi mieć datę ważności?**
-Nie, jest opcjonalna — możesz ją dodać, zmienić lub usunąć w dowolnym momencie w
-szczegółach karnetu. Karnety typu „bez limitu wejść” zawsze wymagają daty ważności.
+**Czy karnet musi mieć datę ważności?**
+Nie — data ważności jest zawsze opcjonalna, dla obu typów karnetu. Możesz ją dodać,
+zmienić lub usunąć w dowolnym momencie w szczegółach karnetu. Karnet „bez limitu” bez
+ustawionej daty po prostu nigdy się sam nie zarchiwizuje.
 
 **Co się dzieje z karnetem po wykorzystaniu wszystkich wejść albo po upływie terminu
 ważności?**

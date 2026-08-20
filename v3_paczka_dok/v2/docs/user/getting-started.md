@@ -9,7 +9,8 @@
    kategorię (siłownia, basen, zajęcia grupowe, masaż, kosmetyka).
 3. Wybierz typ karnetu:
    - **Limit wejść** — podaj liczbę wejść; data ważności jest opcjonalna.
-   - **Bez limitu** — karnet ważny do wskazanej daty; data ważności jest wymagana.
+   - **Bez limitu** — data ważności jest opcjonalna. Jeśli jej nie ustawisz, karnet
+     zostanie aktywny bezterminowo i nie zarchiwizuje się sam.
 4. Opcjonalnie dodaj zdjęcie vouchera lub kodu QR (jeden dla całego karnetu albo osobny
    dla każdego wejścia).
 5. Zapisz karnet.

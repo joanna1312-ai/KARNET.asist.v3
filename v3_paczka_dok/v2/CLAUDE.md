@@ -31,7 +31,8 @@ pamięć). Karnet.asist centralizuje to w jednym miejscu, bez konieczności zak�
 - CRUD karnetów (dodanie przez kreator, edycja, usunięcie z potwierdzeniem)
 - Dodawanie i edycja wejść, licznik wykorzystanych wejść
 - Automatyczna archiwizacja (limit wyczerpany / data ważności minęła)
-- Reguła: karnet `unlimited` zawsze wymaga daty ważności, `limit` — opcjonalnie
+- Reguła: data ważności zawsze opcjonalna, dla obu typów karnetu (Sesja V6.15 zmieniła
+  to względem pierwotnego MVP, gdzie `unlimited` zawsze jej wymagał)
 - Dodawanie firmy ręcznie (bez integracji Google Maps — patrz niżej)
 - Konto opcjonalne / tryb bez logowania jako pełnoprawna ścieżka
 - i18n PL/EN, tryb ciemny (już działają w prototypie — przenieść 1:1)
@@ -159,8 +160,10 @@ npx prisma migrate dev   # migracje bazy danych
   `Karta_pomyslu_Karnet_asist.docx`).
 - **Konto zawsze opcjonalne** — żadna funkcja rdzeniowa (dodanie karnetu, wejścia,
   archiwum) nie może wymagać logowania.
-- Karnety typu „limit wejść” mają **opcjonalną** datę ważności; karnety „bez limitu” —
-  **wymagają** jej zawsze. Nie usuwaj tej reguły przy zmianach w modelu danych.
+- Data ważności jest **zawsze opcjonalna**, dla obu typów karnetu (Sesja V6.15 — decyzja
+  właścicielki, świadomie akceptująca, że karnet „bez limitu” bez daty nigdy się sam nie
+  zarchiwizuje). Wcześniej karnety „bez limitu” zawsze jej wymagały — ta reguła została
+  celowo usunięta, nie przywracaj jej bez nowej decyzji właścicielki.
 - **Progi statusu ostrzegawczego** (`ok`/`soon`/`urgent`) — ustalone, patrz
   `docs/DATABASE.md`, sekcja „Status karnetu — progi”. Nie zgaduj innych wartości;
   jeśli progi wymagają korekty, zaproponuj zmianę w tej samej sekcji zamiast

@@ -78,8 +78,6 @@ export function CardWizard({
       } else if (!(visits > 0)) {
         errors.totalVisits = t("errors.totalVisitsPositive");
       }
-    } else if (values.expiryDate === "") {
-      errors.expiryDate = t("errors.expiryDateRequiredForUnlimited");
     }
     return errors;
   }

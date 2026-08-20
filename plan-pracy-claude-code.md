@@ -1629,11 +1629,20 @@ Prompt (skróć/dostosuj):
 > terminu).
 > Najpierw krótki plan, poczekaj na akceptację.
 
-- [ ] Plan zaakceptowany
-- [ ] Data ważności opcjonalna dla obu typów karnetu (backend + UI + walidacja klienta)
-- [ ] `docs/DATABASE.md`/`docs/API.md` zaktualizowane
-- [ ] Ikona/etykieta „Bez limitu" w kolorze kategorii, nie czerwonym
-- [ ] Testy zaktualizowane, lint/test + commit
+- [x] Plan zaakceptowany
+- [x] Data ważności opcjonalna dla obu typów karnetu (backend + UI + walidacja klienta) —
+      `card-rules.ts`, `card-status.ts`, `CardForm.tsx`, `CardWizard/index.tsx`,
+      `CardWizard/TypeStep.tsx`
+- [x] `docs/DATABASE.md`/`docs/API.md` zaktualizowane; przy okazji też `ARCHITECTURE.md`,
+      `TESTING.md`, `MOBILE_ROADMAP.md`, `CLAUDE.md` i `docs/user/faq.md`/
+      `getting-started.md` — wszystkie opisywały tę samą, teraz nieaktualną regułę
+- [x] Ikona/etykieta „Bez limitu" w kolorze kategorii, nie czerwonym
+      (`CATEGORY_TEXT_COLOR_CLASS`) — przy weryfikacji kontrastu WCAG dodane brakujące
+      warianty `-ink` dla `sky`/`violet`/`slate` w `globals.css` (surowe kolory bazowe
+      miały za słaby kontrast tekstu, 2.4–2.8:1)
+- [x] Testy zaktualizowane (`card-rules.test.ts`, `card-status.test.ts`, 2×
+      `route.test.ts`), lint/test (225/225) + commit — zweryfikowane w przeglądarce
+      (mobile-kreator + desktop-formularz, jasny/ciemny motyw)
 
 ### Sesja V6.16 (punkt 4) — Ukryj zakładki „Aktywne"/„Archiwum" podczas dodawania/edycji karnetu
 

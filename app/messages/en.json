@@ -47,8 +47,8 @@
         "answer": "No — deleting always requires confirmation in a separate dialog."
       },
       "expiryOptional": {
-        "question": "Does a visit-limit card need an expiry date?",
-        "answer": "No, it's optional. \"Unlimited\" cards always require one."
+        "question": "Does a card need an expiry date?",
+        "answer": "No — the expiry date is always optional, for both card types. An \"unlimited\" card with no expiry date set simply never archives itself automatically."
       },
       "ocr": {
         "question": "Does the app read card details from a photo?",
@@ -270,7 +270,6 @@
     },
     "totalVisitsLabel": "Number of visits",
     "expiryDateLabel": "Expiry date",
-    "expiryDateHintRequired": "Required for unlimited cards.",
     "expiryDateHintOptional": "Optional — you can leave it blank.",
     "voucherSectionLabel": "Voucher",
     "voucherInputModeOptions": {
@@ -293,12 +292,10 @@
     "step2Title": "What kind of card?",
     "step3Title": "Add a voucher",
     "expiryOptionalSuffix": "optional",
-    "expiryRequiredSuffix": "required",
     "voucherSkipHint": "You can add a voucher later, from the card's details.",
     "errors": {
       "companyRequired": "Choose a place.",
       "typeRequired": "Choose a card type.",
-      "expiryDateRequiredForUnlimited": "An unlimited card requires an expiry date.",
       "totalVisitsRequiredForLimit": "Enter the number of visits for a limited card.",
       "totalVisitsPositive": "The number of visits must be greater than zero.",
       "voucherFileTooLarge": "The file is too large (max 10 MB).",

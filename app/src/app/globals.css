@@ -32,6 +32,13 @@
   --sky: #6fa8cf;
   --violet: #a992d1;
   --slate: #8d97a3;
+
+  /* Warianty "-ink" dla sky/violet/slate (Sesja V6.15) — analogicznie do mint-ink/
+     coral-ink: kolor bazowy jest za jasny na kontrastowy tekst na tle strony (ok.
+     2.4–2.8:1), te warianty trzymają ≥ 4.5:1 (WCAG AA) w obu motywach. */
+  --sky-ink: #215d80;
+  --violet-ink: #5c3f85;
+  --slate-ink: #465158;
 }
 
 @theme inline {
@@ -55,6 +62,9 @@
   --color-sky: var(--sky);
   --color-violet: var(--violet);
   --color-slate: var(--slate);
+  --color-sky-ink: var(--sky-ink);
+  --color-violet-ink: var(--violet-ink);
+  --color-slate-ink: var(--slate-ink);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -76,6 +86,9 @@
     --sky: #4d84ad;
     --violet: #8b6bb8;
     --slate: #6b7684;
+    --sky-ink: #a9d3ef;
+    --violet-ink: #d9c7f0;
+    --slate-ink: #ccd3d9;
   }
 }
 
@@ -97,6 +110,9 @@
   --sky: #4d84ad;
   --violet: #8b6bb8;
   --slate: #6b7684;
+  --sky-ink: #a9d3ef;
+  --violet-ink: #d9c7f0;
+  --slate-ink: #ccd3d9;
 }
 
 :root[data-theme="light"] {
@@ -115,6 +131,9 @@
   --sky: #6fa8cf;
   --violet: #a992d1;
   --slate: #8d97a3;
+  --sky-ink: #215d80;
+  --violet-ink: #5c3f85;
+  --slate-ink: #465158;
 }
 
 body {
