@@ -10,11 +10,25 @@
 
 ## Środowiska
 
-- **Preview** — automatyczny deploy per pull request (np. Vercel Preview Deployments)
-- **Staging** — gałąź `main`/`develop`, dane testowe
-- **Production** — gałąź release, osobna baza danych i osobne sekrety
+- **Preview** — automatyczny deploy per pull request (Vercel Preview Deployments)
+- **Production** — gałąź `main` (Vercel Git integration, auto-deploy na push)
 
-Nigdy nie wskazywać produkcyjnej bazy danych ze środowiska preview/staging.
+> **Stan faktyczny (sprawdzone 2026-08-19), nie plan:** Preview i Production współdzielą
+> tę samą bazę Supabase (`eewrubcmfeeuoikmddhh`) — pierwotny plan poniżej ("nigdy nie
+> wskazywać produkcyjnej bazy z preview/staging", osobna gałąź "release" ze swoją bazą)
+> **nie został wdrożony**. Nie ma osobnej bazy dev/staging. To realne ryzyko: build z
+> dowolnego pull requestu (Preview) łączy się z tą samą produkcyjną bazą, na której są
+> prawdziwe dane użytkowników — błąd w kodzie na branchu feature (np. zły `DELETE`/
+> `updateMany` bez filtra) mógłby uszkodzić dane produkcyjne, nie testowe. Świadomie
+> zostawione tak przez właścicielkę na małą/prywatną skalę użycia — do rewizji (osobny
+> projekt Supabase pod Preview) przy realnym wzroście ruchu albo liczby współpracujących
+> osób.
+>
+> Pierwotny plan (zanim wdrożono produkcję, zachowany dla kontekstu):
+> - Preview — dane testowe
+> - Production — gałąź release, osobna baza danych i osobne sekrety
+> - Zasada "nigdy nie wskazywać produkcyjnej bazy z preview/staging" — **obecnie
+>   złamana w praktyce, patrz wyżej**
 
 ## Hosting (faktyczny, od pierwszego wdrożenia 2026-08-09)
 
@@ -36,9 +50,16 @@ framework detected", zero funkcji). Do rewizji, gdy wsparcie Vercela dla Next 16
 - `npx prisma migrate deploy` wpięte w skrypt `build` w `app/package.json`
   (`prisma migrate deploy && next build`) — uruchamia się automatycznie na Vercelu przy
   każdym buildzie (Production i Preview), przed `next build`, więc nowa wersja kodu nigdy
-  nie idzie na produkcję bez zastosowanych migracji. Wymaga `DATABASE_URL` ustawionego w
-  zmiennych środowiskowych danego środowiska (Vercel → Project Settings → Environment
-  Variables) — sprawdzone 2026-08-19, ustawiony dla Production i Preview.
+  nie idzie na produkcję bez zastosowanych migracji.
+- `prisma.config.ts` (używany tylko przez Prisma CLI, nie przez runtime aplikacji — patrz
+  `src/lib/db.ts`) czyta connection string z `MIGRATE_DATABASE_URL`, z fallbackiem do
+  `DATABASE_URL`. Powód: `DATABASE_URL` w Vercelu wskazuje Supabase **transaction pooler**
+  (port 6543) — dobry dla zapytań w serverless, ale `prisma migrate deploy` potrzebuje
+  advisory locków na poziomie sesji, których transaction pooling nie wspiera (migracja
+  wisi w nieskończoność zamiast się wykonać albo zakończyć błędem). `MIGRATE_DATABASE_URL`
+  wskazuje **session pooler** (port 5432) tej samej bazy. Ustawione w Vercelu dla
+  Production i Preview 2026-08-19 (patrz też uwaga w sekcji "Środowiska" — obie wskazują
+  tę samą bazę).
 - Migracje muszą być kompatybilne wstecz przez jeden deploy (rolling deploy) — nie usuwać
   kolumny w tym samym release, w którym przestaje być używana
 
