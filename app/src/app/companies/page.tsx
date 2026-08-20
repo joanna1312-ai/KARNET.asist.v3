@@ -422,18 +422,20 @@ export default function CompaniesPage() {
               key={company.id}
               className="flex items-center gap-3 rounded-[20px] border border-black/[.07] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,.04)] hover:bg-black/5 dark:border-white/[.08] dark:bg-zinc-900 dark:hover:bg-white/5"
             >
-              <Link
-                href={`/companies/${company.id}`}
-                className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 gap-y-1"
-              >
-                <p className="min-w-0 truncate font-medium">{company.name}</p>
-                <p className="flex shrink-0 items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
-                  <CategoryIcon slug={company.category.slug} color={company.category.color} />
-                  {categoryDisplayName(company.category, tCategory)}
-                  {sortBy === "nearest" &&
-                    distanceToCompanyKm(company) != null &&
-                    ` · ${t("distanceKm", { km: distanceFormatter.format(distanceToCompanyKm(company)!) })}`}
-                </p>
+              <Link href={`/companies/${company.id}`} className="flex min-w-0 flex-1 flex-col gap-1">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                  <p className="min-w-0 line-clamp-2 font-medium">{company.name}</p>
+                  <p className="flex shrink-0 items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+                    <CategoryIcon slug={company.category.slug} color={company.category.color} />
+                    {categoryDisplayName(company.category, tCategory)}
+                    {sortBy === "nearest" &&
+                      distanceToCompanyKm(company) != null &&
+                      ` · ${t("distanceKm", { km: distanceFormatter.format(distanceToCompanyKm(company)!) })}`}
+                  </p>
+                </div>
+                {company.address && (
+                  <p className="text-xs text-foreground/60">{company.address}</p>
+                )}
               </Link>
               <button
                 type="button"

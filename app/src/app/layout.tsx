@@ -68,6 +68,10 @@ export default async function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {/* SVG favicon przełączany po motywie systemowym — icon.tsx/favicon.ico (poniżej
+            w kolejce linków, jako fallback) renderują tylko wariant jasny. */}
+        <link rel="icon" href="/favicon-light.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
+        <link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
